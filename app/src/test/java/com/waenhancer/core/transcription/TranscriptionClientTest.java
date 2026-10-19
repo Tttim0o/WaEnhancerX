@@ -177,6 +177,17 @@ public class TranscriptionClientTest {
     }
 
     @Test
+    public void deeplyNestedJsonIsRejectedInsteadOfOverflowingTheStack() {
+        StringBuilder deep = new StringBuilder();
+        for (int i = 0; i < 100_000; i++) deep.append('[');
+        assertEquals(null, TranscriptionClient.parseJsonOrNull(deep.toString()));
+        StringBuilder ok = new StringBuilder("{\"text\":\"x\",\"a\":");
+        for (int i = 0; i < 60; i++) ok.append('[');
+        for (int i = 0; i < 60; i++) ok.append(']');
+        assertTrue(TranscriptionClient.parseJsonOrNull(ok.append('}').toString()) instanceof Map);
+    }
+
+    @Test
     public void uploadNameIsSanitizedAndUsesOgg() {
         assertEquals("PTT-1.ogg", TranscriptionClient.uploadName("PTT-1.opus"));
         assertEquals("a_b_.ogg", TranscriptionClient.uploadName("a\"b\r.opus"));
