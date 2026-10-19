@@ -388,6 +388,7 @@ public final class PreferenceSchema {
         add(entries, "videoquality", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "viewonce", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "voice_transcription", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "voice_transcription_auto", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "voicenote_speed", Type.FLOAT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "voice_note_speed_modifier", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "wae_color_mode", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

@@ -135,7 +135,6 @@ fun AutomationTaskerScreen() {
     val preferenceManager = LocalWaexPreferenceManager.current
 
     // Automation states
-    var alwaysTypingEnabled by remember { mutableStateOf(preferenceManager.getBoolean("always_typing", preferenceManager.getBoolean("ghostmode_t", false))) }
     var taskerIntegrationEnabled by remember { mutableStateOf(preferenceManager.getBoolean("tasker_integration", false)) }
 
     // Audio & AI states
@@ -144,6 +143,7 @@ fun AutomationTaskerScreen() {
     var customUrl by remember { mutableStateOf(preferenceManager.getString("custom_transcription_url", "")) }
     var customKey by remember { mutableStateOf(preferenceManager.getString("custom_transcription_key", "")) }
     var customModel by remember { mutableStateOf(preferenceManager.getString("custom_transcription_model", "")) }
+    var autoTranscribe by remember { mutableStateOf(preferenceManager.getBoolean("voice_transcription_auto", false)) }
     var showProviderDropdown by remember { mutableStateOf(false) }
     var assemblyKey by remember { mutableStateOf(preferenceManager.getString("assembly_key", "")) }
     var assemblyStatus by remember { mutableStateOf("idle") } // "idle" | "verifying" | "ok" | "fail"
@@ -237,11 +237,6 @@ fun AutomationTaskerScreen() {
         if (selectedTab == "automation") {
             // Automation Cards
             val cards = listOf(
-                AutomationCardData("always_typing", WaexIcons.Lock, alwaysTypingEnabled, FeatureCatalog.findByKey("always_typing")?.isPro ?: false) {
-                    alwaysTypingEnabled = it
-                    preferenceManager.putBoolean("always_typing", it)
-                    preferenceManager.putBoolean("ghostmode_t", it)
-                },
                 AutomationCardData("tasker_integration", WaexIcons.AutoAwesome, taskerIntegrationEnabled, FeatureCatalog.findByKey("tasker_integration")?.isPro ?: false) {
                     taskerIntegrationEnabled = it
                     preferenceManager.putBoolean("tasker_integration", it)
@@ -497,6 +492,33 @@ fun AutomationTaskerScreen() {
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_transcribe_automatically_2de4db94, "Transcribe automatically"),
+                                        style = typography.bodyMd,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_off_each_new_voice_note_sent_or_receiv_efafc048, "Off: each new voice note, sent or received, gets a notification with a Transcribe button."),
+                                        style = typography.labelSm,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                StitchSwitch(
+                                    checked = autoTranscribe,
+                                    onCheckedChange = {
+                                        autoTranscribe = it
+                                        preferenceManager.putBoolean("voice_transcription_auto", it)
+                                    }
+                                )
+                            }
+
                             // Provider Dropdown selection
                             Column {
                                 Text(
