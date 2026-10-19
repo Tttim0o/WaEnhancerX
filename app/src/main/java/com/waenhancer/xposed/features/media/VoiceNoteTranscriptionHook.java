@@ -238,9 +238,13 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         synchronized (seenNotes) {
             Long handledSize = seenNotes.get(key);
             if (handledSize != null && handledSize == size) return;
+        }
+        Boolean configured = transcriptionReady();
+        if (configured == null) return; // WAEX not reachable yet: leave it for the next scan.
+        synchronized (seenNotes) {
             seenNotes.put(key, size);
         }
-        if (!isTranscriptionReady()) return;
+        if (!configured) return; // No provider configured: stay silent for this note.
         if (isEnabled(PREF_AUTO, false)) {
             transcribe(note);
         } else {
@@ -248,19 +252,23 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         }
     }
 
-    /** True when WAEX has a provider with a key; avoids notifying users who never set it up. */
-    private boolean isTranscriptionReady() {
+    /**
+     * Whether WAEX has a provider with a key, so users who never set one up get no
+     * notifications; {@code null} when WAEX could not be asked.
+     */
+    @Nullable
+    private Boolean transcriptionReady() {
         long now = System.currentTimeMillis();
-        if (now - readyCheckedAt < READY_CACHE_MS) return ready;
-        readyCheckedAt = now;
+        if (readyCheckedAt != 0 && now - readyCheckedAt < READY_CACHE_MS) return ready;
         try {
             Bundle result = context.getContentResolver().call(
                     PROVIDER, TranscriptionRequestHandler.METHOD_READY, null, new Bundle());
             ready = result != null && result.getBoolean(TranscriptionRequestHandler.RESULT_READY, false);
+            readyCheckedAt = now; // Only a real answer is cached; WAEX may still be starting.
+            return ready;
         } catch (Throwable t) {
-            ready = false;
+            return null;
         }
-        return ready;
     }
 
     private void transcribe(File note) {

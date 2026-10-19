@@ -338,8 +338,11 @@ public final class TranscriptionClient {
 
     /** Small strict JSON reader: objects become maps, arrays lists, numbers doubles. */
     static final class MiniJson {
+        /** Bounds recursion so a hostile response cannot overflow the Binder thread's stack. */
+        private static final int MAX_DEPTH = 64;
         private final String s;
         private int i;
+        private int depth;
 
         MiniJson(String s) { this.s = s; }
 
@@ -363,11 +366,16 @@ public final class TranscriptionClient {
             return number();
         }
 
+        private void enter() {
+            if (++depth > MAX_DEPTH) throw new IllegalArgumentException("Nested too deeply");
+        }
+
         private Map<String, Object> object() {
+            enter();
             Map<String, Object> map = new LinkedHashMap<>();
             i++;
             skipWs();
-            if (peek('}')) { i++; return map; }
+            if (peek('}')) { i++; depth--; return map; }
             while (true) {
                 skipWs();
                 String key = string();
@@ -377,20 +385,23 @@ public final class TranscriptionClient {
                 skipWs();
                 if (peek(',')) { i++; continue; }
                 expect('}');
+                depth--;
                 return map;
             }
         }
 
         private List<Object> array() {
+            enter();
             List<Object> list = new java.util.ArrayList<>();
             i++;
             skipWs();
-            if (peek(']')) { i++; return list; }
+            if (peek(']')) { i++; depth--; return list; }
             while (true) {
                 list.add(value());
                 skipWs();
                 if (peek(',')) { i++; continue; }
                 expect(']');
+                depth--;
                 return list;
             }
         }
