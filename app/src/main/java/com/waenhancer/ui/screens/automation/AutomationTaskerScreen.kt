@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -139,7 +140,10 @@ fun AutomationTaskerScreen() {
 
     // Audio & AI states
     var voiceTranscriptionEnabled by remember { mutableStateOf(preferenceManager.getBoolean("voice_transcription", true)) }
-    var transcriptionProvider by remember { mutableStateOf(preferenceManager.getString("transcription_provider", "Groq")) } // "Groq" | "AssemblyAI"
+    var transcriptionProvider by remember { mutableStateOf(preferenceManager.getString("transcription_provider", "Groq")) } // "Groq" | "AssemblyAI" | "Custom"
+    var customUrl by remember { mutableStateOf(preferenceManager.getString("custom_transcription_url", "")) }
+    var customKey by remember { mutableStateOf(preferenceManager.getString("custom_transcription_key", "")) }
+    var customModel by remember { mutableStateOf(preferenceManager.getString("custom_transcription_model", "")) }
     var showProviderDropdown by remember { mutableStateOf(false) }
     var assemblyKey by remember { mutableStateOf(preferenceManager.getString("assembly_key", "")) }
     var assemblyStatus by remember { mutableStateOf("idle") } // "idle" | "verifying" | "ok" | "fail"
@@ -519,7 +523,7 @@ fun AutomationTaskerScreen() {
                                         expanded = showProviderDropdown,
                                         onDismissRequest = { showProviderDropdown = false }
                                     ) {
-                                        listOf("Groq", "AssemblyAI").forEach { provider ->
+                                        listOf("Groq", "AssemblyAI", "Custom").forEach { provider ->
                                             DropdownMenuItem(
                                                 text = { Text(text = provider, style = typography.bodyMd) },
                                                 onClick = {
@@ -570,6 +574,37 @@ fun AutomationTaskerScreen() {
                                         )
                                     }
                                 }
+                            } else if (transcriptionProvider == "Custom") {
+                                Text(
+                                    text = UiText.get(R.string.waex_ui_uses_the_openai_audio_transcriptions_r_d7f9316b, "Uses the OpenAI /audio/transcriptions request format."),
+                                    style = typography.labelSm,
+                                    color = colors.onSurfaceVariant
+                                )
+                                TranscriptionTextField(
+                                    label = UiText.get(R.string.waex_ui_custom_endpoint_url_aabf1f97, "Custom Endpoint URL"),
+                                    value = customUrl,
+                                    onValueChange = {
+                                        customUrl = it
+                                        preferenceManager.putString("custom_transcription_url", it.trim())
+                                    }
+                                )
+                                TranscriptionTextField(
+                                    label = UiText.get(R.string.waex_ui_custom_api_key_acb781f9, "Custom API Key"),
+                                    value = customKey,
+                                    onValueChange = {
+                                        customKey = it
+                                        preferenceManager.putString("custom_transcription_key", it)
+                                    },
+                                    isSecret = true
+                                )
+                                TranscriptionTextField(
+                                    label = UiText.get(R.string.waex_ui_model_name_a501a70a, "Model Name"),
+                                    value = customModel,
+                                    onValueChange = {
+                                        customModel = it
+                                        preferenceManager.putString("custom_transcription_model", it.trim())
+                                    }
+                                )
                             } else {
                                 Column {
                                     Text(
@@ -658,6 +693,50 @@ fun AutomationTaskerScreen() {
             }
         }
         Spacer(modifier = Modifier.height(100.dp))
+    }
+}
+
+@Composable
+private fun TranscriptionTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isSecret: Boolean = false
+) {
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    val radius = WaexTheme.radius
+    Column {
+        Text(
+            text = label,
+            style = typography.labelSm,
+            color = colors.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .clip(radius.mdShape)
+                .background(colors.surface)
+                .border(1.dp, colors.outlineVariant, radius.mdShape)
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                visualTransformation = if (isSecret) PasswordVisualTransformation() else VisualTransformation.None,
+                textStyle = typography.bodyMd.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 13.sp,
+                    color = colors.onSurface
+                ),
+                cursorBrush = SolidColor(colors.primary),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 

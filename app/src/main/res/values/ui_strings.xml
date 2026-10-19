@@ -208,7 +208,9 @@
     <string name="waex_ui_couldn_t_share_the_selected_recording_d260dfd9" formatted="false">"Couldn\'t share the selected recording"</string>
     <string name="waex_ui_css_theme_5cd3abac" formatted="false">"CSS Theme"</string>
     <string name="waex_ui_current_device_unlinked_reverted_to_fr_646d3450" formatted="false">"Current device unlinked. Reverted to Free tier."</string>
+    <string name="waex_ui_custom_api_key_acb781f9" formatted="false">"Custom API Key"</string>
     <string name="waex_ui_custom_dpi_749aab90" formatted="false">"Custom DPI"</string>
+    <string name="waex_ui_custom_endpoint_url_aabf1f97" formatted="false">"Custom Endpoint URL"</string>
     <string name="waex_ui_custom_keybox_ba042043" formatted="false">"Custom keybox"</string>
     <string name="waex_ui_custom_keybox_imported_76fd6f29" formatted="false">"Custom keybox imported"</string>
     <string name="waex_ui_custom_keybox_ready_961be371" formatted="false">"Custom keybox ready"</string>
@@ -467,6 +469,7 @@
     <string name="waex_ui_microphone_call_recording_db09aa48" formatted="false">"Microphone &amp; Call Recording"</string>
     <string name="waex_ui_minorfixes_c42ace17" formatted="false">"MinorFixes"</string>
     <string name="waex_ui_model_download_status_ff625765" formatted="false">"Model Download Status"</string>
+    <string name="waex_ui_model_name_a501a70a" formatted="false">"Model Name"</string>
     <string name="waex_ui_module_framework_b4c7101d" formatted="false">"Module &amp; Framework"</string>
     <string name="waex_ui_module_inactive_57d5f17f" formatted="false">"Module inactive"</string>
     <string name="waex_ui_module_status_78cf7255" formatted="false">"Module status"</string>
@@ -764,6 +767,7 @@
     <string name="waex_ui_user_busy_0ee28857" formatted="false">"User Busy"</string>
     <string name="waex_ui_user_defined_7b3c9074" formatted="false">"User Defined"</string>
     <string name="waex_ui_user_defined_versions_1_s_5f331ced">"USER-DEFINED VERSIONS (%1$s)"</string>
+    <string name="waex_ui_uses_the_openai_audio_transcriptions_r_d7f9316b" formatted="false">"Uses the OpenAI /audio/transcriptions request format."</string>
     <string name="waex_ui_using_disk_fallback_4319351a" formatted="false">"Using disk fallback"</string>
     <string name="waex_ui_validated_and_stored_privately_updated_2fc9fc11">"Validated and stored privately\nUpdated: %1$s"</string>
     <string name="waex_ui_verification_failed_f07240d4" formatted="false">"Verification failed."</string>
