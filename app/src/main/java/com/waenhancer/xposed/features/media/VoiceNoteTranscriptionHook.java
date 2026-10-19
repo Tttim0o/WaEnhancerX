@@ -39,10 +39,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Transcribes WhatsApp voice notes, sent and received, through the transcription provider
@@ -67,16 +69,21 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
 
     /** Let WhatsApp finish writing (and a cancelled recording disappear) before reading. */
     private static final long SETTLE_DELAY_MS = 1_500;
+    /** The poll cannot see CLOSE_WRITE, so it waits longer for a paused recording. */
+    private static final long POLL_SETTLE_MS = 15_000;
+    private static final long FIRST_SCAN_DELAY_MS = 5_000;
     private static final long POLL_INTERVAL_MS = 60_000;
     private static final long READY_CACHE_MS = 60_000;
     private static final long DISCOVERY_RETRY_MS = 10 * 60_000;
     private static final int MAX_DISCOVERY_ATTEMPTS = 6;
-    private static final int WATCHED_WEEK_FOLDERS = 2;
+    private static final int WATCHED_FOLDERS = 3;
     private static final int REMEMBERED_NOTES = 256;
 
     /** FileObserver stops when garbage-collected, so the instances are kept here. */
     private final List<FileObserver> observers = Collections.synchronizedList(new ArrayList<>());
-    private final Map<String, Boolean> seenNotes = boundedMap();
+    private final Set<String> watchedDirs = Collections.synchronizedSet(new HashSet<>());
+    /** Path -> size when handled; a later, different size means the note was still growing. */
+    private final Map<String, Long> seenNotes = boundedMap();
     private final Map<Integer, String> transcripts = boundedMap();
     private final long startedAt = System.currentTimeMillis();
 
@@ -114,7 +121,8 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         }
         registerActionReceiver();
         watchRoot(voiceRoot);
-        worker.postDelayed(this::poll, POLL_INTERVAL_MS);
+        // Catches notes WhatsApp downloaded while this process was starting.
+        worker.postDelayed(this::poll, FIRST_SCAN_DELAY_MS);
     }
 
     // ─── Finding and watching the voice notes folder ────────────────────
@@ -127,9 +135,12 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
             File[] mediaDirs = context.getExternalMediaDirs();
             if (mediaDirs != null) bases.addAll(Arrays.asList(mediaDirs));
         } catch (Throwable ignored) {}
-        try {
-            bases.add(Environment.getExternalStorageDirectory()); // Pre-Android 11 layout.
-        } catch (Throwable ignored) {}
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            // Pre-Android 11 layout. On newer versions this is a stale copy left by migration.
+            try {
+                bases.add(Environment.getExternalStorageDirectory());
+            } catch (Throwable ignored) {}
+        }
         for (File base : bases) {
             if (base == null) continue;
             File[] apps = base.listFiles(File::isDirectory);
@@ -147,16 +158,20 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     private void watchRoot(File root) {
         // Week folders (e.g. "202642") appear as time passes; watch the root for new ones.
         startObserver(root, true);
-        File[] weeks = root.listFiles(File::isDirectory);
-        if (weeks == null) return;
-        Arrays.sort(weeks, (a, b) -> b.getName().compareTo(a.getName()));
-        for (int i = 0; i < Math.min(WATCHED_WEEK_FOLDERS, weeks.length); i++) {
-            startObserver(weeks[i], false);
-        }
+        for (File folder : recentFolders(root, WATCHED_FOLDERS)) startObserver(folder, false);
+    }
+
+    /** Most recently changed subfolders first; names are not relied on. */
+    private static List<File> recentFolders(File root, int limit) {
+        File[] folders = root.listFiles(File::isDirectory);
+        if (folders == null) return Collections.emptyList();
+        Arrays.sort(folders, (a, b) -> Long.compare(b.lastModified(), a.lastModified()));
+        return Arrays.asList(folders).subList(0, Math.min(limit, folders.length));
     }
 
     @SuppressWarnings("deprecation") // FileObserver(File, int) needs API 29; minSdk is 24.
     private void startObserver(File dir, boolean isRoot) {
+        if (!watchedDirs.add(dir.getAbsolutePath())) return;
         int mask = FileObserver.CLOSE_WRITE | FileObserver.MOVED_TO
                 | (isRoot ? FileObserver.CREATE : 0);
         FileObserver observer = new FileObserver(dir.getAbsolutePath(), mask) {
@@ -167,7 +182,10 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
                 int type = event & FileObserver.ALL_EVENTS;
                 if (isRoot && (type == FileObserver.CREATE || type == FileObserver.MOVED_TO)) {
                     worker.post(() -> {
-                        if (target.isDirectory()) startObserver(target, false);
+                        if (!target.isDirectory()) return;
+                        startObserver(target, false);
+                        // A note can land in a new week folder before it is watched.
+                        worker.postDelayed(() -> scanFolder(target, SETTLE_DELAY_MS), SETTLE_DELAY_MS);
                     });
                 }
                 if ((type == FileObserver.CLOSE_WRITE || type == FileObserver.MOVED_TO)
@@ -185,23 +203,23 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         try {
             File root = voiceRoot;
             if (root != null && isEnabled(PREF_ENABLED, true)) {
-                File[] weeks = root.listFiles(File::isDirectory);
-                if (weeks != null && weeks.length > 0) {
-                    Arrays.sort(weeks, (a, b) -> b.getName().compareTo(a.getName()));
-                    File[] notes = weeks[0].listFiles(f -> isVoiceNoteName(f.getName()));
-                    long settledBefore = System.currentTimeMillis() - SETTLE_DELAY_MS;
-                    if (notes != null) {
-                        for (File note : notes) {
-                            long modified = note.lastModified();
-                            if (modified >= startedAt && modified <= settledBefore) onVoiceNote(note);
-                        }
-                    }
-                }
+                for (File folder : recentFolders(root, 2)) scanFolder(folder, POLL_SETTLE_MS);
             }
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Poll failed: " + t.getClass().getSimpleName());
         } finally {
             worker.postDelayed(this::poll, POLL_INTERVAL_MS);
+        }
+    }
+
+    /** Handles notes written since this process started and untouched for {@code settleMs}. */
+    private void scanFolder(File folder, long settleMs) {
+        File[] notes = folder.listFiles(f -> isVoiceNoteName(f.getName()));
+        if (notes == null) return;
+        long settledBefore = System.currentTimeMillis() - settleMs;
+        for (File note : notes) {
+            long modified = note.lastModified();
+            if (modified >= startedAt && modified <= settledBefore) onVoiceNote(note);
         }
     }
 
@@ -216,9 +234,11 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         if (!isEnabled(PREF_ENABLED, true)) return;
         if (!note.isFile() || note.length() == 0) return; // Cancelled recordings get deleted.
         String key = note.getAbsolutePath();
+        long size = note.length();
         synchronized (seenNotes) {
-            if (seenNotes.containsKey(key)) return;
-            seenNotes.put(key, Boolean.TRUE);
+            Long handledSize = seenNotes.get(key);
+            if (handledSize != null && handledSize == size) return;
+            seenNotes.put(key, size);
         }
         if (!isTranscriptionReady()) return;
         if (isEnabled(PREF_AUTO, false)) {
