@@ -26,8 +26,11 @@ public final class TranscriptionClient {
     public static final String PROVIDER_ASSEMBLY = "AssemblyAI";
     public static final String PROVIDER_CUSTOM = "Custom";
 
-    /** Kept below the ~1 MB Binder transaction limit the audio crosses on its way here. */
-    public static final int MAX_AUDIO_BYTES = 800 * 1024;
+    /**
+     * Kept well below the ~1 MB Binder buffer the audio crosses on its way here (about four
+     * minutes of WhatsApp voice audio).
+     */
+    public static final int MAX_AUDIO_BYTES = 700 * 1024;
 
     static final String GROQ_ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions";
     static final String GROQ_DEFAULT_MODEL = "whisper-large-v3-turbo";

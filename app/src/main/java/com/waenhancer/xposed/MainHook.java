@@ -155,6 +155,9 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                             @Override
                             protected void afterHookedMethod(MethodHookParam param) {
                                 Context context = (Context) param.thisObject;
+                                // Overlaps DexKit's APK parse with the host's own startup.
+                                com.waenhancer.xposed.core.devkit.DexSearchEngine
+                                        .prewarmIfUsedLastStart(context);
                                 try {
                                     if (sPreferenceBridge == null) {
                                         synchronized (MainHook.class) {
@@ -308,7 +311,11 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                                         }
                                         FeatureRegistry registry = new FeatureRegistry(appContext, lpparam.classLoader, bridgeClient);
                                         registry.initializeAll();
-                                        postReport(() -> registry.reportInjectedHooks(appContext, packageName));
+                                        postReport(() -> {
+                                            registry.reportInjectedHooks(appContext, packageName);
+                                            com.waenhancer.xposed.core.devkit.DexSearchEngine.getInstance()
+                                                    .recordStartupUsage(appContext);
+                                        });
                                         reportTargetRuntime(
                                                 appContext,
                                                 packageName,
