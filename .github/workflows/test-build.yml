@@ -45,12 +45,19 @@ jobs:
           sed -i -E "s/\"[0-9a-f]{64}\"/\"$sha\"/" app/build.gradle.kts
           grep -n "$sha" app/build.gradle.kts
 
-      - name: Build debug APK
+      - name: Build debug APK and run unit tests
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleDebug --stacktrace \
+          ./gradlew :app:assembleDebug :app:testDebugUnitTest --continue --stacktrace \
             -PandroidStoreFile=key.jks -PandroidStorePassword=testpass \
             -PandroidKeyAlias=test -PandroidKeyPassword=testpass
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-report
+          path: app/build/reports/tests/testDebugUnitTest/
+          if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v4
         with:
