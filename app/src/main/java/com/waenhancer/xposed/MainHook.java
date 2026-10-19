@@ -7,7 +7,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 import com.waenhancer.xposed.bridge.client.PreferenceBridgeClient;
 import com.waenhancer.xposed.core.FeatureRegistry;
 import com.waenhancer.xposed.utils.ModuleStatus;
@@ -44,6 +44,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     private static volatile String sRuntimeStatus = "INJECTED";
     private static volatile String sBridgeStatus = "PENDING";
     private static volatile String sRuntimeError;
+    private static volatile Handler sReportHandler;
     private String mModulePath;
 
     @Override
@@ -198,20 +199,26 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                                             + t.getClass().getSimpleName());
                                 }
 
-                                try {
-                                    com.waenhancer.utils.WhatsAppPackageDetector.registerHookedPackage(
-                                            appContext, packageName);
-                                } catch (Throwable t) {
-                                    XposedBridge.log("[WAEX] Hooked-package reporting failed: "
-                                            + t.getClass().getSimpleName());
-                                }
+                                // Manager IPC can cold-start the WAEX process; keep it off the
+                                // target's main thread so it does not delay hook installation.
+                                postReport(() -> {
+                                    try {
+                                        com.waenhancer.utils.WhatsAppPackageDetector.registerHookedPackage(
+                                                appContext, packageName);
+                                    } catch (Throwable t) {
+                                        XposedBridge.log("[WAEX] Hooked-package reporting failed: "
+                                                + t.getClass().getSimpleName());
+                                    }
+                                });
                                 reportTargetRuntime(
                                         appContext, packageName, "INJECTED", "PENDING", null);
-                                try {
-                                    appContext.getContentResolver().call(
-                                            android.net.Uri.parse("content://com.waenhancer.hookprovider"),
-                                            "request_update_check", packageName, null);
-                                } catch (Throwable ignored) {}
+                                postReport(() -> {
+                                    try {
+                                        appContext.getContentResolver().call(
+                                                android.net.Uri.parse("content://com.waenhancer.hookprovider"),
+                                                "request_update_check", packageName, null);
+                                    } catch (Throwable ignored) {}
+                                });
 
                                 try {
                                     android.content.IntentFilter filter = new android.content.IntentFilter("com.waenhancer.WHATSAPP.RESTART");
@@ -301,7 +308,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                                         }
                                         FeatureRegistry registry = new FeatureRegistry(appContext, lpparam.classLoader, bridgeClient);
                                         registry.initializeAll();
-                                        registry.reportInjectedHooks(appContext, packageName);
+                                        postReport(() -> registry.reportInjectedHooks(appContext, packageName));
                                         reportTargetRuntime(
                                                 appContext,
                                                 packageName,
@@ -386,11 +393,11 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
         sRuntimeStatus = runtimeStatus;
         sBridgeStatus = bridgeStatus;
         sRuntimeError = error;
-        com.waenhancer.utils.WhatsAppPackageDetector.reportRuntimeHealth(
-                appContext, packageName, runtimeStatus, bridgeStatus, error);
+        postReport(() -> com.waenhancer.utils.WhatsAppPackageDetector.reportRuntimeHealth(
+                appContext, packageName, runtimeStatus, bridgeStatus, error));
 
         if (HEARTBEAT_STARTED.compareAndSet(false, true)) {
-            Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = reportHandler();
             Runnable heartbeat = new Runnable() {
                 @Override
                 public void run() {
@@ -400,6 +407,36 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                 }
             };
             handler.postDelayed(heartbeat, HEARTBEAT_INTERVAL_MS);
+        }
+    }
+
+    /**
+     * Single background thread for manager reports. One thread keeps reports in the order they
+     * were posted, so the manager still sees INJECTED before INITIALIZING before READY.
+     */
+    private static Handler reportHandler() {
+        Handler handler = sReportHandler;
+        if (handler == null) {
+            synchronized (MainHook.class) {
+                handler = sReportHandler;
+                if (handler == null) {
+                    HandlerThread thread = new HandlerThread("WAEX-Report",
+                            android.os.Process.THREAD_PRIORITY_BACKGROUND);
+                    thread.start();
+                    handler = new Handler(thread.getLooper());
+                    sReportHandler = handler;
+                }
+            }
+        }
+        return handler;
+    }
+
+    private static void postReport(Runnable report) {
+        try {
+            reportHandler().post(report);
+        } catch (Throwable t) {
+            // Reporting is diagnostic only; fall back to running it inline.
+            report.run();
         }
     }
 
