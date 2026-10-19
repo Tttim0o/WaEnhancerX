@@ -1,0 +1,59 @@
+# Personal test build for the test-build branch only. Uses the free-only
+# stand-in licensing module and a non-official signing key. Never merge.
+name: Test build (stand-in licensing)
+
+on:
+  push:
+    branches: [test-build]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare signing key
+        env:
+          TEST_KEYSTORE_B64: ${{ secrets.TEST_KEYSTORE_B64 }}
+        run: |
+          set -euo pipefail
+          if [ -n "${TEST_KEYSTORE_B64:-}" ]; then
+            echo "$TEST_KEYSTORE_B64" | base64 -d > key.jks
+          else
+            echo "::warning::No TEST_KEYSTORE_B64 secret; using a one-off key. Each build will need an uninstall before installing."
+            keytool -genkeypair -keystore key.jks -alias test -storepass testpass -keypass testpass \
+              -dname "CN=WAEX local test build" -keyalg RSA -keysize 2048 -validity 3650
+          fi
+          sha=$(keytool -exportcert -keystore key.jks -alias test -storepass testpass | sha256sum | cut -d' ' -f1)
+          # Point the build's certificate check at this test key (CI copy only).
+          sed -i -E "s/\"[0-9a-f]{64}\"/\"$sha\"/" app/build.gradle.kts
+          grep -n "$sha" app/build.gradle.kts
+
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug --stacktrace \
+            -PandroidStoreFile=key.jks -PandroidStorePassword=testpass \
+            -PandroidKeyAlias=test -PandroidKeyPassword=testpass
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: waex-test-build
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
