@@ -192,6 +192,7 @@
     <string name="waex_ui_convert_received_voice_notes_to_readab_47e047f7" formatted="false">"Convert received voice notes to readable chat text bubbles."</string>
     <string name="waex_ui_copied_1_s_to_clipboard_99b46814">"Copied %1$s to clipboard"</string>
     <string name="waex_ui_copied_status_text_to_clipboard_b81c6089" formatted="false">"Copied status text to clipboard"</string>
+    <string name="waex_ui_copy_e21f935f" formatted="false">"Copy"</string>
     <string name="waex_ui_copy_error_19dc540f" formatted="false">"Copy error"</string>
     <string name="waex_ui_copy_text_b0ac9cea" formatted="false">"Copy text"</string>
     <string name="waex_ui_copy_the_error_details_when_reporting_8ec1cba5" formatted="false">"\n\nCopy the error details when reporting this issue."</string>
@@ -480,6 +481,7 @@
     <string name="waex_ui_my_status_43503c17" formatted="false">"My Status"</string>
     <string name="waex_ui_name_sender_name_number_sender_jid_pho_ee23ebc4" formatted="false">"%name (Sender Name)\n%number (Sender JID / Phone)\n%message (Text Content)"</string>
     <string name="waex_ui_needs_attention_e0004b39" formatted="false">"NEEDS ATTENTION"</string>
+    <string name="waex_ui_new_voice_note_833475b4" formatted="false">"New voice note"</string>
     <string name="waex_ui_no_1ea442a1" formatted="false">"No"</string>
     <string name="waex_ui_no_active_hooks_reported_by_whatsapp_p_50b24a7f" formatted="false">"No active hooks reported by WhatsApp process.\nEnsure WhatsApp is running."</string>
     <string name="waex_ui_no_active_rules_fc15b50c" formatted="false">"No active rules"</string>
@@ -498,6 +500,7 @@
     <string name="waex_ui_no_preserved_group_chats_29845d70" formatted="false">"No preserved group chats"</string>
     <string name="waex_ui_no_preserved_individual_chats_0491329d" formatted="false">"No preserved individual chats"</string>
     <string name="waex_ui_no_releases_found_d8feb500" formatted="false">"No releases found."</string>
+    <string name="waex_ui_no_speech_detected_3bf350b0" formatted="false">"No speech detected."</string>
     <string name="waex_ui_no_tabs_hidden_eb0aba28" formatted="false">"No tabs hidden"</string>
     <string name="waex_ui_no_validated_managed_keybox_is_cached_d0090b84" formatted="false">"No validated managed keybox is cached yet"</string>
     <string name="waex_ui_none_reported_ffcae7fc" formatted="false">"None reported"</string>
@@ -511,6 +514,7 @@
     <string name="waex_ui_not_reported_adadface" formatted="false">"Not reported"</string>
     <string name="waex_ui_not_reported_yet_355b4779" formatted="false">"Not reported yet"</string>
     <string name="waex_ui_note_resizing_view_elements_dynamicall_95d239ba" formatted="false">"Note: Resizing view elements dynamically requires extra layout rendering. This may cause screens containing these elements to load with a minor delay."</string>
+    <string name="waex_ui_off_each_new_voice_note_sent_or_receiv_efafc048" formatted="false">"Off: each new voice note, sent or received, gets a notification with a Transcribe button."</string>
     <string name="waex_ui_online_presence_indicators_05934fbe" formatted="false">"Online Presence Indicators"</string>
     <string name="waex_ui_only_allow_numbers_saved_in_your_phone_504e2e53" formatted="false">"Only allow numbers saved in your phone address book"</string>
     <string name="waex_ui_opacity_0_100_e19bed46" formatted="false">"Opacity (0 - 100)"</string>
@@ -694,6 +698,7 @@
     <string name="waex_ui_tap_star_on_github_and_your_profile_wi_89e8efe3" formatted="false">"Tap Star on GitHub and your profile will appear after the list updates."</string>
     <string name="waex_ui_tap_to_add_a_view_id_to_remove_or_cust_55465be9" formatted="false">"Tap + to add a view ID to remove or customize in WhatsApp."</string>
     <string name="waex_ui_tap_to_change_default_reaction_emoji_1_341eb819">"Tap to change default reaction emoji (%1$s)"</string>
+    <string name="waex_ui_tap_transcribe_to_turn_it_into_text_235b0d24" formatted="false">"Tap Transcribe to turn it into text."</string>
     <string name="waex_ui_tap_whatsapp_title_3_times_84515b9e" formatted="false">"Tap WhatsApp title 3 times"</string>
     <string name="waex_ui_target_1_s_d0d8050b">"Target: %1$s"</string>
     <string name="waex_ui_target_applications_compatibility_4941b8c2" formatted="false">"TARGET APPLICATIONS COMPATIBILITY"</string>
@@ -720,7 +725,12 @@
     <string name="waex_ui_tools_ea93d6a2" formatted="false">"Tools"</string>
     <string name="waex_ui_top_icon_d8a8beb7" formatted="false">"Top icon"</string>
     <string name="waex_ui_total_commits_fe2d82f4" formatted="false">"Total Commits"</string>
+    <string name="waex_ui_transcribe_638d0530" formatted="false">"Transcribe"</string>
+    <string name="waex_ui_transcribe_automatically_2de4db94" formatted="false">"Transcribe automatically"</string>
     <string name="waex_ui_transcribe_voice_notes_automatically_u_0d57d8de" formatted="false">"Transcribe voice notes automatically using local model"</string>
+    <string name="waex_ui_transcribing_voice_note_9735f158" formatted="false">"Transcribing voice note…"</string>
+    <string name="waex_ui_transcript_copied_758ba0c0" formatted="false">"Transcript copied"</string>
+    <string name="waex_ui_transcription_failed_ccb68494" formatted="false">"Transcription failed"</string>
     <string name="waex_ui_transforms_the_default_navigation_bar_c18f96ff" formatted="false">"Transforms the default navigation bar into a modern floating pill"</string>
     <string name="waex_ui_translucent_background_with_blurred_ba_0d5bf87c" formatted="false">"Translucent background with blurred backdrop"</string>
     <string name="waex_ui_translucent_glassmorphism_with_refract_a6528ef4" formatted="false">"Translucent glassmorphism with refraction border"</string>
@@ -787,6 +797,8 @@
     <string name="waex_ui_viewed_your_status_44b3e59c" formatted="false">" viewed your status"</string>
     <string name="waex_ui_visit_website_584aa47f" formatted="false">"Visit Website"</string>
     <string name="waex_ui_voice_note_ai_rules_a5996bf0" formatted="false">"Voice Note AI Rules"</string>
+    <string name="waex_ui_voice_note_is_too_long_to_transcribe_366b8fb2" formatted="false">"Voice note is too long to transcribe."</string>
+    <string name="waex_ui_voice_note_transcript_804d9ee8" formatted="false">"Voice note transcript"</string>
     <string name="waex_ui_voice_transcription_677b2813" formatted="false">"Voice Transcription"</string>
     <string name="waex_ui_wa_enhancer_settings_ff30ce0c" formatted="false">"WA Enhancer Settings"</string>
     <string name="waex_ui_waenhancer_x_could_not_finish_loading_b154030c" formatted="false">"WaEnhancer X could not finish loading its hooks.\n\n"</string>
@@ -799,6 +811,7 @@
     <string name="waex_ui_waex_features_are_temporarily_paused_f_f15254a3" formatted="false">"WAEX features are temporarily paused for safety to prevent app instability.\n\n"</string>
     <string name="waex_ui_waex_hooks_injected_0b677cb2" formatted="false">"WAEX hooks injected"</string>
     <string name="waex_ui_waex_managed_keybox_3dc5818e" formatted="false">"WAEX managed keybox"</string>
+    <string name="waex_ui_waex_voice_transcripts_e7bdf120" formatted="false">"WAEX voice transcripts"</string>
     <string name="waex_ui_wait_until_a_newer_release_is_availabl_9e7d1559" formatted="false">"Wait until a newer release is available"</string>
     <string name="waex_ui_want_to_see_yourself_here_b2789bdc" formatted="false">"Want to see yourself here?"</string>
     <string name="waex_ui_we_couldn_t_load_the_supporters_right_f4aba896" formatted="false">"We couldn\'t load the supporters right now."</string>

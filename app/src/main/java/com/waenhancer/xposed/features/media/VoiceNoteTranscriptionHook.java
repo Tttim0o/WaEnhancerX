@@ -1,0 +1,459 @@
+package com.waenhancer.xposed.features.media;
+
+import com.waenhancer.app.R;
+import com.waenhancer.utils.UiText;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.FileObserver;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Process;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import com.waenhancer.core.transcription.TranscriptionClient;
+import com.waenhancer.core.transcription.TranscriptionRequestHandler;
+import com.waenhancer.xposed.core.BaseFeature;
+import de.robv.android.xposed.XposedBridge;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Transcribes WhatsApp voice notes, sent and received, through the transcription provider
+ * configured in WAEX.
+ *
+ * <p>WhatsApp writes every voice note as an Ogg/Opus file under "WhatsApp Voice Notes". Watching
+ * that folder needs no obfuscated host classes, so it keeps working across WhatsApp updates.
+ * The audio goes to the WAEX provider, which holds the API key; the result appears as a
+ * notification with Copy, or with a Transcribe button when automatic mode is off.</p>
+ */
+public final class VoiceNoteTranscriptionHook extends BaseFeature {
+    private static final String TAG = "[WAEX][VoiceTranscription]";
+
+    static final String PREF_ENABLED = "voice_transcription";
+    static final String PREF_AUTO = "voice_transcription_auto";
+
+    private static final String ACTION_TRANSCRIBE = "com.waenhancer.action.TRANSCRIBE_VOICE_NOTE";
+    private static final String ACTION_COPY = "com.waenhancer.action.COPY_VOICE_TRANSCRIPT";
+    private static final String EXTRA_PATH = "waex_voice_note_path";
+    private static final String CHANNEL_ID = "waex_voice_transcripts";
+    private static final Uri PROVIDER = Uri.parse("content://com.waenhancer.hookprovider");
+
+    /** Let WhatsApp finish writing (and a cancelled recording disappear) before reading. */
+    private static final long SETTLE_DELAY_MS = 1_500;
+    private static final long POLL_INTERVAL_MS = 60_000;
+    private static final long READY_CACHE_MS = 60_000;
+    private static final long DISCOVERY_RETRY_MS = 10 * 60_000;
+    private static final int MAX_DISCOVERY_ATTEMPTS = 6;
+    private static final int WATCHED_WEEK_FOLDERS = 2;
+    private static final int REMEMBERED_NOTES = 256;
+
+    /** FileObserver stops when garbage-collected, so the instances are kept here. */
+    private final List<FileObserver> observers = Collections.synchronizedList(new ArrayList<>());
+    private final Map<String, Boolean> seenNotes = boundedMap();
+    private final Map<Integer, String> transcripts = boundedMap();
+    private final long startedAt = System.currentTimeMillis();
+
+    private Handler worker;
+    @Nullable private File voiceRoot;
+    private int discoveryAttempts;
+    private long readyCheckedAt;
+    private boolean ready;
+
+    public VoiceNoteTranscriptionHook(@NonNull Context context, @NonNull ClassLoader classLoader,
+                                      @NonNull SharedPreferences prefs) {
+        super(context, classLoader, prefs);
+    }
+
+    @NonNull @Override public String getName() { return "Voice Note Transcription"; }
+
+    @Override
+    public void hook() {
+        // Nothing here touches the disk or IPC: startup must stay fast.
+        HandlerThread thread = new HandlerThread("WAEX-Transcribe", Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+        worker = new Handler(thread.getLooper());
+        worker.post(this::start);
+    }
+
+    private void start() {
+        voiceRoot = findVoiceNotesRoot();
+        if (voiceRoot == null) {
+            if (++discoveryAttempts < MAX_DISCOVERY_ATTEMPTS) {
+                worker.postDelayed(this::start, DISCOVERY_RETRY_MS);
+            } else {
+                XposedBridge.log(TAG + " Voice notes folder not found; transcription inactive");
+            }
+            return;
+        }
+        registerActionReceiver();
+        watchRoot(voiceRoot);
+        worker.postDelayed(this::poll, POLL_INTERVAL_MS);
+    }
+
+    // ─── Finding and watching the voice notes folder ────────────────────
+
+    @Nullable
+    @SuppressWarnings("deprecation") // Both directory APIs are still the only way to reach this folder.
+    private File findVoiceNotesRoot() {
+        List<File> bases = new ArrayList<>();
+        try {
+            File[] mediaDirs = context.getExternalMediaDirs();
+            if (mediaDirs != null) bases.addAll(Arrays.asList(mediaDirs));
+        } catch (Throwable ignored) {}
+        try {
+            bases.add(Environment.getExternalStorageDirectory()); // Pre-Android 11 layout.
+        } catch (Throwable ignored) {}
+        for (File base : bases) {
+            if (base == null) continue;
+            File[] apps = base.listFiles(File::isDirectory);
+            if (apps == null) continue;
+            for (File app : apps) {
+                // e.g. WhatsApp/Media/WhatsApp Voice Notes, WhatsApp Business/Media/WhatsApp Business Voice Notes
+                File[] candidates = new File(app, "Media").listFiles(
+                        f -> f.isDirectory() && f.getName().endsWith("Voice Notes"));
+                if (candidates != null && candidates.length > 0) return candidates[0];
+            }
+        }
+        return null;
+    }
+
+    private void watchRoot(File root) {
+        // Week folders (e.g. "202642") appear as time passes; watch the root for new ones.
+        startObserver(root, true);
+        File[] weeks = root.listFiles(File::isDirectory);
+        if (weeks == null) return;
+        Arrays.sort(weeks, (a, b) -> b.getName().compareTo(a.getName()));
+        for (int i = 0; i < Math.min(WATCHED_WEEK_FOLDERS, weeks.length); i++) {
+            startObserver(weeks[i], false);
+        }
+    }
+
+    @SuppressWarnings("deprecation") // FileObserver(File, int) needs API 29; minSdk is 24.
+    private void startObserver(File dir, boolean isRoot) {
+        int mask = FileObserver.CLOSE_WRITE | FileObserver.MOVED_TO
+                | (isRoot ? FileObserver.CREATE : 0);
+        FileObserver observer = new FileObserver(dir.getAbsolutePath(), mask) {
+            @Override
+            public void onEvent(int event, @Nullable String path) {
+                if (path == null) return;
+                File target = new File(dir, path);
+                int type = event & FileObserver.ALL_EVENTS;
+                if (isRoot && (type == FileObserver.CREATE || type == FileObserver.MOVED_TO)) {
+                    worker.post(() -> {
+                        if (target.isDirectory()) startObserver(target, false);
+                    });
+                }
+                if ((type == FileObserver.CLOSE_WRITE || type == FileObserver.MOVED_TO)
+                        && isVoiceNoteName(path)) {
+                    worker.postDelayed(() -> onVoiceNote(target), SETTLE_DELAY_MS);
+                }
+            }
+        };
+        observer.startWatching();
+        observers.add(observer);
+    }
+
+    /** Safety net for storage stacks that do not deliver inotify events. */
+    private void poll() {
+        try {
+            File root = voiceRoot;
+            if (root != null && isEnabled(PREF_ENABLED, true)) {
+                File[] weeks = root.listFiles(File::isDirectory);
+                if (weeks != null && weeks.length > 0) {
+                    Arrays.sort(weeks, (a, b) -> b.getName().compareTo(a.getName()));
+                    File[] notes = weeks[0].listFiles(f -> isVoiceNoteName(f.getName()));
+                    long settledBefore = System.currentTimeMillis() - SETTLE_DELAY_MS;
+                    if (notes != null) {
+                        for (File note : notes) {
+                            long modified = note.lastModified();
+                            if (modified >= startedAt && modified <= settledBefore) onVoiceNote(note);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + " Poll failed: " + t.getClass().getSimpleName());
+        } finally {
+            worker.postDelayed(this::poll, POLL_INTERVAL_MS);
+        }
+    }
+
+    static boolean isVoiceNoteName(String name) {
+        String lower = name.toLowerCase(Locale.ROOT);
+        return !lower.startsWith(".") && (lower.endsWith(".opus") || lower.endsWith(".ogg"));
+    }
+
+    // ─── Handling a new voice note ──────────────────────────────────────
+
+    private void onVoiceNote(File note) {
+        if (!isEnabled(PREF_ENABLED, true)) return;
+        if (!note.isFile() || note.length() == 0) return; // Cancelled recordings get deleted.
+        String key = note.getAbsolutePath();
+        synchronized (seenNotes) {
+            if (seenNotes.containsKey(key)) return;
+            seenNotes.put(key, Boolean.TRUE);
+        }
+        if (!isTranscriptionReady()) return;
+        if (isEnabled(PREF_AUTO, false)) {
+            transcribe(note);
+        } else {
+            notifyNewNote(note);
+        }
+    }
+
+    /** True when WAEX has a provider with a key; avoids notifying users who never set it up. */
+    private boolean isTranscriptionReady() {
+        long now = System.currentTimeMillis();
+        if (now - readyCheckedAt < READY_CACHE_MS) return ready;
+        readyCheckedAt = now;
+        try {
+            Bundle result = context.getContentResolver().call(
+                    PROVIDER, TranscriptionRequestHandler.METHOD_READY, null, new Bundle());
+            ready = result != null && result.getBoolean(TranscriptionRequestHandler.RESULT_READY, false);
+        } catch (Throwable t) {
+            ready = false;
+        }
+        return ready;
+    }
+
+    private void transcribe(File note) {
+        int id = notificationId(note);
+        if (note.length() > TranscriptionClient.MAX_AUDIO_BYTES) {
+            notifyFailure(note, UiText.get(R.string.waex_ui_voice_note_is_too_long_to_transcribe_366b8fb2,
+                    "Voice note is too long to transcribe."), false);
+            return;
+        }
+        notifyProgress(note);
+        String text = null;
+        String error;
+        try {
+            Bundle extras = new Bundle();
+            extras.putByteArray(TranscriptionRequestHandler.EXTRA_AUDIO, readFile(note));
+            extras.putString(TranscriptionRequestHandler.EXTRA_FILE_NAME, note.getName());
+            Bundle result = context.getContentResolver().call(
+                    PROVIDER, TranscriptionRequestHandler.METHOD, null, extras);
+            text = result == null ? null : result.getString(TranscriptionRequestHandler.RESULT_TEXT);
+            error = result == null ? "WAEX did not answer" : result.getString(TranscriptionRequestHandler.RESULT_ERROR);
+        } catch (Throwable t) {
+            error = "WAEX unavailable (" + t.getClass().getSimpleName() + ")";
+        }
+        if (text == null) {
+            notifyFailure(note, error == null ? "Unknown error" : error, true);
+            return;
+        }
+        if (text.isEmpty()) {
+            text = UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.");
+        }
+        synchronized (transcripts) {
+            transcripts.put(id, text);
+        }
+        notifyTranscript(note, text);
+    }
+
+    private static byte[] readFile(File file) throws IOException {
+        long length = file.length();
+        if (length > TranscriptionClient.MAX_AUDIO_BYTES) throw new IOException("Too large");
+        byte[] data = new byte[(int) length];
+        try (FileInputStream in = new FileInputStream(file)) {
+            int offset = 0;
+            while (offset < data.length) {
+                int read = in.read(data, offset, data.length - offset);
+                if (read < 0) break;
+                offset += read;
+            }
+            return offset == data.length ? data : Arrays.copyOf(data, offset);
+        }
+    }
+
+    // ─── Notifications and their buttons ────────────────────────────────
+
+    private void notifyNewNote(File note) {
+        Notification.Builder builder = baseBuilder(note)
+                .setContentTitle(UiText.get(R.string.waex_ui_new_voice_note_833475b4, "New voice note")
+                        + " · " + timeOf(note))
+                .setContentText(UiText.get(R.string.waex_ui_tap_transcribe_to_turn_it_into_text_235b0d24,
+                        "Tap Transcribe to turn it into text."))
+                .addAction(action(UiText.get(R.string.waex_ui_transcribe_638d0530, "Transcribe"),
+                        ACTION_TRANSCRIBE, note));
+        post(note, builder);
+    }
+
+    private void notifyProgress(File note) {
+        Notification.Builder builder = baseBuilder(note)
+                .setContentTitle(UiText.get(R.string.waex_ui_transcribing_voice_note_9735f158,
+                        "Transcribing voice note…"))
+                .setContentText(timeOf(note))
+                .setProgress(0, 0, true)
+                .setOngoing(true);
+        post(note, builder);
+    }
+
+    private void notifyTranscript(File note, String text) {
+        Notification.Builder builder = baseBuilder(note)
+                .setContentTitle(UiText.get(R.string.waex_ui_voice_note_transcript_804d9ee8,
+                        "Voice note transcript") + " · " + timeOf(note))
+                .setContentText(text)
+                .setStyle(new Notification.BigTextStyle().bigText(text))
+                .addAction(action(UiText.get(R.string.waex_ui_copy_e21f935f, "Copy"), ACTION_COPY, note));
+        post(note, builder);
+    }
+
+    private void notifyFailure(File note, String message, boolean retry) {
+        Notification.Builder builder = baseBuilder(note)
+                .setContentTitle(UiText.get(R.string.waex_ui_transcription_failed_ccb68494,
+                        "Transcription failed") + " · " + timeOf(note))
+                .setContentText(message)
+                .setStyle(new Notification.BigTextStyle().bigText(message));
+        if (retry) {
+            builder.addAction(action(UiText.get(R.string.waex_ui_retry_942087cc, "Retry"),
+                    ACTION_TRANSCRIBE, note));
+        }
+        post(note, builder);
+    }
+
+    @SuppressWarnings("deprecation") // Builder(Context) is the only option below API 26.
+    private Notification.Builder baseBuilder(File note) {
+        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(context, ensureChannel())
+                : new Notification.Builder(context);
+        return builder.setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(true)
+                .setShowWhen(true)
+                .setWhen(note.lastModified());
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private String ensureChannel() {
+        NotificationManager manager = context.getSystemService(NotificationManager.class);
+        if (manager != null && manager.getNotificationChannel(CHANNEL_ID) == null) {
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_ID,
+                    UiText.get(R.string.waex_ui_waex_voice_transcripts_e7bdf120, "WAEX voice transcripts"),
+                    NotificationManager.IMPORTANCE_LOW));
+        }
+        return CHANNEL_ID;
+    }
+
+    private void post(File note, Notification.Builder builder) {
+        try {
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            if (manager != null) manager.notify(notificationId(note), builder.build());
+        } catch (Throwable t) {
+            // Missing notification permission is the user's choice; nothing else to do.
+            XposedBridge.log(TAG + " Notification failed: " + t.getClass().getSimpleName());
+        }
+    }
+
+    @SuppressWarnings("deprecation") // Notification.Action.Builder(int, ...) for API 24-25.
+    private Notification.Action action(String title, String actionName, File note) {
+        Intent intent = new Intent(actionName)
+                .setPackage(context.getPackageName())
+                .putExtra(EXTRA_PATH, note.getAbsolutePath());
+        int requestCode = notificationId(note) * 31 + actionName.hashCode();
+        PendingIntent pending = PendingIntent.getBroadcast(context, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        return new Notification.Action.Builder(0, title, pending).build();
+    }
+
+    private void registerActionReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_TRANSCRIBE);
+        filter.addAction(ACTION_COPY);
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context ignored, Intent intent) {
+                File note = trustedNote(intent.getStringExtra(EXTRA_PATH));
+                if (note == null) return;
+                if (ACTION_TRANSCRIBE.equals(intent.getAction())) {
+                    transcribe(note);
+                } else if (ACTION_COPY.equals(intent.getAction())) {
+                    copyTranscript(note);
+                }
+            }
+        };
+        try {
+            if (Build.VERSION.SDK_INT >= 33) {
+                context.registerReceiver(receiver, filter, null, worker, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                context.registerReceiver(receiver, filter, null, worker);
+            }
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + " Button receiver unavailable: " + t.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * Before API 33 a runtime receiver is reachable by other apps, so only voice notes inside
+     * WhatsApp's own folder are accepted, and Copy uses text kept in memory, never intent text.
+     */
+    @Nullable
+    private File trustedNote(@Nullable String path) {
+        File root = voiceRoot;
+        if (path == null || root == null || !isVoiceNoteName(new File(path).getName())) return null;
+        try {
+            File note = new File(path).getCanonicalFile();
+            String rootPath = root.getCanonicalPath() + File.separator;
+            return note.getPath().startsWith(rootPath) && note.isFile() ? note : null;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private void copyTranscript(File note) {
+        String text;
+        synchronized (transcripts) {
+            text = transcripts.get(notificationId(note));
+        }
+        if (text == null) return;
+        ClipboardManager clipboard = context.getSystemService(ClipboardManager.class);
+        if (clipboard == null) return;
+        clipboard.setPrimaryClip(ClipData.newPlainText("Voice note transcript", text));
+        new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context,
+                UiText.get(R.string.waex_ui_transcript_copied_758ba0c0, "Transcript copied"),
+                Toast.LENGTH_SHORT).show());
+    }
+
+    private static int notificationId(File note) {
+        return 0x5A1E0000 ^ note.getAbsolutePath().hashCode();
+    }
+
+    private static String timeOf(File note) {
+        return DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date(note.lastModified()));
+    }
+
+    private static <K, V> Map<K, V> boundedMap() {
+        return new LinkedHashMap<K, V>(64, 0.75f, false) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+                return size() > REMEMBERED_NOTES;
+            }
+        };
+    }
+}
