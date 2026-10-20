@@ -51,7 +51,7 @@ public final class VoiceDictationHook extends BaseFeature {
     private static final String MIC = "🎙️";
     private static final String STOP = "⏹️";
     private static final String BUSY = "⏳";
-    /** About 450 KB at 24 kbit/s: well under the provider's size limit. */
+    /** About 600 KB at 32 kbit/s: under the provider's size limit. */
     private static final int MAX_RECORDING_MS = 150_000;
     private static final int MIN_RECORDING_MS = 700;
 
@@ -227,22 +227,17 @@ public final class VoiceDictationHook extends BaseFeature {
                     "WhatsApp needs microphone access to dictate."));
             return;
         }
-        boolean ogg = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
-        File file = new File(context.getCacheDir(), "waex_dictation" + (ogg ? ".ogg" : ".m4a"));
+        // AAC/MP4 at 44.1 kHz: Opus at 16 kHz recorded silence on some devices.
+        File file = new File(context.getCacheDir(), "waex_dictation.m4a");
         MediaRecorder newRecorder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 ? new MediaRecorder(context) : new MediaRecorder();
         try {
             newRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            if (ogg) {
-                newRecorder.setOutputFormat(MediaRecorder.OutputFormat.OGG);
-                newRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.OPUS);
-            } else {
-                newRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-                newRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            }
+            newRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            newRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
             newRecorder.setAudioChannels(1);
-            newRecorder.setAudioSamplingRate(16_000);
-            newRecorder.setAudioEncodingBitRate(24_000);
+            newRecorder.setAudioSamplingRate(44_100);
+            newRecorder.setAudioEncodingBitRate(32_000);
             newRecorder.setMaxDuration(MAX_RECORDING_MS);
             newRecorder.setOutputFile(file.getAbsolutePath());
             newRecorder.setOnInfoListener((mr, what, extra) -> {
@@ -305,6 +300,7 @@ public final class VoiceDictationHook extends BaseFeature {
         if (field != null) setGlyph(field, BUSY);
         VoiceTranscriptionBridge.worker().post(() -> {
             VoiceTranscriptionBridge.Result result;
+            String audioInfo = VoiceTranscriptionBridge.describeAudio(file);
             try {
                 result = VoiceTranscriptionBridge.transcribeBytes(context,
                         VoiceTranscriptionBridge.readFile(file), file.getName());
@@ -321,7 +317,8 @@ public final class VoiceDictationHook extends BaseFeature {
                     toast(UiText.get(R.string.waex_ui_transcription_failed_ccb68494, "Transcription failed")
                             + ": " + done.error);
                 } else if (done.text.isEmpty()) {
-                    toast(UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected."));
+                    toast(UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.")
+                            + " " + audioInfo);
                 } else if (target != null) {
                     insertAtCursor(target, done.text);
                 }

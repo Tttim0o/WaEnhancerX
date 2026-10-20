@@ -116,7 +116,9 @@ final class VoiceTranscriptionBridge {
         } catch (IOException e) {
             return new Result(null, "Could not read the voice note");
         }
-        if (result.text != null) {
+        // An empty result may come from a note read before WhatsApp finished writing it; never
+        // cache it, so the next tap tries again.
+        if (result.text != null && !result.text.isEmpty()) {
             synchronized (TRANSCRIPTS) {
                 TRANSCRIPTS.put(key, result.text);
             }
@@ -144,7 +146,27 @@ final class VoiceTranscriptionBridge {
     }
 
     private static String cacheKey(File audio) {
-        return audio.getAbsolutePath() + "#" + audio.length();
+        // WhatsApp can fill a pre-sized file in place, so the size alone does not identify it.
+        return audio.getAbsolutePath() + "#" + audio.length() + "#" + audio.lastModified();
+    }
+
+    /** "(23 KB, 4 s)": shown with empty results, to tell silence from a broken recording. */
+    @NonNull
+    static String describeAudio(@NonNull File audio) {
+        long kb = Math.max(1, audio.length() / 1024);
+        long seconds = -1;
+        android.media.MediaMetadataRetriever retriever = new android.media.MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(audio.getAbsolutePath());
+            String ms = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION);
+            if (ms != null) seconds = Math.round(Long.parseLong(ms) / 1000.0);
+        } catch (Throwable ignored) {
+        } finally {
+            try {
+                retriever.release();
+            } catch (Throwable ignored) {}
+        }
+        return seconds >= 0 ? "(" + kb + " KB, " + seconds + " s)" : "(" + kb + " KB)";
     }
 
     static byte[] readFile(File file) throws IOException {

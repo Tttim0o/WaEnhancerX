@@ -255,7 +255,8 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
             return;
         }
         if (text.isEmpty()) {
-            text = UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.");
+            text = UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.")
+                    + " " + VoiceTranscriptionBridge.describeAudio(note);
         }
         synchronized (transcripts) {
             transcripts.put(id, text);
