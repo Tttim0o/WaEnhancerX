@@ -222,6 +222,10 @@
     <string name="feat_call_recording_desc">Record incoming and outgoing calls (Voice &amp; Video) as audio</string>
     <string name="feat_download_profile_title">Download Profile Photo</string>
     <string name="feat_download_profile_desc">Download full-resolution profile pictures directly</string>
+    <string name="profile_photo_already_saved">Profile photo already saved</string>
+    <string name="profile_photo_saving">PROFILE PHOTO SAVING</string>
+    <string name="save_profile_duplicates">Save duplicates</string>
+    <string name="save_profile_duplicates_desc">Save a new file every time</string>
     <string name="feat_download_view_once_title">Download View Once</string>
     <string name="feat_download_view_once_desc">Show button to download view once media</string>
     <string name="feat_media_preview_title">Enable Media Preview</string>

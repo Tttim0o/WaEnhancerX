@@ -1,6 +1,8 @@
 package com.waenhancer.xposed.features.media;
 
 import com.waenhancer.app.R;
+import com.waenhancer.utils.ContactIdentityPolicy;
+import com.waenhancer.utils.ContactNameResolver;
 import com.waenhancer.utils.UiText;
 
 import android.app.Activity;
@@ -34,6 +36,12 @@ import org.luckypray.dexkit.result.ClassData;
 
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
@@ -47,6 +55,9 @@ import de.robv.android.xposed.XposedHelpers;
 public final class ProfilePhotoDownloadHook extends BaseFeature {
     private static final String TAG = "[WAEX][ProfilePhotoDownload]";
     private static final int MENU_ID = 0x57414558;
+    private static final String PREF_SAVE_DUPLICATES = "download_profile_save_duplicates";
+    private static final String PREF_SAVED_IDENTITIES = "download_profile_saved_identities";
+    private static final Object SAVED_IDENTITIES_LOCK = new Object();
     private final AtomicBoolean saveInFlight = new AtomicBoolean();
     private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "WAEX-ProfilePhotoSave");
@@ -111,6 +122,13 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
             Bitmap captured = null;
             boolean submitted = false;
             try {
+                boolean saveDuplicates = isEnabled(PREF_SAVE_DUPLICATES, true);
+                String profileIdentity = saveDuplicates ? null : profileIdentity(activity);
+                if (profileIdentity != null && hasSavedProfile(profileIdentity)) {
+                    Toast.makeText(activity, UiText.get(R.string.profile_photo_already_saved,
+                            "Profile photo already saved"), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
                 // Admit before copying the displayed bitmap: repeated clicks must not
                 // allocate and queue another full-resolution copy while one save runs.
                 captured = captureDisplayedPhoto(activity);
@@ -124,7 +142,7 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
                 final Context storageContext = application;
                 final Bitmap ownedBitmap = captured;
                 final WeakReference<Activity> owner = new WeakReference<>(activity);
-                io.execute(() -> saveBitmap(storageContext, owner, ownedBitmap));
+                io.execute(() -> saveBitmap(storageContext, owner, ownedBitmap, profileIdentity));
                 submitted = true;
             } catch (RuntimeException | LinkageError failure) {
                 logFailure("capture or scheduling", failure);
@@ -208,7 +226,8 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
         return (long) Math.max(0, width) * Math.max(0, height);
     }
 
-    private void saveBitmap(Context storageContext, WeakReference<Activity> owner, Bitmap bitmap) {
+    private void saveBitmap(Context storageContext, WeakReference<Activity> owner, Bitmap bitmap,
+                            String profileIdentity) {
         Uri output = null;
         boolean success = false;
         try {
@@ -238,6 +257,7 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
                 }
             }
             success = true;
+            if (profileIdentity != null) markProfileSaved(profileIdentity);
         } catch (Exception | LinkageError failure) {
             logFailure("save", failure);
         } finally {
@@ -266,6 +286,50 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
                                     : UiText.get(R.string.waex_ui_couldn_t_save_profile_photo_296d0ed9,
                                     "Couldn't save profile photo"), Toast.LENGTH_LONG).show();
                 });
+            }
+        }
+    }
+
+    /** Returns a non-reversible, stable per-contact key; never persist a raw WhatsApp JID. */
+    private static String profileIdentity(Activity activity) {
+        try {
+            String jid = ContactIdentityPolicy.canonicalJid(
+                    ContactNameResolver.INSTANCE.extractJidFromActivity(activity));
+            if (jid == null) return null;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(jid.getBytes(StandardCharsets.UTF_8));
+            StringBuilder encoded = new StringBuilder(hash.length * 2);
+            for (byte value : hash) {
+                int unsigned = value & 0xff;
+                encoded.append(Character.forDigit(unsigned >>> 4, 16));
+                encoded.append(Character.forDigit(unsigned & 0x0f, 16));
+            }
+            return encoded.toString();
+        } catch (NoSuchAlgorithmException | RuntimeException | LinkageError ignored) {
+            return null;
+        }
+    }
+
+    private boolean hasSavedProfile(String profileIdentity) {
+        synchronized (SAVED_IDENTITIES_LOCK) {
+            try {
+                return prefs.getStringSet(PREF_SAVED_IDENTITIES, Collections.emptySet())
+                        .contains(profileIdentity);
+            } catch (RuntimeException | LinkageError ignored) {
+                return false;
+            }
+        }
+    }
+
+    private void markProfileSaved(String profileIdentity) {
+        synchronized (SAVED_IDENTITIES_LOCK) {
+            try {
+                Set<String> saved = new LinkedHashSet<>(prefs.getStringSet(
+                        PREF_SAVED_IDENTITIES, Collections.emptySet()));
+                saved.add(profileIdentity);
+                prefs.edit().putStringSet(PREF_SAVED_IDENTITIES, saved).commit();
+            } catch (RuntimeException | LinkageError failure) {
+                logFailure("remember saved profile", failure);
             }
         }
     }

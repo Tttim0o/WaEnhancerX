@@ -133,6 +133,9 @@ fun MediaStatusHubScreen() {
             mediaKeys.forEach { key -> put(key, readMediaKey(key)) }
         }
     }
+    var saveProfileDuplicates by remember(preferenceManager) {
+        mutableStateOf(preferenceManager.getBoolean("download_profile_save_duplicates", true))
+    }
 
     // Refresh after returning from another settings screen (e.g. the Calls hub).
     // Never auto-migrate a legacy call_recording=true value into the recorder key:
@@ -141,6 +144,7 @@ fun MediaStatusHubScreen() {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 mediaKeys.forEach { key -> settingsState[key] = readMediaKey(key) }
+                saveProfileDuplicates = preferenceManager.getBoolean("download_profile_save_duplicates", true)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -325,11 +329,68 @@ fun MediaStatusHubScreen() {
                                         enabled = !isLocked
                                     )
                                 }
-                                if (item.isPro) {
-                                    WaexProChip(
+                            if (item.isPro) {
+                                WaexProChip(
                                         isUnlocked = isPro,
                                         modifier = Modifier.align(Alignment.TopEnd)
                                     )
+                                }
+                            }
+                            if (item.key == "download_profile" && (settingsState[item.key] ?: false)) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = colors.surfaceDim.copy(alpha = 0.6f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = UiText.get(R.string.profile_photo_saving,
+                                                "PROFILE PHOTO SAVING"),
+                                            style = typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.primary
+                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .padding(end = 8.dp),
+                                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.save_profile_duplicates),
+                                                    style = typography.bodyMd,
+                                                    fontWeight = FontWeight.Medium,
+                                                    color = colors.onSurface
+                                                )
+                                                Text(
+                                                    text = stringResource(R.string.save_profile_duplicates_desc),
+                                                    style = typography.labelSm,
+                                                    color = colors.onSurfaceVariant
+                                                )
+                                            }
+                                            StitchSwitch(
+                                                checked = saveProfileDuplicates,
+                                                onCheckedChange = { checked ->
+                                                    preferenceManager.putBoolean("download_profile_save_duplicates", checked)
+                                                    saveProfileDuplicates = preferenceManager.getBoolean(
+                                                        "download_profile_save_duplicates", true
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
                                 }
                             }
                             if (index < group.items.lastIndex) {
