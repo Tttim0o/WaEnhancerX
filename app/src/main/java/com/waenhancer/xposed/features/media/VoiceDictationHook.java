@@ -59,6 +59,9 @@ public final class VoiceDictationHook extends BaseFeature {
 
     private final Set<Class<?>> hookedFieldClasses = Collections.synchronizedSet(new HashSet<>());
     private State state = State.IDLE;
+    /** Set when this feature hit an unexpected error; it then stays off until restart. */
+    private final java.util.concurrent.atomic.AtomicBoolean disabled =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
     @Nullable private MediaRecorder recorder;
     @Nullable private File recording;
     private long recordingStartedAt;
@@ -74,19 +77,19 @@ public final class VoiceDictationHook extends BaseFeature {
 
     @Override
     public void hook() {
-        ActivityTracker.addListener(activity -> {
+        ActivityTracker.addListener(activity -> safe(() -> {
             if (!isConversation(activity) || !isEnabled(PREF_KEY, true)) return;
             // Readiness needs IPC: ask off the UI thread, then attach on it.
-            VoiceTranscriptionBridge.worker().post(() -> {
+            VoiceTranscriptionBridge.worker().post(safe(() -> {
                 if (!Boolean.TRUE.equals(VoiceTranscriptionBridge.ready(context))) return;
-                VoiceTranscriptionBridge.main().post(() -> attach(activity, 0));
-            });
-        });
+                VoiceTranscriptionBridge.main().post(safe(() -> attach(activity, 0)));
+            }));
+        }).run());
         XposedHelpers.findAndHookMethod(Activity.class, "onPause", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) {
                 if (param.thisObject == recordingActivity.get() && state == State.RECORDING) {
-                    cancelRecording();
+                    safe(VoiceDictationHook.this::cancelRecording).run();
                 }
             }
         });
@@ -116,7 +119,7 @@ public final class VoiceDictationHook extends BaseFeature {
     }
 
     private void retryAttach(Activity activity, int attempt) {
-        activity.getWindow().getDecorView().postDelayed(() -> attach(activity, attempt), 400L * attempt);
+        activity.getWindow().getDecorView().postDelayed(safe(() -> attach(activity, attempt)), 400L * attempt);
     }
 
     @Nullable
@@ -166,10 +169,12 @@ public final class VoiceDictationHook extends BaseFeature {
             XposedBridge.hookMethod(onTouchEvent, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
-                    if (!(param.thisObject instanceof EditText)) return;
+                    if (!(param.thisObject instanceof EditText) || disabled.get()) return;
                     EditText field = (EditText) param.thisObject;
                     if (XposedHelpers.getAdditionalInstanceField(field, FIELD_ATTACHED) == null) return;
-                    if (onFieldTouch(field, (MotionEvent) param.args[0])) param.setResult(true);
+                    boolean[] consumed = new boolean[1];
+                    safe(() -> consumed[0] = onFieldTouch(field, (MotionEvent) param.args[0])).run();
+                    if (consumed[0]) param.setResult(true);
                 }
             });
         } catch (Throwable t) {
@@ -242,7 +247,9 @@ public final class VoiceDictationHook extends BaseFeature {
             newRecorder.setMaxDuration(MAX_RECORDING_MS);
             newRecorder.setOutputFile(file.getAbsolutePath());
             newRecorder.setOnInfoListener((mr, what, extra) -> {
-                if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) stopAndTranscribe();
+                if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
+                    safe(this::stopAndTranscribe).run();
+                }
             });
             newRecorder.prepare();
             newRecorder.start();
@@ -299,7 +306,7 @@ public final class VoiceDictationHook extends BaseFeature {
         recording = null; // Owned by the transcription task from here on.
         state = State.TRANSCRIBING;
         if (field != null) setGlyph(field, BUSY);
-        VoiceTranscriptionBridge.interactive().post(() -> {
+        VoiceTranscriptionBridge.interactive().post(safeOrReset(() -> {
             VoiceTranscriptionBridge.Result result;
             String audioInfo = VoiceTranscriptionBridge.describeAudio(file);
             try {
@@ -310,7 +317,7 @@ public final class VoiceDictationHook extends BaseFeature {
             }
             if (!file.delete()) file.deleteOnExit();
             VoiceTranscriptionBridge.Result done = result;
-            VoiceTranscriptionBridge.main().post(() -> {
+            VoiceTranscriptionBridge.main().post(safeOrReset(() -> {
                 state = State.IDLE;
                 EditText target = recordingField.get();
                 if (target != null) setGlyph(target, MIC);
@@ -323,8 +330,8 @@ public final class VoiceDictationHook extends BaseFeature {
                 } else if (target != null) {
                     insertAtCursor(target, done.text);
                 }
-            });
-        });
+            }));
+        }));
     }
 
     static void insertAtCursor(EditText field, String text) {
@@ -345,7 +352,27 @@ public final class VoiceDictationHook extends BaseFeature {
     }
 
     private void toast(String message) {
-        VoiceTranscriptionBridge.main().post(() ->
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show());
+        VoiceTranscriptionBridge.main().post(safe(() ->
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()));
+    }
+
+    private Runnable safe(Runnable work) {
+        return VoiceTranscriptionBridge.guard(TAG, disabled, work);
+    }
+
+    /** Like {@link #safe}, but a failed transcription also returns the button to 🎙️. */
+    private Runnable safeOrReset(Runnable work) {
+        return () -> {
+            try {
+                work.run();
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " Transcription step failed: " + VoiceTranscriptionBridge.describe(t));
+                VoiceTranscriptionBridge.main().post(safe(() -> {
+                    state = State.IDLE;
+                    EditText target = recordingField.get();
+                    if (target != null) setGlyph(target, MIC);
+                }));
+            }
+        };
     }
 }

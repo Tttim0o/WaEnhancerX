@@ -64,6 +64,8 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
             java.util.Collections.synchronizedSet(new java.util.HashSet<>());
     private WeakReference<ListView> listViewRef = new WeakReference<>(null);
     private boolean readyRefreshPending;
+    /** Set when this feature hit an unexpected error; it then stays off until restart. */
+    private final AtomicBoolean disabled = new AtomicBoolean(false);
 
     public VoiceNoteRowTranscriptHook(@NonNull Context context, @NonNull ClassLoader classLoader,
                                       @NonNull SharedPreferences prefs) {
@@ -77,11 +79,7 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         XposedHelpers.findAndHookMethod(ListView.class, "setAdapter", ListAdapter.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
-                try {
-                    onSetAdapter((ListView) param.thisObject, (ListAdapter) param.args[0]);
-                } catch (Throwable t) {
-                    XposedBridge.log(TAG + " setAdapter: " + t.getClass().getSimpleName());
-                }
+                safe(() -> onSetAdapter((ListView) param.thisObject, (ListAdapter) param.args[0])).run();
             }
         });
     }
@@ -104,12 +102,9 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         XposedBridge.hookMethod(getView, new XC_MethodHook(XCallback.PRIORITY_HIGHEST) {
             @Override
             protected void afterHookedMethod(MethodHookParam param) {
-                if (!(param.thisObject instanceof ListAdapter)) return;
-                try {
-                    decorate((ListAdapter) param.thisObject, (int) param.args[0], param.getResult());
-                } catch (Throwable t) {
-                    XposedBridge.log(TAG + " decorate: " + t.getClass().getSimpleName());
-                }
+                if (!(param.thisObject instanceof ListAdapter) || disabled.get()) return;
+                safe(() -> decorate((ListAdapter) param.thisObject, (int) param.args[0],
+                        param.getResult())).run();
             }
         });
     }
@@ -119,14 +114,14 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         if (readyRefreshPending) return;
         readyRefreshPending = true;
         boolean before = VoiceTranscriptionBridge.lastKnownReady();
-        VoiceTranscriptionBridge.worker().post(() -> {
+        VoiceTranscriptionBridge.worker().post(safe(() -> {
             Boolean ready = VoiceTranscriptionBridge.ready(context);
-            VoiceTranscriptionBridge.main().post(() -> {
+            VoiceTranscriptionBridge.main().post(safe(() -> {
                 readyRefreshPending = false;
                 ListView list = listViewRef.get();
                 if (Boolean.TRUE.equals(ready) && !before && list != null) list.invalidateViews();
-            });
-        });
+            }));
+        }));
     }
 
     private void decorate(ListAdapter adapter, int position, Object rendered) {
@@ -177,10 +172,10 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         XposedHelpers.setAdditionalInstanceField(date, FIELD_FILE, voiceNote.getAbsolutePath());
         // The listener reads the field at tap time, so a recycled row never opens a stale note,
         // and listeners other hooks set on this view are never cleared from here.
-        date.setOnClickListener(v -> {
+        date.setOnClickListener(v -> safe(() -> {
             Object path = XposedHelpers.getAdditionalInstanceField(v, FIELD_FILE);
             if (path instanceof String) showTranscript((String) path);
-        });
+        }).run());
     }
 
     private static void unmarkRow(TextView date) {
@@ -297,17 +292,21 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
                 .show();
 
         if (cached != null) return;
-        VoiceTranscriptionBridge.interactive().post(() -> {
+        VoiceTranscriptionBridge.interactive().post(safe(() -> {
             VoiceTranscriptionBridge.Result result = VoiceTranscriptionBridge.transcribe(context, note);
             String shown = result.text != null ? displayText(result.text, note) : null;
-            VoiceTranscriptionBridge.main().post(() -> body.setText(shown != null
+            VoiceTranscriptionBridge.main().post(safe(() -> body.setText(shown != null
                     ? shown
                     : UiText.get(R.string.waex_ui_transcription_failed_ccb68494, "Transcription failed")
-                            + "\n" + result.error));
-        });
+                            + "\n" + result.error)));
+        }));
     }
 
     /** Call off the UI thread for empty text: describing the audio reads its metadata. */
+    private Runnable safe(Runnable work) {
+        return VoiceTranscriptionBridge.guard(TAG, disabled, work);
+    }
+
     private static String displayText(String text, File note) {
         return text.isEmpty()
                 ? UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.")

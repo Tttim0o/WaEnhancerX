@@ -195,6 +195,7 @@
     <string name="waex_ui_convert_received_voice_notes_to_readab_47e047f7" formatted="false">"Convert received voice notes to readable chat text bubbles."</string>
     <string name="waex_ui_copied_1_s_to_clipboard_99b46814">"Copied %1$s to clipboard"</string>
     <string name="waex_ui_copied_status_text_to_clipboard_b81c6089" formatted="false">"Copied status text to clipboard"</string>
+    <string name="waex_ui_copy_details_ec7ee282" formatted="false">"Copy details"</string>
     <string name="waex_ui_copy_e21f935f" formatted="false">"Copy"</string>
     <string name="waex_ui_copy_error_19dc540f" formatted="false">"Copy error"</string>
     <string name="waex_ui_copy_text_b0ac9cea" formatted="false">"Copy text"</string>
@@ -825,10 +826,12 @@
     <string name="waex_ui_wait_until_a_newer_release_is_availabl_9e7d1559" formatted="false">"Wait until a newer release is available"</string>
     <string name="waex_ui_want_to_see_yourself_here_b2789bdc" formatted="false">"Want to see yourself here?"</string>
     <string name="waex_ui_we_couldn_t_load_the_supporters_right_f4aba896" formatted="false">"We couldn\'t load the supporters right now."</string>
+    <string name="waex_ui_whatsapp_crashed_last_time_f08802c3" formatted="false">"WhatsApp crashed last time"</string>
     <string name="waex_ui_whatsapp_hook_active_95610821" formatted="false">"WhatsApp hook active"</string>
     <string name="waex_ui_whatsapp_hooked_c9066f8d" formatted="false">"WhatsApp Hooked"</string>
     <string name="waex_ui_whatsapp_needs_microphone_access_to_di_5fa2efe0" formatted="false">"WhatsApp needs microphone access to dictate."</string>
     <string name="waex_ui_whatsapp_settings_37faf372" formatted="false">"WhatsApp Settings"</string>
+    <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa_01fcf48f" formatted="false">"WhatsApp stopped unexpectedly while WaEnhancer X was active. Copy the details and send them to whoever made this build."</string>
     <string name="waex_ui_whatsapp_will_resume_updating_your_las_13fe4e9d" formatted="false">"WhatsApp will resume updating your last seen timestamp normally.\n\nRestart WhatsApp to apply changes?"</string>
     <string name="waex_ui_when_messages_are_deleted_via_delete_f_439b7068" formatted="false">"When messages are deleted via \'Delete For Me\', they will be preserved and listed here."</string>
     <string name="waex_ui_when_whatsapp_calls_are_placed_or_rece_a10b5a50" formatted="false">"When WhatsApp calls are placed or received with Call Recording enabled, the audio files will appear here automatically."</string>
