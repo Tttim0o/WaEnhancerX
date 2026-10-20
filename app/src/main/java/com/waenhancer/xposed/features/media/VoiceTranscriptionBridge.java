@@ -55,6 +55,36 @@ final class VoiceTranscriptionBridge {
 
     private VoiceTranscriptionBridge() {}
 
+    /**
+     * Wraps work that runs on a Handler thread or in a host callback. An exception escaping
+     * there would kill the whole WhatsApp process; instead it is logged with its origin and
+     * the feature behind {@code disabled} stays off until WhatsApp restarts.
+     */
+    static Runnable guard(String tag, java.util.concurrent.atomic.AtomicBoolean disabled, Runnable work) {
+        return () -> {
+            if (disabled.get()) return;
+            try {
+                work.run();
+            } catch (Throwable t) {
+                disabled.set(true);
+                de.robv.android.xposed.XposedBridge.log(tag + " disabled until restart: " + describe(t));
+            }
+        };
+    }
+
+    /** Exception type and the first WAEX frame, without messages (they can contain user data). */
+    static String describe(Throwable t) {
+        StringBuilder out = new StringBuilder(t.getClass().getName());
+        for (StackTraceElement frame : t.getStackTrace()) {
+            if (frame.getClassName().startsWith("com.waenhancer")) {
+                out.append(" at ").append(frame.getClassName()).append('.').append(frame.getMethodName())
+                        .append(':').append(frame.getLineNumber());
+                break;
+            }
+        }
+        return out.toString();
+    }
+
     /** One background thread for all transcription work in this process. */
     static synchronized Handler worker() {
         if (sWorker == null) {

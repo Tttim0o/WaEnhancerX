@@ -3,6 +3,7 @@ package com.waenhancer.xposed.features.media;
 import com.waenhancer.app.R;
 import com.waenhancer.utils.UiText;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -80,6 +81,9 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     private final long startedAt = System.currentTimeMillis();
 
     private Handler worker;
+    /** Set when this feature hit an unexpected error; it then stays off until restart. */
+    private final java.util.concurrent.atomic.AtomicBoolean disabled =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
     @Nullable private File voiceRoot;
     private int discoveryAttempts;
 
@@ -94,14 +98,14 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     public void hook() {
         // Nothing here touches the disk or IPC: startup must stay fast.
         worker = VoiceTranscriptionBridge.worker();
-        worker.post(this::start);
+        worker.post(safe(this::start));
     }
 
     private void start() {
         voiceRoot = findVoiceNotesRoot();
         if (voiceRoot == null) {
             if (++discoveryAttempts < MAX_DISCOVERY_ATTEMPTS) {
-                worker.postDelayed(this::start, DISCOVERY_RETRY_MS);
+                worker.postDelayed(safe(this::start), DISCOVERY_RETRY_MS);
             } else {
                 XposedBridge.log(TAG + " Voice notes folder not found; transcription inactive");
             }
@@ -110,7 +114,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         registerActionReceiver();
         watchRoot(voiceRoot);
         // Catches notes WhatsApp downloaded while this process was starting.
-        worker.postDelayed(this::poll, FIRST_SCAN_DELAY_MS);
+        worker.postDelayed(safe(this::poll), FIRST_SCAN_DELAY_MS);
     }
 
     // ─── Finding and watching the voice notes folder ────────────────────
@@ -169,16 +173,16 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
                 File target = new File(dir, path);
                 int type = event & FileObserver.ALL_EVENTS;
                 if (isRoot && (type == FileObserver.CREATE || type == FileObserver.MOVED_TO)) {
-                    worker.post(() -> {
+                    worker.post(safe(() -> {
                         if (!target.isDirectory()) return;
                         startObserver(target, false);
                         // A note can land in a new week folder before it is watched.
-                        worker.postDelayed(() -> scanFolder(target, SETTLE_DELAY_MS), SETTLE_DELAY_MS);
-                    });
+                        worker.postDelayed(safe(() -> scanFolder(target, SETTLE_DELAY_MS)), SETTLE_DELAY_MS);
+                    }));
                 }
                 if ((type == FileObserver.CLOSE_WRITE || type == FileObserver.MOVED_TO)
                         && isVoiceNoteName(path)) {
-                    worker.postDelayed(() -> onVoiceNote(target), SETTLE_DELAY_MS);
+                    worker.postDelayed(safe(() -> onVoiceNote(target)), SETTLE_DELAY_MS);
                 }
             }
         };
@@ -196,7 +200,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Poll failed: " + t.getClass().getSimpleName());
         } finally {
-            worker.postDelayed(this::poll, POLL_INTERVAL_MS);
+            worker.postDelayed(safe(this::poll), POLL_INTERVAL_MS);
         }
     }
 
@@ -354,6 +358,10 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         return new Notification.Action.Builder(0, title, pending).build();
     }
 
+    // Before API 33 a runtime receiver cannot be registered as not exported, and the androidx
+    // permission emulation depends on a permission declared in WhatsApp's manifest. Callers are
+    // constrained by trustedNote() instead, and Copy never trusts text from the intent.
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void registerActionReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_TRANSCRIBE);
@@ -361,13 +369,15 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context ignored, Intent intent) {
-                File note = trustedNote(intent.getStringExtra(EXTRA_PATH));
-                if (note == null) return;
-                if (ACTION_TRANSCRIBE.equals(intent.getAction())) {
-                    VoiceTranscriptionBridge.interactive().post(() -> transcribe(note));
-                } else if (ACTION_COPY.equals(intent.getAction())) {
-                    copyTranscript(note);
-                }
+                safe(() -> {
+                    File note = trustedNote(intent.getStringExtra(EXTRA_PATH));
+                    if (note == null) return;
+                    if (ACTION_TRANSCRIBE.equals(intent.getAction())) {
+                        VoiceTranscriptionBridge.interactive().post(safe(() -> transcribe(note)));
+                    } else if (ACTION_COPY.equals(intent.getAction())) {
+                        copyTranscript(note);
+                    }
+                }).run();
             }
         };
         try {
@@ -407,9 +417,13 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         ClipboardManager clipboard = context.getSystemService(ClipboardManager.class);
         if (clipboard == null) return;
         clipboard.setPrimaryClip(ClipData.newPlainText("Voice note transcript", text));
-        new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context,
+        new Handler(Looper.getMainLooper()).post(safe(() -> Toast.makeText(context,
                 UiText.get(R.string.waex_ui_transcript_copied_758ba0c0, "Transcript copied"),
-                Toast.LENGTH_SHORT).show());
+                Toast.LENGTH_SHORT).show()));
+    }
+
+    private Runnable safe(Runnable work) {
+        return VoiceTranscriptionBridge.guard(TAG, disabled, work);
     }
 
     private static int notificationId(File note) {

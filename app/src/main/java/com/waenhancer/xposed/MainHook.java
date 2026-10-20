@@ -201,6 +201,15 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                                     XposedBridge.log("[WAEX] ActivityTracker initialization failed: "
                                             + t.getClass().getSimpleName());
                                 }
+                                try {
+                                    // Wraps the host's handler: its Application.onCreate already ran.
+                                    com.waenhancer.xposed.core.CrashRecorder.install(appContext);
+                                } catch (Throwable t) {
+                                    XposedBridge.log("[WAEX] Crash recorder unavailable: "
+                                            + t.getClass().getSimpleName());
+                                }
+                                postReport(() -> com.waenhancer.xposed.core.CrashRecorder
+                                        .offerPendingReport(appContext));
 
                                 // Manager IPC can cold-start the WAEX process; keep it off the
                                 // target's main thread so it does not delay hook installation.
@@ -407,9 +416,14 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
             Runnable heartbeat = new Runnable() {
                 @Override
                 public void run() {
-                    com.waenhancer.utils.WhatsAppPackageDetector.reportRuntimeHealth(
-                            appContext, packageName, sRuntimeStatus, sBridgeStatus, sRuntimeError);
-                    handler.postDelayed(this, HEARTBEAT_INTERVAL_MS);
+                    try {
+                        com.waenhancer.utils.WhatsAppPackageDetector.reportRuntimeHealth(
+                                appContext, packageName, sRuntimeStatus, sBridgeStatus, sRuntimeError);
+                    } catch (Throwable t) {
+                        XposedBridge.log("[WAEX] Heartbeat failed: " + t.getClass().getSimpleName());
+                    } finally {
+                        handler.postDelayed(this, HEARTBEAT_INTERVAL_MS);
+                    }
                 }
             };
             handler.postDelayed(heartbeat, HEARTBEAT_INTERVAL_MS);
@@ -438,11 +452,19 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     }
 
     private static void postReport(Runnable report) {
+        // An exception escaping on the report thread would kill the host process.
+        Runnable guarded = () -> {
+            try {
+                report.run();
+            } catch (Throwable t) {
+                XposedBridge.log("[WAEX] Report failed: " + t.getClass().getSimpleName());
+            }
+        };
         try {
-            reportHandler().post(report);
+            reportHandler().post(guarded);
         } catch (Throwable t) {
             // Reporting is diagnostic only; fall back to running it inline.
-            report.run();
+            guarded.run();
         }
     }
 
