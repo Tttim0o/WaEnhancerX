@@ -136,6 +136,10 @@ class WaexNavController(initialScreen: Screen = Screen.MainDashboard) {
     var highlightTargetKey by mutableStateOf<String?>(null)
 
     fun navigateToPreference(tabIndex: Int, subTabId: String?, preferenceKey: String) {
+        if (preferenceKey == "app_interface_size") {
+            navigateTo(Screen.ModuleSettings)
+            return
+        }
         if (preferenceKey == "show_hook_toast" || preferenceKey == "show_restart_sheet") {
             navigateTo(Screen.SystemHealth)
             return

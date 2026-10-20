@@ -110,7 +110,7 @@ def main():
         (out / 'explicit-fixture-sha256.json').write_text(json.dumps(
             {str(p.relative_to(sources)): sha(p) for p in files if 'explicit-fixtures' in p.parts}, indent=2) + '\n')
         values = ET.parse(arrays).find("string-array[@name='status_style_values']")
-        if values is None or [item.text for item in values] != ['1', '0', '5', '4', '3', '9']:
+        if values is None or [item.text for item in values] != ['1', '0', '3', '9']:
             raise RuntimeError('Published choices changed; review the hook acceptance matrix')
         try:
             jar = args.dexkit_jar.resolve() if args.dexkit_jar else dexkit(out)

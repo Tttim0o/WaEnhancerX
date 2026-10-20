@@ -96,7 +96,6 @@
       "message_bomber",
       "anti_edit_messages",
       "message_device_source",
-      "preserve_delete_for_me",
       "revokeallmessages",
       "hide_forwarded_tag",
       "removeforwardlimit",
@@ -157,7 +156,6 @@
     "tabIndex": 2,
     "tabId": "media",
     "keys": [
-      "call_recording",
       "download_view_once",
       "media_preview",
       "download_profile"
@@ -243,6 +241,7 @@
     "tabIndex": -1,
     "tabId": "settings",
     "keys": [
+      "app_interface_size",
       "show_hook_toast",
       "show_restart_sheet",
       "supported_versions",

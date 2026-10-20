@@ -1,8 +1,9 @@
 # Status and property override acceptance
 
-The public `status_style` setting remains a string with six published choices:
-`1` (Default), `0` (Vertical Rows), `5` (Facebook Cards), `4` (Compact List),
-`3` (Circular Avatars), and `9` (Square Cards). The default remains `1`.
+The public `status_style` setting remains a string with four choices verified on
+current WhatsApp builds: `1` (Default), `0` (Vertical Rows), `3` (Circular
+Avatars), and `9` (Square Cards). Previously published values `4` and `5` now
+fail closed to Default when restored from an older backup. The default remains `1`.
 Whitespace around a valid value remains accepted. Missing, malformed, unsupported
 and incorrectly typed values use the default without failing hook initialization.
 
@@ -33,7 +34,7 @@ The callback fixture implements the documented Xposed result/exception transitio
 `setResult` clears the previous exception, so a missing exception guard fails the
 test instead of being hidden by the fixture.
 
-The suite covers the six choices, trimmed values, invalid integers and strings,
+The suite covers the four choices, trimmed values, obsolete values, invalid integers and strings,
 wrong preference types, exception identity, absent/incompatible results, matching
 and nonmatching property types, unregistered IDs, `novaconfig` off/on, simultaneous
 status/settings overrides, callback priority, and properties registered after

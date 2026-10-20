@@ -107,7 +107,7 @@ fun MediaStatusHubScreen() {
         listOf(
             "statusdowload", "status_downloader", "videoquality", "imagequality",
             "media_upload_quality", "send_audio_as_voice_status", "status_video_splitter", "file_size_spoofer",
-            "call_recording", "download_profile", "download_video_note",
+            "download_profile", "download_video_note",
             "downloadviewonce", "download_view_once", "media_preview", "enable_media_preview"
         )
     }
@@ -116,7 +116,7 @@ fun MediaStatusHubScreen() {
     val lifecycleOwner = LocalLifecycleOwner.current
     fun readMediaKey(key: String): Boolean {
         // The UI must reflect the settings consumed by hooks, not stale legacy aliases.
-        if (key == "call_recording" || key == "media_upload_quality"
+        if (key == "media_upload_quality"
             || key == "downloadviewonce" || key == "download_view_once") {
             return MediaQuickSettingPolicy.isEnabled(key) { storedKey ->
                 preferenceManager.getBoolean(storedKey, false)

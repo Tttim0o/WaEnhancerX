@@ -87,13 +87,12 @@ public final class StatusStyleHook extends BaseFeature {
         if (value == null) return 1;
         try {
             int style = Integer.parseInt(value.trim());
-            // Keep the same six values offered by the public STRING editor.
+            // Only values verified against current WhatsApp builds are published.
+            // Obsolete restored values fail closed to the host default.
             switch (style) {
                 case 0:
                 case 1:
                 case 3:
-                case 4:
-                case 5:
                 case 9:
                     return style;
                 default:

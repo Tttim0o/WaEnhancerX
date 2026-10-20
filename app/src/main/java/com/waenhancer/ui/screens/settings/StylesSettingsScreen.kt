@@ -509,8 +509,6 @@ private fun TypedStyleEditorDialog(
             choices = listOf(
                 "1" to UiText.get(R.string.status_style_default, "Default"),
                 "0" to UiText.get(R.string.status_style_vertical_rows, "Vertical Rows"),
-                "5" to UiText.get(R.string.status_style_facebook_grid, "Facebook Cards (Grid)"),
-                "4" to UiText.get(R.string.status_style_vertical_compact, "Vertical List (Compact)"),
                 "3" to UiText.get(R.string.status_style_vertical_circle, "Vertical List (Circular Avatars)"),
                 "9" to UiText.get(R.string.status_style_vertical_square, "Vertical List (Square Cards)")
             ),
@@ -886,8 +884,6 @@ private fun typedStyleSummary(
     "quick_home_menu" -> when (preferenceManager.getString("waex_menu_style", "grouped")) { "separate" -> UiText.get(R.string.waex_ui_separate_items_7f91460e, "Separate items"); "icons" -> UiText.get(R.string.waex_ui_toolbar_icons_12004bba, "Toolbar icons"); else -> UiText.get(R.string.waex_ui_grouped_89731456, "Grouped") }
     "status_style" -> when (preferenceManager.getString("status_style", "1")) {
         "0" -> UiText.get(R.string.status_style_vertical_rows, "Vertical Rows")
-        "5" -> UiText.get(R.string.status_style_facebook_grid, "Facebook Cards (Grid)")
-        "4" -> UiText.get(R.string.status_style_vertical_compact, "Vertical List (Compact)")
         "3" -> UiText.get(R.string.status_style_vertical_circle, "Vertical List (Circular Avatars)")
         "9" -> UiText.get(R.string.status_style_vertical_square, "Vertical List (Square Cards)")
         else -> UiText.get(R.string.status_style_default, "Default")

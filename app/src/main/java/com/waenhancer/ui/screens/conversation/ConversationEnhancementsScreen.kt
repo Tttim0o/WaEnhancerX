@@ -78,7 +78,7 @@ fun ConversationEnhancementsScreen() {
 
     val convKeys = remember {
         listOf(
-            "message_bomber", "anti_edit_messages", "message_device_source", "preserve_delete_for_me", "preserve_own_revoke", "revokeallmessages", "hide_forwarded_tag",
+            "message_bomber", "anti_edit_messages", "message_device_source", "preserve_own_revoke", "revokeallmessages", "hide_forwarded_tag",
             "removeforwardlimit", "sticker_confirm_alert", "removeseemore", "stamp_copied_message", "doubletap2like",
             "jump_to_first_message", "unlimited_pinned_chats", "broadcast_tag", "direct_chat_dialer",
             "inline_translation", "copy_status_text", "animation_emojis", "disable_defemojis"
@@ -187,14 +187,6 @@ fun ConversationEnhancementsScreen() {
                                 val y = coordinates.positionInRoot().y - containerY + scrollState.value
                                 itemCoordinates["message_device_source"] = y
                             }
-                    )
-                    WaexSwitchPreference(
-                        title = UiText.get(R.string.feat_preserve_delete_for_me_title, "Delete (for me)"),
-                        description = UiText.get(R.string.waex_ui_retain_messages_locally_when_delete_fo_83f67a27, "Retain messages locally when Delete for Me is pressed"),
-                        checked = stateMap["preserve_delete_for_me"] ?: false,
-                        onCheckedChange = { onToggle("preserve_delete_for_me", it) },
-                        icon = WaexIcons.Security,
-                        showDivider = true
                     )
                     WaexSwitchPreference(
                         title = UiText.get(R.string.feat_preserve_own_revoke_title, "Keep My Revoked Messages"),

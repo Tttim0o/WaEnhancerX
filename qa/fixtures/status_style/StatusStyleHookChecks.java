@@ -88,13 +88,13 @@ public final class StatusStyleHookChecks {
     }
 
     public static void main(String[] args) throws Throwable {
-        for (String choice : new String[]{"0", "1", "3", "4", "5", "9"})
+        for (String choice : new String[]{"0", "1", "3", "9"})
             styleValue(choice, Integer.parseInt(choice), "published choice " + choice);
-        styleValue(" 5 ", 5, "trimmed published choice");
-        for (Object invalid : new Object[]{null, "", "text", "2", "-1", "10", "2147483647", "2147483648", true, 5})
+        styleValue(" 3 ", 3, "trimmed published choice");
+        for (Object invalid : new Object[]{null, "", "text", "2", "4", "5", "-1", "10", "2147483647", "2147483648", true, 5})
             styleValue(invalid, 1, "invalid/default " + String.valueOf(invalid));
 
-        reset(); Preferences prefs = new Preferences(); prefs.values.put("status_style", "5");
+        reset(); Preferences prefs = new Preferences(); prefs.values.put("status_style", "9");
         new StatusStyleHook(CONTEXT, LOADER, prefs).hook();
         Throwable original = new IllegalStateException("fixture host failure");
         XC_MethodHook.MethodHookParam failed = after(styleMethod(), null, original, false);
@@ -135,7 +135,7 @@ public final class StatusStyleHookChecks {
         check(after(central, 37, null, call).getResult().equals(37), "unregistered property retained");
 
         reset(); Preferences settings = new Preferences();
-        settings.values.put("status_style", "5");
+        settings.values.put("status_style", "9");
         new StatusStyleHook(CONTEXT, LOADER, settings).hook();
         new NewSettingsStyleHook(CONTEXT, LOADER, settings).hook();
         check(!PropsOverrideHook.BOOLEANS.containsKey(14862) && !PropsOverrideHook.INTEGERS.containsKey(18564),
@@ -150,8 +150,8 @@ public final class StatusStyleHookChecks {
         check(Boolean.TRUE.equals(PropsOverrideHook.BOOLEANS.get(14862))
                         && Integer.valueOf(2).equals(PropsOverrideHook.INTEGERS.get(18564)),
                 "enabled settings preference retains existing typed overrides");
-        check(Integer.valueOf(5).equals(PropsOverrideHook.INTEGERS.get(8522))
-                        && Integer.valueOf(5).equals(PropsOverrideHook.INTEGERS.get(8521)),
+        check(Integer.valueOf(9).equals(PropsOverrideHook.INTEGERS.get(8522))
+                        && Integer.valueOf(9).equals(PropsOverrideHook.INTEGERS.get(8521)),
                 "settings and status overrides coexist without replacing each other");
         check(XposedBridge.hooks.get(central).priority == 10000,
                 "property callback keeps highest priority");
