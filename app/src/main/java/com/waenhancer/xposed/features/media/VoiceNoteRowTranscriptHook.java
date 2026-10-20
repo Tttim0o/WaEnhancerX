@@ -59,7 +59,9 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
     private static final Map<Class<?>, Field[]> FILE_PATHS = new ConcurrentHashMap<>();
     private static final Field[] NO_PATH = new Field[0];
 
-    private XC_MethodHook.Unhook getViewHook;
+    /** getView methods already hooked; hooks stay, so another list cannot detach the chat's. */
+    private final java.util.Set<Method> hookedGetViews =
+            java.util.Collections.synchronizedSet(new java.util.HashSet<>());
     private WeakReference<ListView> listViewRef = new WeakReference<>(null);
     private boolean readyRefreshPending;
 
@@ -94,21 +96,17 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         listViewRef = new WeakReference<>(listView);
         refreshReadiness();
 
-        if (getViewHook != null) {
-            getViewHook.unhook();
-            getViewHook = null;
-        }
         Method getView = XposedHelpers.findMethodBestMatch(adapter.getClass(), "getView",
                 int.class, View.class, ViewGroup.class);
-        if (getView == null) return;
-        final ListAdapter bound = adapter;
+        if (getView == null || !hookedGetViews.add(getView)) return;
         // Highest priority runs this after-hook last, after AntiRevokeHook reset the date view.
-        getViewHook = XposedBridge.hookMethod(getView, new XC_MethodHook(XCallback.PRIORITY_HIGHEST) {
+        // Rows without a "date" view (other lists sharing the method) return immediately.
+        XposedBridge.hookMethod(getView, new XC_MethodHook(XCallback.PRIORITY_HIGHEST) {
             @Override
             protected void afterHookedMethod(MethodHookParam param) {
-                if (param.thisObject != bound) return;
+                if (!(param.thisObject instanceof ListAdapter)) return;
                 try {
-                    decorate(bound, (int) param.args[0], param.getResult());
+                    decorate((ListAdapter) param.thisObject, (int) param.args[0], param.getResult());
                 } catch (Throwable t) {
                     XposedBridge.log(TAG + " decorate: " + t.getClass().getSimpleName());
                 }
@@ -299,7 +297,7 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
                 .show();
 
         if (cached != null) return;
-        VoiceTranscriptionBridge.worker().post(() -> {
+        VoiceTranscriptionBridge.interactive().post(() -> {
             VoiceTranscriptionBridge.Result result = VoiceTranscriptionBridge.transcribe(context, note);
             String shown = result.text != null ? displayText(result.text, note) : null;
             VoiceTranscriptionBridge.main().post(() -> body.setText(shown != null
