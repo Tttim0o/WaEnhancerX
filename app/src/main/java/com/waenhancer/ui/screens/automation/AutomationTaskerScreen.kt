@@ -63,6 +63,9 @@ import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.waenhancer.core.transcription.TranscriptionRequestHandler
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateDpAsState
@@ -148,7 +151,15 @@ fun AutomationTaskerScreen() {
     var dictationButton by remember { mutableStateOf(preferenceManager.getBoolean("voice_dictation_button", true)) }
     var showProviderDropdown by remember { mutableStateOf(false) }
     var assemblyKey by remember { mutableStateOf(preferenceManager.getString("assembly_key", "")) }
-    var assemblyStatus by remember { mutableStateOf("idle") } // "idle" | "verifying" | "ok" | "fail"
+    var connectionStatus by remember { mutableStateOf("idle") } // "idle" | "verifying" | "ok" | "fail"
+    var connectionError by remember { mutableStateOf("") }
+    var transcriptionLanguage by remember { mutableStateOf(preferenceManager.getString("transcription_language", "")) }
+    var showLanguageDropdown by remember { mutableStateOf(false) }
+    val transcriptionLanguages = listOf(
+        "" to UiText.get(R.string.waex_ui_automatic_d461a493, "Automatic"),
+        "sk" to "Slovenčina", "cs" to "Čeština", "en" to "English", "de" to "Deutsch",
+        "hu" to "Magyar", "pl" to "Polski", "uk" to "Українська", "es" to "Español"
+    )
     var groqKey by remember { mutableStateOf(preferenceManager.getString("groq_key", "")) }
 
 
@@ -607,6 +618,7 @@ fun AutomationTaskerScreen() {
                                                 onClick = {
                                                     transcriptionProvider = provider
                                                     preferenceManager.putString("transcription_provider", provider)
+                                                connectionStatus = "idle"
                                                     showProviderDropdown = false
                                                 }
                                             )
@@ -639,6 +651,7 @@ fun AutomationTaskerScreen() {
                                             onValueChange = {
                                                 groqKey = it
                                                 preferenceManager.putString("groq_key", it)
+                                                connectionStatus = "idle"
                                             },
                                             singleLine = true,
                                             visualTransformation = PasswordVisualTransformation(),
@@ -664,6 +677,7 @@ fun AutomationTaskerScreen() {
                                     onValueChange = {
                                         customUrl = it
                                         preferenceManager.putString("custom_transcription_url", it.trim())
+                                                connectionStatus = "idle"
                                     }
                                 )
                                 TranscriptionTextField(
@@ -672,6 +686,7 @@ fun AutomationTaskerScreen() {
                                     onValueChange = {
                                         customKey = it
                                         preferenceManager.putString("custom_transcription_key", it)
+                                                connectionStatus = "idle"
                                     },
                                     isSecret = true
                                 )
@@ -705,7 +720,7 @@ fun AutomationTaskerScreen() {
                                             value = assemblyKey,
                                             onValueChange = {
                                                 assemblyKey = it
-                                                assemblyStatus = "idle"
+                                                connectionStatus = "idle"
                                                 preferenceManager.putString("assembly_key", it)
                                             },
                                             singleLine = true,
@@ -720,19 +735,67 @@ fun AutomationTaskerScreen() {
                                         )
                                     }
                                 }
+                            }
 
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            // Spoken language: a fixed language is more accurate than detection
+                            Column {
+                                Text(
+                                    text = UiText.get(R.string.waex_ui_transcription_language_8bc22eb0, "Transcription language"),
+                                    style = typography.labelSm,
+                                    color = colors.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 6.dp)
+                                )
+                                Box {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(44.dp)
+                                            .clip(radius.mdShape)
+                                            .background(colors.surface)
+                                            .border(1.dp, colors.outlineVariant, radius.mdShape)
+                                            .clickable { showLanguageDropdown = true }
+                                            .padding(horizontal = 12.dp),
+                                        contentAlignment = Alignment.CenterStart
                                     ) {
-                                        Text(text = UiText.get(R.string.waex_ui_connection_status_3693e288, "Connection Status"), style = typography.bodyMd, color = colors.onSurfaceVariant)
-                                        if (assemblyStatus == "ok") {
+                                        Text(
+                                            text = transcriptionLanguages.firstOrNull { it.first == transcriptionLanguage }?.second
+                                                ?: UiText.get(R.string.waex_ui_automatic_d461a493, "Automatic"),
+                                            style = typography.bodyMd,
+                                            color = colors.onSurface
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showLanguageDropdown,
+                                        onDismissRequest = { showLanguageDropdown = false }
+                                    ) {
+                                        transcriptionLanguages.forEach { (code, label) ->
+                                            DropdownMenuItem(
+                                                text = { Text(text = label, style = typography.bodyMd) },
+                                                onClick = {
+                                                    transcriptionLanguage = code
+                                                    preferenceManager.putString("transcription_language", code)
+                                                    showLanguageDropdown = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Connection test: sends one second of silence with the current settings
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    modifier = Modifier.weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(text = UiText.get(R.string.waex_ui_connection_status_3693e288, "Connection Status"), style = typography.bodyMd, color = colors.onSurfaceVariant)
+                                    when (connectionStatus) {
+                                        "ok" -> {
                                             Icon(
                                                 imageVector = WaexIcons.Success,
                                                 contentDescription = null,
@@ -740,30 +803,36 @@ fun AutomationTaskerScreen() {
                                                 modifier = Modifier.size(13.dp)
                                             )
                                             Text(text = UiText.get(R.string.waex_ui_connected_22965568, "Connected"), style = typography.labelSm, color = Color(0xFF22C55E), fontWeight = FontWeight.Bold)
-                                        } else if (assemblyStatus == "verifying") {
-                                            CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = colors.primary)
                                         }
-                                    }
-                                    Button(
-                                        onClick = {
-                                            if (assemblyKey.isEmpty()) return@Button
-                                            assemblyStatus = "verifying"
-                                            coroutineScope.launch {
-                                                delay(800)
-                                                assemblyStatus = "ok"
-                                            }
-                                        },
-                                        enabled = assemblyKey.isNotEmpty() && assemblyStatus != "verifying",
-                                        shape = radius.mdShape,
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = colors.primary,
-                                            contentColor = colors.onPrimary
-                                        ),
-                                        modifier = Modifier.height(36.dp)
-                                    ) {
-                                        Text(text = UiText.get(R.string.waex_ui_test_532eaabd, "Test"), style = typography.bodyMd)
+                                        "fail" -> Text(text = UiText.get(R.string.waex_ui_connection_failed_596c52f1, "Connection failed"), style = typography.labelSm, color = colors.error, fontWeight = FontWeight.Bold)
+                                        "verifying" -> CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = colors.primary)
                                     }
                                 }
+                                Button(
+                                    onClick = {
+                                        connectionStatus = "verifying"
+                                        connectionError = ""
+                                        coroutineScope.launch {
+                                            val error = withContext(Dispatchers.IO) {
+                                                TranscriptionRequestHandler.testConnection(context.applicationContext)
+                                            }
+                                            connectionStatus = if (error == null) "ok" else "fail"
+                                            connectionError = error ?: ""
+                                        }
+                                    },
+                                    enabled = connectionStatus != "verifying",
+                                    shape = radius.mdShape,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = colors.primary,
+                                        contentColor = colors.onPrimary
+                                    ),
+                                    modifier = Modifier.height(36.dp)
+                                ) {
+                                    Text(text = UiText.get(R.string.waex_ui_test_532eaabd, "Test"), style = typography.bodyMd)
+                                }
+                            }
+                            if (connectionStatus == "fail" && connectionError.isNotEmpty()) {
+                                Text(text = connectionError, style = typography.labelSm, color = colors.error)
                             }
                         }
                     }
