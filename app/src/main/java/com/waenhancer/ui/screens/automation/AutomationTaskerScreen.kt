@@ -144,6 +144,8 @@ fun AutomationTaskerScreen() {
     var customKey by remember { mutableStateOf(preferenceManager.getString("custom_transcription_key", "")) }
     var customModel by remember { mutableStateOf(preferenceManager.getString("custom_transcription_model", "")) }
     var autoTranscribe by remember { mutableStateOf(preferenceManager.getBoolean("voice_transcription_auto", false)) }
+    var transcriptButton by remember { mutableStateOf(preferenceManager.getBoolean("voice_note_transcript_button", true)) }
+    var dictationButton by remember { mutableStateOf(preferenceManager.getBoolean("voice_dictation_button", true)) }
     var showProviderDropdown by remember { mutableStateOf(false) }
     var assemblyKey by remember { mutableStateOf(preferenceManager.getString("assembly_key", "")) }
     var assemblyStatus by remember { mutableStateOf("idle") } // "idle" | "verifying" | "ok" | "fail"
@@ -515,6 +517,60 @@ fun AutomationTaskerScreen() {
                                     onCheckedChange = {
                                         autoTranscribe = it
                                         preferenceManager.putBoolean("voice_transcription_auto", it)
+                                    }
+                                )
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_transcript_button_on_voice_notes_09080da3, "Transcript button on voice notes"),
+                                        style = typography.bodyMd,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_shows_next_to_the_time_of_voice_notes_1a90c809, "Shows 📝 next to the time of voice notes in chats. Tap it to read the transcript."),
+                                        style = typography.labelSm,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                StitchSwitch(
+                                    checked = transcriptButton,
+                                    onCheckedChange = {
+                                        transcriptButton = it
+                                        preferenceManager.putBoolean("voice_note_transcript_button", it)
+                                    }
+                                )
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_dictation_button_084c4a1d, "Dictation button"),
+                                        style = typography.bodyMd,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_adds_to_the_message_field_tap_to_recor_b871bea0, "Adds 🎙️ to the message field. Tap to record, tap again to insert the text."),
+                                        style = typography.labelSm,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                StitchSwitch(
+                                    checked = dictationButton,
+                                    onCheckedChange = {
+                                        dictationButton = it
+                                        preferenceManager.putBoolean("voice_dictation_button", it)
                                     }
                                 )
                             }

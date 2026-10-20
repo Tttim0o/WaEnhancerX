@@ -192,6 +192,9 @@ public class TranscriptionClientTest {
         assertEquals("PTT-1.ogg", TranscriptionClient.uploadName("PTT-1.opus"));
         assertEquals("a_b_.ogg", TranscriptionClient.uploadName("a\"b\r.opus"));
         assertEquals("voice-note.ogg", TranscriptionClient.uploadName(null));
+        assertEquals("waex_dictation.m4a", TranscriptionClient.uploadName("waex_dictation.m4a"));
+        assertEquals("audio/mp4", TranscriptionClient.contentType("waex_dictation.m4a"));
+        assertEquals("audio/ogg", TranscriptionClient.contentType("PTT-1.ogg"));
     }
 
     @Test
