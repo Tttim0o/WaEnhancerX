@@ -136,6 +136,9 @@ fun MediaStatusHubScreen() {
     var saveProfileDuplicates by remember(preferenceManager) {
         mutableStateOf(preferenceManager.getBoolean("download_profile_save_duplicates", true))
     }
+    var saveStatusDuplicates by remember(preferenceManager) {
+        mutableStateOf(preferenceManager.getBoolean("status_download_save_duplicates", true))
+    }
 
     // Refresh after returning from another settings screen (e.g. the Calls hub).
     // Never auto-migrate a legacy call_recording=true value into the recorder key:
@@ -145,6 +148,7 @@ fun MediaStatusHubScreen() {
             if (event == Lifecycle.Event.ON_RESUME) {
                 mediaKeys.forEach { key -> settingsState[key] = readMediaKey(key) }
                 saveProfileDuplicates = preferenceManager.getBoolean("download_profile_save_duplicates", true)
+                saveStatusDuplicates = preferenceManager.getBoolean("status_download_save_duplicates", true)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -386,6 +390,63 @@ fun MediaStatusHubScreen() {
                                                     preferenceManager.putBoolean("download_profile_save_duplicates", checked)
                                                     saveProfileDuplicates = preferenceManager.getBoolean(
                                                         "download_profile_save_duplicates", true
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            if (item.key == "status_downloader" && (settingsState[item.key] ?: false)) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = colors.surfaceDim.copy(alpha = 0.6f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = UiText.get(R.string.status_download_saving,
+                                                "STATUS DOWNLOAD SAVING"),
+                                            style = typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.primary
+                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .padding(end = 8.dp),
+                                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.save_status_duplicates),
+                                                    style = typography.bodyMd,
+                                                    fontWeight = FontWeight.Medium,
+                                                    color = colors.onSurface
+                                                )
+                                                Text(
+                                                    text = stringResource(R.string.save_status_duplicates_desc),
+                                                    style = typography.labelSm,
+                                                    color = colors.onSurfaceVariant
+                                                )
+                                            }
+                                            StitchSwitch(
+                                                checked = saveStatusDuplicates,
+                                                onCheckedChange = { checked ->
+                                                    preferenceManager.putBoolean("status_download_save_duplicates", checked)
+                                                    saveStatusDuplicates = preferenceManager.getBoolean(
+                                                        "status_download_save_duplicates", true
                                                     )
                                                 }
                                             )

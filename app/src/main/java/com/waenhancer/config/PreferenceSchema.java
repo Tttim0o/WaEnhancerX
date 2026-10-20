@@ -187,6 +187,8 @@ public final class PreferenceSchema {
         add(entries, "download_status", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "downloadstatus", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "status_downloader", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "status_download_save_duplicates", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "status_download_saved_identities", Type.STRING_SET, Sensitivity.CACHE, Store.PUBLIC);
         add(entries, "downloadviewonce", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "filter_group_members_messages", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "filter_items", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

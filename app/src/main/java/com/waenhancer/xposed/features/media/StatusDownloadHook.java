@@ -33,6 +33,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,6 +63,9 @@ public class StatusDownloadHook extends BaseFeature {
 
     private static final String TAG = "[WAEX][StatusDownload]";
     private static final int MENU_ID_STATUS_DOWNLOAD = 0x7EAD0007;
+    private static final String PREF_SAVE_DUPLICATES = "status_download_save_duplicates";
+    private static final String PREF_SAVED_IDENTITIES = "status_download_saved_identities";
+    private static final Object SAVED_IDENTITIES_LOCK = new Object();
     private volatile Field statusListField;
     private volatile Field currentStatusIndexField;
 
@@ -558,14 +562,51 @@ public class StatusDownloadHook extends BaseFeature {
     }
 
     private void saveMediaFile(Context ctx, File srcFile) {
+        String identity = isEnabled(PREF_SAVE_DUPLICATES, true)
+                ? null : StatusDownloadIdentity.forFile(srcFile);
+        if (identity == null) {
+            exportStatus(ctx, srcFile);
+            return;
+        }
+        synchronized (SAVED_IDENTITIES_LOCK) {
+            if (hasSavedStatus(identity)) {
+                showToast(ctx, UiText.get(R.string.status_already_saved, "Status already saved"));
+                return;
+            }
+            if (exportStatus(ctx, srcFile)) markStatusSaved(identity);
+        }
+    }
+
+    private boolean exportStatus(Context ctx, File srcFile) {
         try {
             StatusMediaExporter.export(ctx, srcFile);
             showToast(ctx, UiText.get(R.string.waex_ui_status_saved_to_gallery_waex_9f345669,
                     "Status saved to Gallery (WAEX)"));
+            return true;
         } catch (Exception failure) {
             XposedBridge.log(TAG + " status export failed: " + failure.getClass().getSimpleName());
             showToast(ctx, UiText.get(R.string.waex_ui_failed_to_download_status_19426d76,
                     "Failed to download status: ") + failure.getClass().getSimpleName());
+            return false;
+        }
+    }
+
+    private boolean hasSavedStatus(String identity) {
+        try {
+            return prefs.getStringSet(PREF_SAVED_IDENTITIES, Collections.emptySet()).contains(identity);
+        } catch (RuntimeException | LinkageError ignored) {
+            return false;
+        }
+    }
+
+    private void markStatusSaved(String identity) {
+        try {
+            Set<String> saved = new LinkedHashSet<>(prefs.getStringSet(
+                    PREF_SAVED_IDENTITIES, Collections.emptySet()));
+            saved.add(identity);
+            prefs.edit().putStringSet(PREF_SAVED_IDENTITIES, saved).commit();
+        } catch (RuntimeException | LinkageError failure) {
+            XposedBridge.log(TAG + " status identity save failed: " + failure.getClass().getSimpleName());
         }
     }
 

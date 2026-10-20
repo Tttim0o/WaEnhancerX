@@ -113,6 +113,7 @@ public class TestStatusExport {
    ContentResolver r=new ContentResolver();r.fault="nullOutput";rejects(r,f);ck(r.creates==0,"bound before creating destination");f.delete();
   });
   test("empty and missing",()->{ContentResolver a=new ContentResolver();File empty=new File(root,"empty.mp4");Files.write(empty.toPath(),new byte[0]);rejects(a,empty);rejects(new ContentResolver(),new File(root,"absent"));});
+  test("content identity is stable and never exposes a source path",()->{File first=source(root,"identity-a.jpg","jpg"),second=source(root,"identity-b.jpg","jpg");String a=StatusDownloadIdentity.forFile(first),b=StatusDownloadIdentity.forFile(second);ck(a!=null&&a.equals(b)&&a.length()==64,"same status bytes share identity");Files.write(second.toPath(),new byte[]{1,2,3});String changed=StatusDownloadIdentity.forFile(second);ck(changed!=null&&!a.equals(changed)&&!changed.contains("identity"),"changed bytes get opaque identity");});
   test("legacy keeps repeated exports and scans",()->{
    Build.VERSION.SDK_INT=28;Environment.root=new File(root,"legacy");ContentResolver r=new ContentResolver();File src=source(root,"legacy.opus","ogg");export(r,src);export(r,src);
    File[] files=new File(Environment.root,"Music/WAEX").listFiles();ck(files!=null&&files.length==2,"same-second exports must not overwrite");
@@ -168,7 +169,7 @@ def main():
             path = root/name; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(source)
         (root/'TestStatusExport.java').write_text(TEST)
         (root/'LegacyStatusExporter.java').write_text(legacy_source(args.baseline_hook) if args.baseline_hook else 'package com.waenhancer.xposed.features.media;class LegacyStatusExporter {static void export(android.content.Context c,java.io.File f){throw new AssertionError("Unused adapter");}}')
-        production = [source_root/MEDIA/'StatusMediaExporter.java', source_root/MEDIA/'GalleryMediaExporter.java']
+        production = [source_root/MEDIA/'StatusMediaExporter.java', source_root/MEDIA/'GalleryMediaExporter.java', source_root/MEDIA/'StatusDownloadIdentity.java']
         compile_result = subprocess.run(['javac', '--release', '17', '-d', str(root/'classes'), *map(str, production), *map(str, root.rglob('*.java'))], capture_output=True, text=True, timeout=60)
         if out: (out/'compile.log').write_text(compile_result.stdout+compile_result.stderr)
         if compile_result.returncode:

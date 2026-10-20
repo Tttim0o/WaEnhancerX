@@ -226,6 +226,10 @@
     <string name="profile_photo_saving">PROFILE PHOTO SAVING</string>
     <string name="save_profile_duplicates">Save duplicates</string>
     <string name="save_profile_duplicates_desc">Save a new file every time</string>
+    <string name="status_already_saved">Status already saved</string>
+    <string name="status_download_saving">STATUS DOWNLOAD SAVING</string>
+    <string name="save_status_duplicates">Save duplicates</string>
+    <string name="save_status_duplicates_desc">Save a new file every time</string>
     <string name="feat_download_view_once_title">Download View Once</string>
     <string name="feat_download_view_once_desc">Show button to download view once media</string>
     <string name="feat_media_preview_title">Enable Media Preview</string>
