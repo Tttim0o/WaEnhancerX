@@ -278,7 +278,7 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         body.setTextIsSelectable(true);
         body.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         body.setTextColor(themeTextColor(activity));
-        body.setText(cached != null ? displayText(cached)
+        body.setText(cached != null ? displayText(cached, note)
                 : UiText.get(R.string.waex_ui_transcribing_voice_note_9735f158, "Transcribing voice note…"));
 
         new WaexBottomSheet(activity)
@@ -301,15 +301,20 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         if (cached != null) return;
         VoiceTranscriptionBridge.worker().post(() -> {
             VoiceTranscriptionBridge.Result result = VoiceTranscriptionBridge.transcribe(context, note);
-            VoiceTranscriptionBridge.main().post(() -> body.setText(result.text != null
-                    ? displayText(result.text)
+            String shown = result.text != null ? displayText(result.text, note) : null;
+            VoiceTranscriptionBridge.main().post(() -> body.setText(shown != null
+                    ? shown
                     : UiText.get(R.string.waex_ui_transcription_failed_ccb68494, "Transcription failed")
                             + "\n" + result.error));
         });
     }
 
-    private static String displayText(String text) {
-        return text.isEmpty() ? UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.") : text;
+    /** Call off the UI thread for empty text: describing the audio reads its metadata. */
+    private static String displayText(String text, File note) {
+        return text.isEmpty()
+                ? UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.")
+                        + " " + VoiceTranscriptionBridge.describeAudio(note)
+                : text;
     }
 
     private static int themeTextColor(Activity activity) {
