@@ -21,8 +21,11 @@ public final class TranscriptionRequestHandler {
     public static final String RESULT_ERROR = "error";
     public static final String RESULT_READY = "ready";
 
-    /** One request at a time: voice notes arrive in bursts and servers rate-limit. */
-    private static final Object LOCK = new Object();
+    /**
+     * At most two requests at once: voice notes arrive in bursts and servers rate-limit, but a
+     * request the user is waiting on must not queue behind a background one.
+     */
+    private static final java.util.concurrent.Semaphore SLOTS = new java.util.concurrent.Semaphore(2);
 
     private TranscriptionRequestHandler() {}
 
@@ -50,8 +53,11 @@ public final class TranscriptionRequestHandler {
         TranscriptionClient.Config config = configFor(context);
         try {
             String text;
-            synchronized (LOCK) {
+            SLOTS.acquire();
+            try {
                 text = new TranscriptionClient().transcribe(config, audio, fileName);
+            } finally {
+                SLOTS.release();
             }
             result.putString(RESULT_TEXT, text);
         } catch (TranscriptionClient.TranscriptionException e) {

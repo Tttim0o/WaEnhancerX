@@ -125,7 +125,8 @@ public final class VoiceDictationHook extends BaseFeature {
         int id = activity.getResources().getIdentifier("entry", "id", activity.getPackageName());
         View byId = id != 0 ? decor.findViewById(id) : null;
         if (byId instanceof EditText && byId.isShown()) return (EditText) byId;
-        // Fallback: the lowest visible text field on screen is the message composer.
+        // Fallback only on the chat screen itself, where the lowest visible field is the composer.
+        if (!"Conversation".equals(activity.getClass().getSimpleName())) return null;
         EditText[] best = new EditText[1];
         int[] bestY = {Integer.MIN_VALUE};
         int[] location = new int[2];
@@ -298,7 +299,7 @@ public final class VoiceDictationHook extends BaseFeature {
         recording = null; // Owned by the transcription task from here on.
         state = State.TRANSCRIBING;
         if (field != null) setGlyph(field, BUSY);
-        VoiceTranscriptionBridge.worker().post(() -> {
+        VoiceTranscriptionBridge.interactive().post(() -> {
             VoiceTranscriptionBridge.Result result;
             String audioInfo = VoiceTranscriptionBridge.describeAudio(file);
             try {

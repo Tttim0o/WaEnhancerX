@@ -364,7 +364,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
                 File note = trustedNote(intent.getStringExtra(EXTRA_PATH));
                 if (note == null) return;
                 if (ACTION_TRANSCRIBE.equals(intent.getAction())) {
-                    transcribe(note);
+                    VoiceTranscriptionBridge.interactive().post(() -> transcribe(note));
                 } else if (ACTION_COPY.equals(intent.getAction())) {
                     copyTranscript(note);
                 }

@@ -29,6 +29,7 @@ final class VoiceTranscriptionBridge {
     private static final int REMEMBERED_TRANSCRIPTS = 256;
 
     private static Handler sWorker;
+    private static Handler sInteractive;
     private static long sReadyCheckedAt;
     private static volatile boolean sReady;
 
@@ -62,6 +63,19 @@ final class VoiceTranscriptionBridge {
             sWorker = new Handler(thread.getLooper());
         }
         return sWorker;
+    }
+
+    /**
+     * Thread for requests the user is waiting on (dictation, transcript sheet, notification
+     * buttons), so they never queue behind automatic background transcriptions.
+     */
+    static synchronized Handler interactive() {
+        if (sInteractive == null) {
+            HandlerThread thread = new HandlerThread("WAEX-Transcribe-UI");
+            thread.start();
+            sInteractive = new Handler(thread.getLooper());
+        }
+        return sInteractive;
     }
 
     static Handler main() {
