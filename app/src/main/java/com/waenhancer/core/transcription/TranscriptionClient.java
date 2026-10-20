@@ -49,12 +49,20 @@ public final class TranscriptionClient {
         public final String url;
         public final String apiKey;
         public final String model;
+        /** ISO-639-1 code such as "sk", or empty to let the service detect the language. */
+        public final String language;
 
         public Config(String provider, String url, String apiKey, String model) {
+            this(provider, url, apiKey, model, "");
+        }
+
+        public Config(String provider, String url, String apiKey, String model, String language) {
             this.provider = provider == null ? PROVIDER_GROQ : provider.trim();
             this.url = url == null ? "" : url.trim();
             this.apiKey = apiKey == null ? "" : apiKey.trim();
             this.model = model == null ? "" : model.trim();
+            String code = language == null ? "" : language.trim().toLowerCase(Locale.ROOT);
+            this.language = code.matches("[a-z]{2,3}") ? code : "";
         }
     }
 
@@ -101,10 +109,12 @@ public final class TranscriptionClient {
             case PROVIDER_CUSTOM:
                 if (config.url.isEmpty()) throw new TranscriptionException("No custom endpoint URL set");
                 return transcribeOpenAi(resolveOpenAiEndpoint(config.url), config.apiKey,
-                        config.model.isEmpty() ? CUSTOM_DEFAULT_MODEL : config.model, audio, fileName);
+                        config.model.isEmpty() ? CUSTOM_DEFAULT_MODEL : config.model, config.language,
+                        audio, fileName);
             case PROVIDER_GROQ:
             default:
-                return transcribeOpenAi(GROQ_ENDPOINT, config.apiKey, GROQ_DEFAULT_MODEL, audio, fileName);
+                return transcribeOpenAi(GROQ_ENDPOINT, config.apiKey, GROQ_DEFAULT_MODEL, config.language,
+                        audio, fileName);
         }
     }
 
@@ -123,12 +133,14 @@ public final class TranscriptionClient {
         return trimmed + "/audio/transcriptions";
     }
 
-    private String transcribeOpenAi(String endpoint, String apiKey, String model, byte[] audio,
-                                    String fileName) throws TranscriptionException, IOException {
+    private String transcribeOpenAi(String endpoint, String apiKey, String model, String language,
+                                    byte[] audio, String fileName)
+            throws TranscriptionException, IOException {
         String boundary = "----waex" + UUID.randomUUID().toString().replace("-", "");
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("model", model);
         fields.put("response_format", "json");
+        if (!language.isEmpty()) fields.put("language", language);
         String upload = uploadName(fileName);
         byte[] body = multipart(boundary, fields, "file", upload, contentType(upload), audio);
 
@@ -164,7 +176,9 @@ public final class TranscriptionClient {
 
         Map<String, String> jsonHeaders = new LinkedHashMap<>(auth);
         jsonHeaders.put("Content-Type", "application/json");
-        String request = "{\"audio_url\":" + jsonQuote(uploadUrl) + ",\"language_detection\":true}";
+        String request = "{\"audio_url\":" + jsonQuote(uploadUrl) + (config.language.isEmpty()
+                ? ",\"language_detection\":true}"
+                : ",\"language_code\":" + jsonQuote(config.language) + "}");
         Response created = transport.send("POST", ASSEMBLY_BASE + "/transcript", jsonHeaders,
                 request.getBytes(StandardCharsets.UTF_8));
         Object createdJson = parseJsonOrNull(created.body);
@@ -198,6 +212,24 @@ public final class TranscriptionClient {
                 throw new TranscriptionException("Transcription cancelled");
             }
         }
+    }
+
+    /**
+     * One second of 16 kHz mono silence as a WAV file: enough for every provider to accept the
+     * request, so a connection test proves the URL and key without real audio.
+     */
+    public static byte[] silentWav() {
+        int sampleRate = 16_000;
+        int dataBytes = sampleRate * 2;
+        java.nio.ByteBuffer wav = java.nio.ByteBuffer.allocate(44 + dataBytes)
+                .order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        wav.put("RIFF".getBytes(StandardCharsets.US_ASCII)).putInt(36 + dataBytes)
+                .put("WAVE".getBytes(StandardCharsets.US_ASCII))
+                .put("fmt ".getBytes(StandardCharsets.US_ASCII)).putInt(16)
+                .putShort((short) 1).putShort((short) 1).putInt(sampleRate).putInt(sampleRate * 2)
+                .putShort((short) 2).putShort((short) 16)
+                .put("data".getBytes(StandardCharsets.US_ASCII)).putInt(dataBytes);
+        return wav.array(); // Sample bytes stay zero: silence.
     }
 
     static String uploadName(String fileName) {

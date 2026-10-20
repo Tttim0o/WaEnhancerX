@@ -95,6 +95,7 @@
     <string name="waex_ui_automate_whatsapp_workflows_using_inte_9ba38948" formatted="false">"Automate WhatsApp workflows using Intent broadcasts in Tasker, MacroDroid, and Automate."</string>
     <string name="waex_ui_automated_checks_adf7684a" formatted="false">"AUTOMATED CHECKS"</string>
     <string name="waex_ui_automated_morning_briefing_scheduled_d_42884bb5" formatted="false">"Automated Morning Briefing Scheduled Dispatch"</string>
+    <string name="waex_ui_automatic_d461a493" formatted="false">"Automatic"</string>
     <string name="waex_ui_automatically_capture_incoming_outgoin_892737f9" formatted="false">"Automatically capture incoming &amp; outgoing voice calls"</string>
     <string name="waex_ui_automatically_drop_every_incoming_what_52316223" formatted="false">"Automatically drop every incoming WhatsApp call"</string>
     <string name="waex_ui_automatically_hides_pill_when_scrollin_cc4932d4" formatted="false">"Automatically hides pill when scrolling chat lists"</string>
@@ -183,6 +184,7 @@
     <string name="waex_ui_connected_22965568" formatted="false">"Connected"</string>
     <string name="waex_ui_connected_devices_16c0c720" formatted="false">"Connected Devices"</string>
     <string name="waex_ui_connected_directly_547bd078" formatted="false">"Connected directly"</string>
+    <string name="waex_ui_connection_failed_596c52f1" formatted="false">"Connection failed"</string>
     <string name="waex_ui_connection_status_3693e288" formatted="false">"Connection Status"</string>
     <string name="waex_ui_contact_group_info_screen_5dbeac75" formatted="false">"Contact &amp; Group Info Screen"</string>
     <string name="waex_ui_contact_rules_1_s_c13a5f53">"Contact Rules (%1$s)"</string>
@@ -738,6 +740,7 @@
     <string name="waex_ui_transcript_button_on_voice_notes_09080da3" formatted="false">"Transcript button on voice notes"</string>
     <string name="waex_ui_transcript_copied_758ba0c0" formatted="false">"Transcript copied"</string>
     <string name="waex_ui_transcription_failed_ccb68494" formatted="false">"Transcription failed"</string>
+    <string name="waex_ui_transcription_language_8bc22eb0" formatted="false">"Transcription language"</string>
     <string name="waex_ui_transforms_the_default_navigation_bar_c18f96ff" formatted="false">"Transforms the default navigation bar into a modern floating pill"</string>
     <string name="waex_ui_translucent_background_with_blurred_ba_0d5bf87c" formatted="false">"Translucent background with blurred backdrop"</string>
     <string name="waex_ui_translucent_glassmorphism_with_refract_a6528ef4" formatted="false">"Translucent glassmorphism with refraction border"</string>

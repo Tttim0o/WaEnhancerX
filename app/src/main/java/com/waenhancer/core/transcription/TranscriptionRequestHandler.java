@@ -3,6 +3,7 @@ package com.waenhancer.core.transcription;
 import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.waenhancer.config.PreferenceStores;
 
 /**
@@ -62,23 +63,45 @@ public final class TranscriptionRequestHandler {
         return result;
     }
 
+    /**
+     * Sends one second of silence with the current settings, from the WAEX app itself.
+     * Returns {@code null} when the service accepted the URL and key, otherwise a readable error.
+     * Blocking: call off the main thread.
+     */
+    @Nullable
+    public static String testConnection(@NonNull Context context) {
+        TranscriptionClient.Config config = configFor(context);
+        try {
+            new TranscriptionClient().transcribe(config, TranscriptionClient.silentWav(), "waex-test.wav");
+            return null;
+        } catch (TranscriptionClient.TranscriptionException e) {
+            String message = e.getMessage() == null ? "Failed" : e.getMessage();
+            // AssemblyAI only rejects the silent clip after upload and job creation succeeded,
+            // which already proves the key works.
+            return message.startsWith("AssemblyAI: ") ? null : message;
+        } catch (Exception e) {
+            return "Network error (" + e.getClass().getSimpleName() + ")";
+        }
+    }
+
     private static TranscriptionClient.Config configFor(Context context) {
         String provider = readString(context, "transcription_provider", TranscriptionClient.PROVIDER_GROQ);
+        String language = readString(context, "transcription_language", "");
         TranscriptionClient.Config config;
         switch (provider) {
             case TranscriptionClient.PROVIDER_ASSEMBLY:
                 config = new TranscriptionClient.Config(provider, "",
-                        firstNonEmpty(context, "assembly_key", "assemblyai_key"), "");
+                        firstNonEmpty(context, "assembly_key", "assemblyai_key"), "", language);
                 break;
             case TranscriptionClient.PROVIDER_CUSTOM:
                 config = new TranscriptionClient.Config(provider,
                         readString(context, "custom_transcription_url", ""),
                         readString(context, "custom_transcription_key", ""),
-                        readString(context, "custom_transcription_model", ""));
+                        readString(context, "custom_transcription_model", ""), language);
                 break;
             default:
                 config = new TranscriptionClient.Config(TranscriptionClient.PROVIDER_GROQ, "",
-                        firstNonEmpty(context, "groq_key", "groq_api_key"), "");
+                        firstNonEmpty(context, "groq_key", "groq_api_key"), "", language);
         }
         return config;
     }

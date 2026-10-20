@@ -76,6 +76,41 @@ public class TranscriptionClientTest {
     }
 
     @Test
+    public void languageIsSentOnlyWhenChosenAndValid() throws Exception {
+        FakeTransport transport = new FakeTransport().reply(200, "{\"text\":\"a\"}").reply(200, "{\"text\":\"b\"}");
+        TranscriptionClient client = new TranscriptionClient(transport);
+        client.transcribe(new TranscriptionClient.Config("Custom", "https://h/v1", "k", "", "SK"), AUDIO, "a.opus");
+        client.transcribe(new TranscriptionClient.Config("Custom", "https://h/v1", "k", "", "sk\"; x"), AUDIO, "a.opus");
+        assertTrue(new String(transport.bodies.get(0), StandardCharsets.UTF_8)
+                .contains("name=\"language\"\r\n\r\nsk\r\n"));
+        assertFalse(new String(transport.bodies.get(1), StandardCharsets.UTF_8).contains("name=\"language\""));
+    }
+
+    @Test
+    public void assemblyAiUsesLanguageCodeInsteadOfDetection() throws Exception {
+        FakeTransport transport = new FakeTransport()
+                .reply(200, "{\"upload_url\":\"u\"}")
+                .reply(200, "{\"id\":\"t\"}")
+                .reply(200, "{\"status\":\"completed\",\"text\":\"x\"}");
+        new TranscriptionClient(transport).transcribe(
+                new TranscriptionClient.Config("AssemblyAI", "", "aai", "", "sk"), AUDIO, "a.opus");
+        String body = new String(transport.bodies.get(1), StandardCharsets.UTF_8);
+        assertTrue(body.contains("\"language_code\":\"sk\""));
+        assertFalse(body.contains("language_detection"));
+    }
+
+    @Test
+    public void silentWavIsAValidOneSecondPcmFile() {
+        byte[] wav = TranscriptionClient.silentWav();
+        assertEquals(44 + 32_000, wav.length);
+        assertEquals("RIFF", new String(wav, 0, 4, StandardCharsets.US_ASCII));
+        assertEquals("WAVE", new String(wav, 8, 4, StandardCharsets.US_ASCII));
+        assertEquals("data", new String(wav, 36, 4, StandardCharsets.US_ASCII));
+        assertEquals("waex-test.wav", TranscriptionClient.uploadName("waex-test.wav"));
+        assertEquals("audio/wav", TranscriptionClient.contentType("waex-test.wav"));
+    }
+
+    @Test
     public void groqUsesFixedEndpointAndModel() throws Exception {
         FakeTransport transport = new FakeTransport().reply(200, "{\"text\":\"hello\",\"x_groq\":{\"id\":\"1\"}}");
         String text = new TranscriptionClient(transport).transcribe(
