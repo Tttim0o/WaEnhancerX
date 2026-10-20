@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.waenhancer.xposed.core.BaseFeature;
+import com.waenhancer.utils.EmojiInputPolicy;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
 import com.waenhancer.xposed.utils.ActivityTracker;
 import de.robv.android.xposed.XC_MethodHook;
@@ -302,10 +303,8 @@ public class DoubleTapReactionHook extends BaseFeature {
 
     private void handleDoubleTapReaction(View rowView, Object fMessage) {
         try {
-            String selectedEmoji = prefs.getString(PREF_EMOJI_KEY, "👍");
-            if (selectedEmoji == null || selectedEmoji.trim().isEmpty()) {
-                selectedEmoji = "👍";
-            }
+            String selectedEmoji = EmojiInputPolicy.singleEmojiOrDefault(
+                    prefs.getString(PREF_EMOJI_KEY, EmojiInputPolicy.DEFAULT_EMOJI));
 
             // Check if user already reacted with this emoji to toggle it off
             int bubbleResId = context.getResources().getIdentifier("reactions_bubble_layout", "id", context.getPackageName());

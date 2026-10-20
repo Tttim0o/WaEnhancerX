@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.waenhancer.ui.designsystem.WaexTheme
+import com.waenhancer.utils.EmojiInputPolicy
 
 private val PRESET_EMOJIS = listOf(
     "👍", "❤️", "😂", "😮", "😢", "🙏",
@@ -67,7 +68,10 @@ fun WaexEmojiPickerDialog(
     val radius = WaexTheme.radius
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var selectedEmoji by remember { mutableStateOf(initialEmoji.ifBlank { "👍" }) }
+    var emojiInput by remember(initialEmoji) {
+        mutableStateOf(EmojiInputPolicy.singleEmojiOrDefault(initialEmoji))
+    }
+    val hasValidSingleEmoji = EmojiInputPolicy.isSingleEmoji(emojiInput.trim())
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -113,7 +117,7 @@ fun WaexEmojiPickerDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     PRESET_EMOJIS.forEach { emoji ->
-                        val isSelected = selectedEmoji == emoji
+                        val isSelected = emojiInput == emoji
                         Box(
                             modifier = Modifier
                                 .size(44.dp)
@@ -122,7 +126,7 @@ fun WaexEmojiPickerDialog(
                                     if (isSelected) colors.primary.copy(alpha = 0.2f)
                                     else colors.surfaceContainerHighest
                                 )
-                                .clickable { selectedEmoji = emoji },
+                        .clickable { emojiInput = emoji },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -145,13 +149,10 @@ fun WaexEmojiPickerDialog(
                 )
 
                 OutlinedTextField(
-                    value = selectedEmoji,
-                    onValueChange = { newValue ->
-                        if (newValue.length <= 4) {
-                            selectedEmoji = newValue
-                        }
-                    },
+                    value = emojiInput,
+                    onValueChange = { emojiInput = it },
                     singleLine = true,
+                    isError = emojiInput.isNotEmpty() && !hasValidSingleEmoji,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -170,10 +171,10 @@ fun WaexEmojiPickerDialog(
                 // Actions
                 Button(
                     onClick = {
-                        val finalEmoji = selectedEmoji.trim().ifEmpty { "👍" }
-                        onEmojiSelected(finalEmoji)
+                        onEmojiSelected(emojiInput.trim())
                         onDismiss()
                     },
+                    enabled = hasValidSingleEmoji,
                     colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
                     shape = radius.buttonShape,
                     modifier = Modifier.fillMaxWidth().height(50.dp)

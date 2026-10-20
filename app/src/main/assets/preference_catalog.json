@@ -102,8 +102,7 @@
       "sticker_confirm_alert",
       "removeseemore",
       "stamp_copied_message",
-      "doubletap2like",
-      "doubletap2like_emoji"
+      "doubletap2like"
     ],
     "proKeys": [
       "message_bomber"

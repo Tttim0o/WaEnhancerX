@@ -15,6 +15,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 HOOK = Path("app/src/main/java/com/waenhancer/xposed/features/conversation/DoubleTapReactionHook.java")
+EMOJI_POLICY = Path("app/src/main/java/com/waenhancer/utils/EmojiInputPolicy.java")
 STUBS = {}
 def stub(path, text):
     STUBS[path] = text
@@ -27,6 +28,10 @@ stub("android/content/Context.java", """package android.content;
 public class Context {public android.content.res.Resources getResources(){return new android.content.res.Resources();}public String getPackageName(){return "com.whatsapp";}}""")
 stub("android/content/res/Resources.java", """package android.content.res;
 public class Resources {public int getIdentifier(String name,String type,String pkg){return 0;}}""")
+stub("android/icu/text/BreakIterator.java", """package android.icu.text;
+public final class BreakIterator {private final java.text.BreakIterator delegate;public static final int DONE=java.text.BreakIterator.DONE;
+ private BreakIterator(java.text.BreakIterator value){delegate=value;}public static BreakIterator getCharacterInstance(java.util.Locale locale){return new BreakIterator(java.text.BreakIterator.getCharacterInstance(locale));}
+ public void setText(String value){delegate.setText(value);}public int first(){return delegate.first();}public int next(){return delegate.next();}}""")
 stub("android/app/Activity.java", "package android.app; public class Activity extends android.content.Context {}")
 stub("android/R.java", "package android; public class R {public static class id {public static int list=1;}}")
 stub("android/os/SystemClock.java", """package android.os;
@@ -184,7 +189,7 @@ def run(source, out, allow_failure):
     classes=out/"classes";classes.mkdir()
     for path,text in {**STUBS,"fixture/DoubleTapChecks.java":TEST}.items():
         p=src/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text)
-    result=subprocess.run(["javac","--release","17","-d",str(classes),str(source),*map(str,src.rglob("*.java"))],capture_output=True,text=True,timeout=60)
+    result=subprocess.run(["javac","--release","17","-d",str(classes),str(source),str(ROOT/EMOJI_POLICY),*map(str,src.rglob("*.java"))],capture_output=True,text=True,timeout=60)
     (out/"compile.log").write_text(result.stdout+result.stderr)
     if result.returncode:raise AssertionError("Complete production compile failed: "+str(out/"compile.log"))
     result=subprocess.run(["java","-cp",str(classes),"fixture.DoubleTapChecks"],capture_output=True,text=True,timeout=15)

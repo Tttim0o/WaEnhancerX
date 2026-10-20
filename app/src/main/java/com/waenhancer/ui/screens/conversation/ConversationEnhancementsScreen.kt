@@ -2,6 +2,7 @@ package com.waenhancer.ui.screens.conversation
 
 import com.waenhancer.app.R
 import com.waenhancer.utils.UiText
+import com.waenhancer.utils.EmojiInputPolicy
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -257,7 +258,7 @@ fun ConversationEnhancementsScreen() {
                     if (doubleTapEnabled) {
                         var showEmojiPicker by remember { mutableStateOf(false) }
                         var currentEmoji by remember {
-                            mutableStateOf(preferenceManager.getString("doubletap2like_emoji", "👍").ifBlank { "👍" })
+                            mutableStateOf(EmojiInputPolicy.singleEmojiOrDefault(preferenceManager.getString("doubletap2like_emoji", "👍")))
                         }
 
                         WaexPreferenceItem(

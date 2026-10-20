@@ -1,6 +1,7 @@
 package com.waenhancer.ui.screens.privacy
 
 import com.waenhancer.utils.UiText
+import com.waenhancer.utils.EmojiInputPolicy
 
 import android.graphics.Color as AndroidColor
 import android.widget.Toast
@@ -1092,7 +1093,7 @@ fun GlobalPrivacySettingsScreen(
                             if (item.key == "doubletap2like" && (settingsState["doubletap2like"] == true)) {
                                 var showEmojiPicker by remember { mutableStateOf(false) }
                                 var currentEmoji by remember {
-                                    mutableStateOf(preferenceManager.getString("doubletap2like_emoji", "👍").ifBlank { "👍" })
+                                    mutableStateOf(EmojiInputPolicy.singleEmojiOrDefault(preferenceManager.getString("doubletap2like_emoji", "👍")))
                                 }
 
                                 Surface(
