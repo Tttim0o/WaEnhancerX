@@ -114,6 +114,9 @@ jobs:
             qa/test_android24_compatibility.py
             qa/test_restart_safety.py
             qa/test_tasker_runtime_gate.py
+            qa/test_double_tap_adapter_binding.py
+            qa/test_profile_photo_save.py
+            qa/test_status_media_export.py
             qa/test_hook_return_types.py
             qa/test_monet_wiring.py
             qa/test_catalog_source.py
@@ -461,5 +464,74 @@ jobs:
         with:
           name: stability-framework-evidence
           path: ${{ runner.temp }}/waex-stability/*/evidence
+          retention-days: 14
+          if-no-files-found: error
+
+  preserved-vault-framework:
+    name: Preserved vault / row identity and Android SQLite compatibility
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Require Kotlin and Maven for the complete production store
+        run: |
+          set -euo pipefail
+          kotlinc -version
+          mvn -version
+          test -f qa/fixtures/PreservedStoreCompatibilityTest.java
+      - name: Exercise 33 row identity and schema lifecycle cases
+        run: python3 qa/android_preserved_store_test.py --out "$RUNNER_TEMP/waex-preserved-vault"
+      - name: Preserve source identities and Android SQLite results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preserved-vault-framework-evidence
+          path: |
+            ${{ runner.temp }}/waex-preserved-vault/*.json
+            ${{ runner.temp }}/waex-preserved-vault/*.log
+          retention-days: 14
+          if-no-files-found: error
+
+  preserved-dispatch-framework:
+    name: Preserved messages / provider acknowledgements and original delete scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Require the complete sender, provider and store fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          kotlinc -version
+          mvn -version
+          test -f qa/maven_dependencies.py
+          test -f qa/fixtures/PreservedDispatchContractTest.java
+      - name: Exercise 84 persistence and callback cases on Android API 24, 28 and 34
+        run: python3 qa/android_preserved_dispatch_test.py --out "$RUNNER_TEMP/waex-preserved-dispatch"
+      - name: Preserve source identities and acknowledgement results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preserved-dispatch-framework-evidence
+          path: |
+            ${{ runner.temp }}/waex-preserved-dispatch/*.json
+            ${{ runner.temp }}/waex-preserved-dispatch/*.log
           retention-days: 14
           if-no-files-found: error
