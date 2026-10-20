@@ -187,5 +187,9 @@ def main():
     assert body.index('StatusMediaExporter.export(ctx, srcFile);') < body.index('waex_ui_status_saved_to_gallery_waex_9f345669')
     assert 'FileOutputStream' not in body and 'openOutputStream' not in body
     assert 'getMessage()' not in body
+    assert 'MenuItem item = menu.findItem(MENU_ID_STATUS_DOWNLOAD);' in hook
+    assert 'configureStatusMenuItem(item, sourceObject);' in hook
+    assert 'item.setTitle(isTextStatus' in hook
+    assert 'hookMenuRefreshMethods(statusContactFragClass);' in hook
 
 if __name__ == '__main__': main()

@@ -120,6 +120,11 @@ public class StatusDownloadHook extends BaseFeature {
             Class<?> statusBaseFragClass = resolveStatusPlaybackBaseFragmentClass();
             statusListField = findStatusListField(statusContactFragClass);
             currentStatusIndexField = findCurrentStatusIndexField(bridge, statusBaseFragClass);
+            // The playback fragment reuses its menu while the user swipes. Refresh the
+            // existing action each time WhatsApp prepares a menu instead of keeping the
+            // label/icon chosen for the first status that was opened.
+            hookMenuRefreshMethods(statusContactFragClass);
+            hookMenuRefreshMethods(statusBaseFragClass);
 
             if (menuStatusMethod != null) {
                 final Class<?> contactClass = statusContactFragClass;
@@ -138,25 +143,6 @@ public class StatusDownloadHook extends BaseFeature {
                     }
                 });
 
-            } else if (statusContactFragClass != null) {
-                // Fallback Strategy 3: Hook fragment menu methods directly
-                for (Method m : statusContactFragClass.getDeclaredMethods()) {
-                    Class<?>[] methodParameters = m.getParameterTypes();
-                    if (methodParameters.length >= 1 && Menu.class.isAssignableFrom(methodParameters[0])) {
-                        XposedBridge.hookMethod(m, new XC_MethodHook() {
-                            @Override
-                            protected void afterHookedMethod(MethodHookParam param) {
-                                if (!isFeatureEnabled()) return;
-                                try {
-                                    Menu menu = (Menu) param.args[0];
-                                    if (menu != null) {
-                                        injectDownloadMenuItem(menu, param.thisObject);
-                                    }
-                                } catch (Throwable ignored) {}
-                            }
-                        });
-                    }
-                }
             }
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Error setting up status playback hook: " + t.getClass().getSimpleName());
@@ -209,43 +195,70 @@ public class StatusDownloadHook extends BaseFeature {
     }
 
     private void injectDownloadMenuItem(Menu menu, Object sourceObject) {
-        if (menu.findItem(MENU_ID_STATUS_DOWNLOAD) != null) return;
-
-        String visibleTextStatus = findVisibleTextStatus(sourceObject);
-        boolean isTextStatus = visibleTextStatus != null;
-        MenuItem item = menu.add(
-                Menu.NONE,
-                MENU_ID_STATUS_DOWNLOAD,
-                Menu.NONE,
-                isTextStatus ? UiText.get(R.string.waex_ui_copy_text_b0ac9cea, "Copy text") : UiText.get(R.string.waex_ui_download_d6eafe82, "Download")
-        );
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
-        Drawable icon = MenuIconLoader.load(
-                context,
-                isTextStatus ? "ic_waex_copy" : "ic_waex_download"
-        );
-        if (icon != null) {
-            item.setIcon(icon);
+        MenuItem item = menu.findItem(MENU_ID_STATUS_DOWNLOAD);
+        if (item == null) {
+            item = menu.add(Menu.NONE, MENU_ID_STATUS_DOWNLOAD, Menu.NONE, "");
+            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         }
+        configureStatusMenuItem(item, sourceObject);
+    }
 
+    private void configureStatusMenuItem(MenuItem item, Object sourceObject) {
+        boolean isTextStatus = isCurrentTextStatus(sourceObject);
+        item.setTitle(isTextStatus
+                ? UiText.get(R.string.waex_ui_copy_text_b0ac9cea, "Copy text")
+                : UiText.get(R.string.waex_ui_download_d6eafe82, "Download"));
+        Drawable icon = MenuIconLoader.load(context,
+                isTextStatus ? "ic_waex_copy" : "ic_waex_download");
+        if (icon != null) item.setIcon(icon);
         item.setOnMenuItemClickListener(menuItem -> {
-            String currentTextStatus = findVisibleTextStatus(sourceObject);
-            if (currentTextStatus != null) {
-                copyToClipboard(context, currentTextStatus);
-                return true;
+            // Decide again at tap time: the user may swipe while the menu remains alive.
+            if (isCurrentMediaStatus(sourceObject)) {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        downloadCurrentStatus(sourceObject);
+                    } catch (Throwable t) {
+                        XposedBridge.log(TAG + " Download error: " + t.getClass().getSimpleName());
+                        showToast(context, UiText.get(R.string.waex_ui_failed_to_download_status_19426d76,
+                                "Failed to download status"));
+                    }
+                });
+            } else {
+                String currentTextStatus = findVisibleTextStatus(sourceObject);
+                if (currentTextStatus != null) copyToClipboard(context, currentTextStatus);
             }
-
-            CompletableFuture.runAsync(() -> {
-                try {
-                    downloadCurrentStatus(sourceObject);
-                } catch (Throwable t) {
-                    XposedBridge.log(TAG + " Download error: " + t.getClass().getSimpleName());
-                    showToast(context, UiText.get(R.string.waex_ui_failed_to_download_status_19426d76, "Failed to download status: ") + t.getMessage());
-                }
-            });
             return true;
         });
+    }
+
+    private boolean isCurrentTextStatus(Object sourceObject) {
+        return !isCurrentMediaStatus(sourceObject) && findVisibleTextStatus(sourceObject) != null;
+    }
+
+    private boolean isCurrentMediaStatus(Object sourceObject) {
+        return extractMediaFileDeep(resolveCurrentStatusItem(sourceObject)) != null;
+    }
+
+    private void hookMenuRefreshMethods(Class<?> fragmentClass) {
+        if (fragmentClass == null) return;
+        for (Method method : fragmentClass.getDeclaredMethods()) {
+            boolean acceptsMenu = false;
+            for (Class<?> parameter : method.getParameterTypes()) {
+                if (Menu.class.isAssignableFrom(parameter)) {
+                    acceptsMenu = true;
+                    break;
+                }
+            }
+            if (!acceptsMenu) continue;
+            XposedBridge.hookMethod(method, new XC_MethodHook() {
+                @Override protected void afterHookedMethod(MethodHookParam param) {
+                    if (!isFeatureEnabled() || param.hasThrowable()) return;
+                    for (Object arg : param.args) {
+                        if (arg instanceof Menu) injectDownloadMenuItem((Menu) arg, param.thisObject);
+                    }
+                }
+            });
+        }
     }
 
     private void downloadCurrentStatus(Object sourceObject) {
