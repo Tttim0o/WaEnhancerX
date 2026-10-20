@@ -129,7 +129,8 @@ public final class TranscriptionClient {
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("model", model);
         fields.put("response_format", "json");
-        byte[] body = multipart(boundary, fields, "file", uploadName(fileName), "audio/ogg", audio);
+        String upload = uploadName(fileName);
+        byte[] body = multipart(boundary, fields, "file", upload, contentType(upload), audio);
 
         Map<String, String> headers = new LinkedHashMap<>();
         headers.put("Authorization", "Bearer " + apiKey);
@@ -200,12 +201,27 @@ public final class TranscriptionClient {
     }
 
     static String uploadName(String fileName) {
-        // Groq validates the extension; an Ogg/Opus voice note is accepted as .ogg.
+        // Groq validates the extension: keep supported ones, and send Ogg/Opus as .ogg.
         String base = fileName == null ? "" : fileName.replaceAll("[^A-Za-z0-9._-]", "_");
+        String extension = "ogg";
         int dot = base.lastIndexOf('.');
-        if (dot > 0) base = base.substring(0, dot);
+        if (dot > 0) {
+            String given = base.substring(dot + 1).toLowerCase(Locale.ROOT);
+            if (given.equals("m4a") || given.equals("mp3") || given.equals("wav") || given.equals("webm")) {
+                extension = given;
+            }
+            base = base.substring(0, dot);
+        }
         if (base.isEmpty()) base = "voice-note";
-        return base + ".ogg";
+        return base + "." + extension;
+    }
+
+    static String contentType(String uploadName) {
+        if (uploadName.endsWith(".m4a")) return "audio/mp4";
+        if (uploadName.endsWith(".mp3")) return "audio/mpeg";
+        if (uploadName.endsWith(".wav")) return "audio/wav";
+        if (uploadName.endsWith(".webm")) return "audio/webm";
+        return "audio/ogg";
     }
 
     static byte[] multipart(String boundary, Map<String, String> fields, String fileField,

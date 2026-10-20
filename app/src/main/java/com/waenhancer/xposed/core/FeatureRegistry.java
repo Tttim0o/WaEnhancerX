@@ -41,6 +41,8 @@ import com.waenhancer.xposed.features.media.MediaQualityBypassHook;
 import com.waenhancer.xposed.features.media.ProfilePhotoDownloadHook;
 import com.waenhancer.xposed.features.media.ProximitySensorHook;
 import com.waenhancer.xposed.features.media.StatusDownloadHook;
+import com.waenhancer.xposed.features.media.VoiceDictationHook;
+import com.waenhancer.xposed.features.media.VoiceNoteRowTranscriptHook;
 import com.waenhancer.xposed.features.media.VoiceNoteTranscriptionHook;
 import com.waenhancer.xposed.features.privacy.AlwaysOnlineHook;
 import com.waenhancer.xposed.features.privacy.AntiDisappearingMessagesHook;
@@ -193,6 +195,8 @@ public final class FeatureRegistry {
         addFeature(CallRecordingHook.class, "Media", () -> new CallRecordingHook(context, classLoader, prefs));
         addFeature(ProfilePhotoDownloadHook.class, "Media", () -> new ProfilePhotoDownloadHook(context, classLoader, prefs));
         addFeature(VoiceNoteTranscriptionHook.class, "Media", () -> new VoiceNoteTranscriptionHook(context, classLoader, prefs));
+        addFeature(VoiceNoteRowTranscriptHook.class, "Media", () -> new VoiceNoteRowTranscriptHook(context, classLoader, prefs));
+        addFeature(VoiceDictationHook.class, "Media", () -> new VoiceDictationHook(context, classLoader, prefs));
         try {
             AudioToVoiceStatusFeature.install(context, classLoader, prefs);
             features.add(new FeatureEntry("Audio to Voice Status", "AudioToVoiceStatusFeature", "Media", "ACTIVE"));

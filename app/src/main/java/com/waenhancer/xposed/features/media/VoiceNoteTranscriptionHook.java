@@ -14,25 +14,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileObserver;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Process;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import com.waenhancer.core.transcription.TranscriptionClient;
-import com.waenhancer.core.transcription.TranscriptionRequestHandler;
 import com.waenhancer.xposed.core.BaseFeature;
 import de.robv.android.xposed.XposedBridge;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -65,7 +59,6 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     private static final String ACTION_COPY = "com.waenhancer.action.COPY_VOICE_TRANSCRIPT";
     private static final String EXTRA_PATH = "waex_voice_note_path";
     private static final String CHANNEL_ID = "waex_voice_transcripts";
-    private static final Uri PROVIDER = Uri.parse("content://com.waenhancer.hookprovider");
 
     /** Let WhatsApp finish writing (and a cancelled recording disappear) before reading. */
     private static final long SETTLE_DELAY_MS = 1_500;
@@ -73,7 +66,6 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     private static final long POLL_SETTLE_MS = 15_000;
     private static final long FIRST_SCAN_DELAY_MS = 5_000;
     private static final long POLL_INTERVAL_MS = 60_000;
-    private static final long READY_CACHE_MS = 60_000;
     private static final long DISCOVERY_RETRY_MS = 10 * 60_000;
     private static final int MAX_DISCOVERY_ATTEMPTS = 6;
     private static final int WATCHED_FOLDERS = 3;
@@ -90,8 +82,6 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     private Handler worker;
     @Nullable private File voiceRoot;
     private int discoveryAttempts;
-    private long readyCheckedAt;
-    private boolean ready;
 
     public VoiceNoteTranscriptionHook(@NonNull Context context, @NonNull ClassLoader classLoader,
                                       @NonNull SharedPreferences prefs) {
@@ -103,9 +93,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     @Override
     public void hook() {
         // Nothing here touches the disk or IPC: startup must stay fast.
-        HandlerThread thread = new HandlerThread("WAEX-Transcribe", Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
-        worker = new Handler(thread.getLooper());
+        worker = VoiceTranscriptionBridge.worker();
         worker.post(this::start);
     }
 
@@ -239,7 +227,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
             Long handledSize = seenNotes.get(key);
             if (handledSize != null && handledSize == size) return;
         }
-        Boolean configured = transcriptionReady();
+        Boolean configured = VoiceTranscriptionBridge.ready(context);
         if (configured == null) return; // WAEX not reachable yet: leave it for the next scan.
         synchronized (seenNotes) {
             seenNotes.put(key, size);
@@ -252,25 +240,6 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         }
     }
 
-    /**
-     * Whether WAEX has a provider with a key, so users who never set one up get no
-     * notifications; {@code null} when WAEX could not be asked.
-     */
-    @Nullable
-    private Boolean transcriptionReady() {
-        long now = System.currentTimeMillis();
-        if (readyCheckedAt != 0 && now - readyCheckedAt < READY_CACHE_MS) return ready;
-        try {
-            Bundle result = context.getContentResolver().call(
-                    PROVIDER, TranscriptionRequestHandler.METHOD_READY, null, new Bundle());
-            ready = result != null && result.getBoolean(TranscriptionRequestHandler.RESULT_READY, false);
-            readyCheckedAt = now; // Only a real answer is cached; WAEX may still be starting.
-            return ready;
-        } catch (Throwable t) {
-            return null;
-        }
-    }
-
     private void transcribe(File note) {
         int id = notificationId(note);
         if (note.length() > TranscriptionClient.MAX_AUDIO_BYTES) {
@@ -279,21 +248,10 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
             return;
         }
         notifyProgress(note);
-        String text = null;
-        String error;
-        try {
-            Bundle extras = new Bundle();
-            extras.putByteArray(TranscriptionRequestHandler.EXTRA_AUDIO, readFile(note));
-            extras.putString(TranscriptionRequestHandler.EXTRA_FILE_NAME, note.getName());
-            Bundle result = context.getContentResolver().call(
-                    PROVIDER, TranscriptionRequestHandler.METHOD, null, extras);
-            text = result == null ? null : result.getString(TranscriptionRequestHandler.RESULT_TEXT);
-            error = result == null ? "WAEX did not answer" : result.getString(TranscriptionRequestHandler.RESULT_ERROR);
-        } catch (Throwable t) {
-            error = "WAEX unavailable (" + t.getClass().getSimpleName() + ")";
-        }
+        VoiceTranscriptionBridge.Result result = VoiceTranscriptionBridge.transcribe(context, note);
+        String text = result.text;
         if (text == null) {
-            notifyFailure(note, error == null ? "Unknown error" : error, true);
+            notifyFailure(note, result.error == null ? "Unknown error" : result.error, true);
             return;
         }
         if (text.isEmpty()) {
@@ -303,21 +261,6 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
             transcripts.put(id, text);
         }
         notifyTranscript(note, text);
-    }
-
-    private static byte[] readFile(File file) throws IOException {
-        long length = file.length();
-        if (length > TranscriptionClient.MAX_AUDIO_BYTES) throw new IOException("Too large");
-        byte[] data = new byte[(int) length];
-        try (FileInputStream in = new FileInputStream(file)) {
-            int offset = 0;
-            while (offset < data.length) {
-                int read = in.read(data, offset, data.length - offset);
-                if (read < 0) break;
-                offset += read;
-            }
-            return offset == data.length ? data : Arrays.copyOf(data, offset);
-        }
     }
 
     // ─── Notifications and their buttons ────────────────────────────────
