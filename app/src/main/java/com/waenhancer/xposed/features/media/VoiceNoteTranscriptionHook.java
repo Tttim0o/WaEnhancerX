@@ -3,6 +3,7 @@ package com.waenhancer.xposed.features.media;
 import com.waenhancer.app.R;
 import com.waenhancer.utils.UiText;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -354,6 +355,10 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         return new Notification.Action.Builder(0, title, pending).build();
     }
 
+    // Before API 33 a runtime receiver cannot be registered as not exported, and the androidx
+    // permission emulation depends on a permission declared in WhatsApp's manifest. Callers are
+    // constrained by trustedNote() instead, and Copy never trusts text from the intent.
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void registerActionReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_TRANSCRIBE);
