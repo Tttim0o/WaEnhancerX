@@ -1,41 +1,9 @@
 [Added]
-- Added support upto version 2.26.42.xx
-- Added support for switching between debug and release
-- Added HMA detection in diagnosis
-- Added searchable interface size options in module settings
-- Added Status/Stories Style with four WhatsApp-compatible layouts
 
 [Fixes]
-- Fixed missing texts or resources from category titles or descriptions
-- Fixed some menu icons were not visible in release mode
-- Fixed showing unreleated apps in home list
-- Fixed Hide Forwarded
-- Fixed Filter Item by ID
-- Fixed chat screen ui lags
-- Fixed version compatibility bug
-- Fixed Delete for me messages not saving + improvements
-- Fixed Disable Pinned chat limit
-- Fixed Tasker message events continuing after Tasker integration was disabled
-- Fixed interface size being applied twice to typography and spacing
-- Fixed interface size not appearing in settings search
-- Fixed interface scaling overriding Android accessibility font scaling
-- Fixed invalid or obsolete Status/Stories Style values reaching WhatsApp hooks
-- Fixed status-style callbacks replacing errors from the original WhatsApp method
-- Fixed incomplete localized resource and preference-catalog validation
-- Fixed exception logs exposing private runtime details
 
 [Improvements]
-- Improved Call recorder
-- Improved System Diagnosis
-- Consolidated Call Recording controls into its dedicated settings screen
-- Consolidated Delete for Me controls into the Deleted Messages screen
 - Removed obsolete Facebook Grid and Compact List status layouts
-- Improved Android 7/API 24 compatibility validation
-
-[New Languages]
-- Chinese (Thanks to @wilsonmilson)
-- Turkish
-- Slovenian (Thanks to @damjang)
 
 [Community contribution]
 - Thanks to @TheKillerMax for valuable contributions in this update.
