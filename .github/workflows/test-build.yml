@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # Publishes the pre-release below.
 
 jobs:
   apk:
@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
 
       - uses: actions/setup-java@v4
         with:
@@ -64,3 +66,24 @@ jobs:
           name: waex-test-build
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+      # Runs only when the build and unit tests above succeeded.
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(grep -E '^VERSION_NAME=' gradle.properties | cut -d= -f2)
+          tag="test-${version}-${GITHUB_RUN_NUMBER}"
+          apk=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          {
+            echo "**Unofficial personal test build. Not an official WaEnhancerX release.**"
+            echo
+            echo "Built from \`test-build\` (${GITHUB_SHA::7}) with a free-only stand-in for the private licensing module (Pro features off) and a one-off test signing key. Uninstall other WaEnhancerX builds first."
+            echo
+            echo "Recent changes:"
+            git log --no-merges --format='- %s' -12 HEAD -- app licensing
+          } > notes.md
+          gh release create "$tag" "$apk" --target "$GITHUB_SHA" --prerelease \
+            --title "Test build ${version}-${GITHUB_RUN_NUMBER} (unofficial)" --notes-file notes.md
+          echo "Download: https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/$(basename "$apk")" >> "$GITHUB_STEP_SUMMARY"
