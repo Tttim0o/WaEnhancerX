@@ -219,10 +219,33 @@ public class BlueOnReplyHook extends BaseFeature {
         } catch (Throwable ignored) { return false; }
     }
 
+    /** True only when this item exposes an exact receipt ID that was suppressed earlier. */
+    public static boolean hasCapturedStatusReceipt(Object statusItem) {
+        return findStatusId(statusItem, new java.util.IdentityHashMap<>(), 0) != null;
+    }
+
     private static Object[] copyArguments(Object[] source) { Object[] copy = Arrays.copyOf(source, source.length); for (int i=0;i<copy.length;i++) if(copy[i] instanceof String[]) copy[i]=((String[])copy[i]).clone(); return copy; }
     private static String findStatusId(Object value, java.util.IdentityHashMap<Object, Boolean> seen, int depth) {
-        if (value == null || depth > 5 || seen.put(value, Boolean.TRUE) != null) return null;
+        // The current status item is wrapped differently between playback pages. Traverse
+        // its small object graph deeply enough to reach the MessageKey, but accept an ID
+        // only when it exactly matches a receipt WhatsApp itself already suppressed.
+        if (value == null || depth > 12 || seen.put(value, Boolean.TRUE) != null) return null;
         if (value instanceof String) { synchronized (PENDING_STATUS_RECEIPTS) { return PENDING_STATUS_RECEIPTS.containsKey(value) ? (String)value : null; } }
+        if (value.getClass().isArray()) {
+            int length = java.lang.reflect.Array.getLength(value);
+            for (int i = 0; i < length; i++) {
+                String found = findStatusId(java.lang.reflect.Array.get(value, i), seen, depth + 1);
+                if (found != null) return found;
+            }
+            return null;
+        }
+        if (value instanceof Iterable) {
+            for (Object child : (Iterable<?>) value) {
+                String found = findStatusId(child, seen, depth + 1);
+                if (found != null) return found;
+            }
+            return null;
+        }
         Class<?> type=value.getClass(); if (type.getName().startsWith("java.")) return null;
         for (Class<?> c=type;c!=null&&c!=Object.class;c=c.getSuperclass()) for (Field f:c.getDeclaredFields()) {
             if (Modifier.isStatic(f.getModifiers()) || f.getType().isPrimitive()) continue;
@@ -234,6 +257,11 @@ public class BlueOnReplyHook extends BaseFeature {
         return prefs != null && prefs.getBoolean("manual_status_seen", false)
                 && (prefs.getBoolean("stealth_status_view", false)
                 || prefs.getBoolean("hidestatusview", false));
+    }
+
+    public static boolean isManualStatusSeenMenuPlacement(SharedPreferences prefs) {
+        return isManualStatusSeenEnabled(prefs)
+                && "menu".equals(prefs.getString("manual_status_seen_placement", "menu"));
     }
 
     public static boolean isManualStatusReceipt(Object job) {

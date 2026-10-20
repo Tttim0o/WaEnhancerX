@@ -168,6 +168,9 @@ fun GlobalPrivacySettingsScreen(
     var manualStatusSeen by remember {
         mutableStateOf(preferenceManager.getBoolean("manual_status_seen", false))
     }
+    var manualStatusSeenPlacement by remember {
+        mutableStateOf(preferenceManager.getString("manual_status_seen_placement", "menu") ?: "menu")
+    }
 
     var archiveOpenViaMenu by remember {
         mutableStateOf(preferenceManager.getBoolean("archive_open_via_menu", true))
@@ -228,6 +231,7 @@ fun GlobalPrivacySettingsScreen(
                 settingsState["downloadviewonce"] = enabled
                 settingsState["download_view_once"] = enabled
                 manualStatusSeen = preferenceManager.getBoolean("manual_status_seen", false)
+                manualStatusSeenPlacement = preferenceManager.getString("manual_status_seen_placement", "menu") ?: "menu"
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -622,12 +626,6 @@ fun GlobalPrivacySettingsScreen(
                                         modifier = Modifier.fillMaxWidth().padding(12.dp),
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Text(
-                                            text = UiText.get(R.string.manual_status_seen_section, "STATUS VIEWING"),
-                                            style = typography.labelSm,
-                                            fontWeight = FontWeight.Bold,
-                                            color = colors.primary
-                                        )
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -641,6 +639,26 @@ fun GlobalPrivacySettingsScreen(
                                                 preferenceManager.putBoolean("manual_status_seen", checked)
                                                 manualStatusSeen = preferenceManager.getBoolean("manual_status_seen", false)
                                             })
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (item.key == "stealth_status_view" && settingsState["stealth_status_view"] == true && manualStatusSeen) {
+                                Surface(shape = RoundedCornerShape(12.dp), color = colors.surfaceDim.copy(alpha = 0.6f),
+                                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
+                                    Column(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text(UiText.get(R.string.manual_status_seen_placement_title, "SHOW ACTION AS"), style = typography.labelSm, fontWeight = FontWeight.Bold, color = colors.primary)
+                                        Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).background(colors.surface).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            listOf("menu" to UiText.get(R.string.manual_status_seen_menu, "Menu option"), "icon" to UiText.get(R.string.manual_status_seen_icon, "Status icon")).forEach { (value, label) ->
+                                                val selected = manualStatusSeenPlacement == value
+                                                Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).background(if (selected) colors.primary else Color.Transparent).clickable {
+                                                    manualStatusSeenPlacement = value
+                                                    preferenceManager.putString("manual_status_seen_placement", value)
+                                                }.padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
+                                                    Text(label, style = typography.labelSm, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal, color = if (selected) Color.White else colors.onSurfaceVariant)
+                                                }
+                                            }
                                         }
                                     }
                                 }

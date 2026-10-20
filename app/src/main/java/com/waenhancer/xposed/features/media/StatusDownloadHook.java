@@ -16,7 +16,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Gravity;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -31,6 +35,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -39,6 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -70,6 +76,14 @@ public class StatusDownloadHook extends BaseFeature {
     private static final Object SAVED_IDENTITIES_LOCK = new Object();
     private volatile Field statusListField;
     private volatile Field currentStatusIndexField;
+    private volatile Object latestStatusFragment;
+    private final Set<View> watchedStatusRoots = Collections.newSetFromMap(new WeakHashMap<>());
+    private final Set<View> watchedStatusPagers = Collections.newSetFromMap(new WeakHashMap<>());
+    // A reply bar may survive a page swipe. Keep the status item that was current when
+    // that specific control was last refreshed, rather than resolving an old fragment
+    // only after the user taps it.
+    private final Map<View, Object> statusSeenBindings =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
     public StatusDownloadHook(@NonNull Context context, @NonNull ClassLoader classLoader, @NonNull SharedPreferences prefs) {
         super(context, classLoader, prefs);
@@ -127,6 +141,8 @@ public class StatusDownloadHook extends BaseFeature {
             // label/icon chosen for the first status that was opened.
             hookMenuRefreshMethods(statusContactFragClass);
             hookMenuRefreshMethods(statusBaseFragClass);
+            hookStatusSeenIcon(statusContactFragClass);
+            hookStatusSeenIconActivity();
 
             if (menuStatusMethod != null) {
                 final Class<?> contactClass = statusContactFragClass;
@@ -197,7 +213,11 @@ public class StatusDownloadHook extends BaseFeature {
     }
 
     private void injectDownloadMenuItem(Menu menu, Object sourceObject) {
-        if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)) injectStatusSeenMenuItem(menu, sourceObject);
+        if (BlueOnReplyHook.isManualStatusSeenMenuPlacement(prefs)) injectStatusSeenMenuItem(menu, sourceObject);
+        if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
+                && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
+            scheduleStatusSeenIcon(sourceObject);
+        }
         if (!isFeatureEnabled()) return;
         MenuItem item = menu.findItem(MENU_ID_STATUS_DOWNLOAD);
         if (item == null) {
@@ -276,6 +296,228 @@ public class StatusDownloadHook extends BaseFeature {
                 }
             });
         }
+    }
+
+    /** Adds a compact explicit-seen control beside WhatsApp's status reply/heart controls. */
+    private void hookStatusSeenIcon(Class<?> fragmentClass) {
+        if (fragmentClass == null) return;
+        for (Method method : fragmentClass.getDeclaredMethods()) {
+            if (!"onViewCreated".equals(method.getName())) continue;
+            XposedBridge.hookMethod(method, new XC_MethodHook() {
+                @Override protected void afterHookedMethod(MethodHookParam param) {
+                    if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
+                            && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
+                        scheduleStatusSeenIcon(param.thisObject);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * The playback activity is the reliable lifecycle owner for the reply bar.
+     * Some WhatsApp builds create that bar after the fragment's view callback,
+     * so an activity-resume retry keeps the icon independent of menu inflation.
+     */
+    private void hookStatusSeenIconActivity() {
+        try {
+            Class<?> playbackActivity = XposedHelpers.findClassIfExists(
+                    "com.whatsapp.status.playback.StatusPlaybackActivity", classLoader
+            );
+            if (playbackActivity == null) return;
+            XposedBridge.hookAllMethods(playbackActivity, "onResume", new XC_MethodHook() {
+                @Override protected void afterHookedMethod(MethodHookParam param) {
+                    if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
+                            && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
+                        scheduleStatusSeenIcon(param.thisObject);
+                    }
+                }
+            });
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + " Could not hook status icon activity: " + t.getClass().getSimpleName());
+        }
+    }
+
+    /** Runs after WhatsApp has attached the playback reply bar to the activity window. */
+    private void scheduleStatusSeenIcon(Object sourceObject) {
+        if (!(sourceObject instanceof Activity)) latestStatusFragment = sourceObject;
+        View root = resolveStatusRoot(sourceObject);
+        if (root == null) return;
+        watchStatusReplyBar(root, sourceObject);
+        watchStatusPager(root, sourceObject);
+        root.post(() -> installStatusSeenIcon(sourceObject));
+        root.postDelayed(() -> installStatusSeenIcon(sourceObject), 250L);
+        root.postDelayed(() -> installStatusSeenIcon(sourceObject), 750L);
+    }
+
+    /** Reinserts the sibling control after WhatsApp replaces its reply bar on a status swipe. */
+    private void watchStatusReplyBar(View root, Object sourceObject) {
+        synchronized (watchedStatusRoots) {
+            if (!watchedStatusRoots.add(root)) return;
+        }
+        root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
+                    && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
+                watchStatusPager(root, sourceObject);
+                installStatusSeenIcon(sourceObject);
+            }
+        });
+    }
+
+    /**
+     * WhatsApp can keep the reply-bar View while changing only ViewPager pages. Listening
+     * to that pager refreshes the cached item even when the bar itself is not recreated.
+     */
+    private void watchStatusPager(View root, Object sourceObject) {
+        String packageName = root.getContext().getPackageName();
+        int pagerId = root.getResources().getIdentifier("playback_pager", "id", packageName);
+        View pager = pagerId == 0 ? null : root.findViewById(pagerId);
+        if (pager == null) return;
+        synchronized (watchedStatusPagers) {
+            if (!watchedStatusPagers.add(pager)) return;
+        }
+        pager.addOnLayoutChangeListener((view, left, top, right, bottom,
+                                        oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
+                    && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
+                // Run after ViewPager has committed its current-page index.
+                root.post(() -> installStatusSeenIcon(sourceObject));
+            }
+        });
+    }
+
+    private void installStatusSeenIcon(Object sourceObject) {
+        View root = resolveStatusRoot(sourceObject);
+        if (root == null) return;
+        Context statusContext = root.getContext();
+        String statusPackage = statusContext.getPackageName();
+        int replyBarId = root.getResources().getIdentifier("reply_bar_tappable", "id", statusPackage);
+        int likeContainerId = root.getResources().getIdentifier("status_like_button_container", "id", statusPackage);
+        View anchor = replyBarId == 0 ? null : root.findViewById(replyBarId);
+        View likeContainer = likeContainerId == 0 ? null : root.findViewById(likeContainerId);
+        if (!(anchor instanceof ViewGroup) || likeContainer == null || likeContainer.getParent() != anchor) return;
+        ViewGroup controls = (ViewGroup) anchor;
+        View existing = controls.findViewWithTag("waex_status_seen_button");
+        if (existing != null) {
+            bindStatusSeenControl(existing, sourceObject);
+            return;
+        }
+
+        // WhatsApp lays out the heart as a 48dp FrameLayout with a centered 32dp ImageButton.
+        // Reuse that exact sibling structure and insert before it, rather than altering the reply bar.
+        FrameLayout seenContainer = new FrameLayout(statusContext);
+        seenContainer.setTag("waex_status_seen_button");
+        ViewGroup.LayoutParams heartLayout = likeContainer.getLayoutParams();
+        ViewGroup.LayoutParams seenContainerLayout = copyLayoutParams(heartLayout);
+        addEndMargin(seenContainerLayout, root, 8);
+        copyViewChrome(likeContainer, seenContainer);
+        seenContainer.setClickable(true);
+        seenContainer.setFocusable(true);
+
+        ImageButton button = new ImageButton(statusContext);
+        button.setContentDescription(UiText.get(R.string.manual_status_seen_title, "Send status seen manually"));
+        Drawable icon = MenuIconLoader.load(context, "ic_waex_mark_read");
+        if (icon != null) button.setImageDrawable(icon);
+        else button.setImageResource(android.R.drawable.checkbox_on_background);
+        if (likeContainer instanceof ViewGroup && ((ViewGroup) likeContainer).getChildCount() > 0) {
+            View heartIcon = ((ViewGroup) likeContainer).getChildAt(0);
+            if (heartIcon instanceof ImageView) {
+                button.setScaleType(((ImageView) heartIcon).getScaleType());
+                button.setImageTintList(((ImageView) heartIcon).getImageTintList());
+            }
+            ViewGroup.LayoutParams heartIconLayout = copyLayoutParams(heartIcon.getLayoutParams());
+            if (heartIconLayout != null) button.setLayoutParams(heartIconLayout);
+        }
+        if (button.getLayoutParams() == null) {
+            int iconSize = (int) (32 * root.getResources().getDisplayMetrics().density);
+            button.setLayoutParams(new FrameLayout.LayoutParams(iconSize, iconSize, Gravity.CENTER));
+        }
+        // The container owns the circular/ripple background; the tick itself stays clean.
+        button.setBackground(null);
+        button.setForeground(null);
+        button.setPadding(0, 0, 0, 0);
+        button.setClickable(false);
+        button.setFocusable(false);
+        seenContainer.addView(button);
+        seenContainer.setOnClickListener(v -> sendBoundStatusSeenReceipt(seenContainer, statusContext));
+        controls.addView(seenContainer, controls.indexOfChild(likeContainer), seenContainerLayout);
+        bindStatusSeenControl(seenContainer, sourceObject);
+    }
+
+    /** Updates an existing button for every visible status page, including reused reply bars. */
+    private void bindStatusSeenControl(View control, Object sourceObject) {
+        Object fragment = latestStatusFragment != null ? latestStatusFragment : sourceObject;
+        Object currentStatus = resolveCurrentStatusItem(fragment);
+        synchronized (statusSeenBindings) {
+            if (currentStatus == null) statusSeenBindings.remove(control);
+            else statusSeenBindings.put(control, currentStatus);
+        }
+    }
+
+    private void sendBoundStatusSeenReceipt(View control, Context statusContext) {
+        Object statusItem;
+        synchronized (statusSeenBindings) {
+            statusItem = statusSeenBindings.get(control);
+        }
+        boolean sent = BlueOnReplyHook.sendCapturedStatusReceipt(statusItem);
+        if (sent) {
+            synchronized (statusSeenBindings) {
+                statusSeenBindings.remove(control);
+            }
+        }
+        showToast(statusContext, sent
+                ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Blue tick sent")
+                : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send"));
+    }
+
+    /** Retains any WhatsApp/WDS-specific LayoutParams subclass used by the heart control. */
+    private ViewGroup.LayoutParams copyLayoutParams(ViewGroup.LayoutParams source) {
+        if (source == null) return null;
+        try {
+            Constructor<?> constructor = source.getClass().getConstructor(ViewGroup.LayoutParams.class);
+            Object copy = constructor.newInstance(source);
+            if (copy instanceof ViewGroup.LayoutParams) return (ViewGroup.LayoutParams) copy;
+        } catch (Throwable ignored) {}
+        if (source instanceof ViewGroup.MarginLayoutParams) {
+            return new ViewGroup.MarginLayoutParams((ViewGroup.MarginLayoutParams) source);
+        }
+        return new ViewGroup.LayoutParams(source);
+    }
+
+    private void addEndMargin(ViewGroup.LayoutParams layout, View root, int dp) {
+        if (!(layout instanceof ViewGroup.MarginLayoutParams)) return;
+        int gap = (int) (dp * root.getResources().getDisplayMetrics().density + 0.5f);
+        ViewGroup.MarginLayoutParams margins = (ViewGroup.MarginLayoutParams) layout;
+        margins.setMarginEnd(margins.getMarginEnd() + gap);
+    }
+
+    private void copyViewChrome(View source, View target) {
+        target.setPadding(source.getPaddingLeft(), source.getPaddingTop(), source.getPaddingRight(), source.getPaddingBottom());
+        target.setMinimumWidth(source.getMinimumWidth());
+        target.setMinimumHeight(source.getMinimumHeight());
+        target.setAlpha(source.getAlpha());
+        Drawable background = copyDrawable(source.getBackground());
+        if (background != null) target.setBackground(background);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            Drawable foreground = copyDrawable(source.getForeground());
+            if (foreground != null) target.setForeground(foreground);
+        }
+    }
+
+    private Drawable copyDrawable(Drawable source) {
+        if (source == null || source.getConstantState() == null) return source;
+        return source.getConstantState().newDrawable().mutate();
+    }
+
+    private View resolveStatusRoot(Object sourceObject) {
+        if (sourceObject instanceof Activity) {
+            Activity activity = (Activity) sourceObject;
+            if (activity.getWindow() != null) return activity.getWindow().getDecorView();
+        }
+        View fragmentView = resolveSourceView(sourceObject);
+        if (fragmentView != null) return fragmentView.getRootView();
+        Activity activity = ActivityTracker.getCurrentActivity();
+        return activity != null && activity.getWindow() != null ? activity.getWindow().getDecorView() : null;
     }
 
     private void downloadCurrentStatus(Object sourceObject) {
@@ -367,17 +609,45 @@ public class StatusDownloadHook extends BaseFeature {
     private Object resolveCurrentStatusItem(Object fragmentInstance) {
         if (fragmentInstance == null) return null;
         try {
-            List<?> statusList = readStatusList(fragmentInstance);
-            if (statusList == null || statusList.isEmpty()) return null;
-
-            int currentIndex = readCurrentStatusIndex(fragmentInstance, statusList.size());
-            if (currentIndex >= 0 && currentIndex < statusList.size()) {
-                return statusList.get(currentIndex);
+            Object fallback = null;
+            for (List<?> statusList : readStatusLists(fragmentInstance)) {
+                int currentIndex = readCurrentStatusIndex(fragmentInstance, statusList.size());
+                if (currentIndex < 0 || currentIndex >= statusList.size()) continue;
+                Object candidate = statusList.get(currentIndex);
+                if (fallback == null) fallback = candidate;
+                // Playback fragments have several List fields. Only prefer a candidate
+                // that exposes the exact status receipt captured by HideReceiptsHook.
+                if (BlueOnReplyHook.hasCapturedStatusReceipt(candidate)) return candidate;
             }
+            return fallback;
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Error resolving current status item: " + t.getClass().getSimpleName());
         }
         return null;
+    }
+
+    private List<List<?>> readStatusLists(Object fragmentInstance) {
+        List<List<?>> lists = new ArrayList<>();
+        try {
+            Field cached = statusListField;
+            if (cached != null && cached.getDeclaringClass().isInstance(fragmentInstance)) {
+                Object value = cached.get(fragmentInstance);
+                if (value instanceof List && !((List<?>) value).isEmpty()) lists.add((List<?>) value);
+            }
+        } catch (Throwable ignored) {}
+        for (Class<?> type = fragmentInstance.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+            for (Field field : type.getDeclaredFields()) {
+                if (!List.class.isAssignableFrom(field.getType())) continue;
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(fragmentInstance);
+                    if (value instanceof List && !((List<?>) value).isEmpty() && !lists.contains(value)) {
+                        lists.add((List<?>) value);
+                    }
+                } catch (Throwable ignored) {}
+            }
+        }
+        return lists;
     }
 
     private List<?> readStatusList(Object fragmentInstance) {

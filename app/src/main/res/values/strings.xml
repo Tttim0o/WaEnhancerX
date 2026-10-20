@@ -114,7 +114,10 @@
     <string name="feat_stealth_status_view_desc">View statuses without users knowing</string>
     <string name="manual_status_seen_section">STATUS VIEWING</string>
     <string name="manual_status_seen_title">Send status seen manually</string>
-    <string name="manual_status_seen_desc">Add a menu action to mark the current status as seen</string>
+    <string name="manual_status_seen_desc">Choose how to mark the current status as seen</string>
+    <string name="manual_status_seen_placement_title">SHOW ACTION AS</string>
+    <string name="manual_status_seen_menu">Menu option</string>
+    <string name="manual_status_seen_icon">Seen Button</string>
     <string name="feat_hide_read_receipts_title">Hide Blue Ticks</string>
     <string name="feat_hide_read_receipts_desc">View messages within conversation screen without users knowing</string>
     <string name="feat_hideread_group_title">Hide Blue Tick in Groups</string>
