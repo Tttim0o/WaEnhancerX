@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import com.waenhancer.xposed.core.BaseFeature;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
 import com.waenhancer.xposed.features.homescreen.MenuIconLoader;
+import com.waenhancer.xposed.features.privacy.BlueOnReplyHook;
 import com.waenhancer.xposed.utils.ActivityTracker;
 
 import java.io.File;
@@ -63,6 +64,7 @@ public class StatusDownloadHook extends BaseFeature {
 
     private static final String TAG = "[WAEX][StatusDownload]";
     private static final int MENU_ID_STATUS_DOWNLOAD = 0x7EAD0007;
+    private static final int MENU_ID_STATUS_SEEN = 0x7EAD0008;
     private static final String PREF_SAVE_DUPLICATES = "status_download_save_duplicates";
     private static final String PREF_SAVED_IDENTITIES = "status_download_saved_identities";
     private static final Object SAVED_IDENTITIES_LOCK = new Object();
@@ -133,7 +135,7 @@ public class StatusDownloadHook extends BaseFeature {
                 XposedBridge.hookMethod(menuStatusMethod, new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) {
-                        if (!isFeatureEnabled()) return;
+                        if (!isFeatureEnabled() && !BlueOnReplyHook.isManualStatusSeenEnabled(prefs)) return;
 
                         try {
                             handleStatusMenuHook(param, contactClass, baseClass);
@@ -195,12 +197,27 @@ public class StatusDownloadHook extends BaseFeature {
     }
 
     private void injectDownloadMenuItem(Menu menu, Object sourceObject) {
+        if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)) injectStatusSeenMenuItem(menu, sourceObject);
+        if (!isFeatureEnabled()) return;
         MenuItem item = menu.findItem(MENU_ID_STATUS_DOWNLOAD);
         if (item == null) {
             item = menu.add(Menu.NONE, MENU_ID_STATUS_DOWNLOAD, Menu.NONE, "");
             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         }
         configureStatusMenuItem(item, sourceObject);
+    }
+
+    private void injectStatusSeenMenuItem(Menu menu, Object sourceObject) {
+        if (menu.findItem(MENU_ID_STATUS_SEEN) != null) return;
+        MenuItem item = menu.add(Menu.NONE, MENU_ID_STATUS_SEEN, Menu.NONE,
+                UiText.get(R.string.waex_ui_send_blue_tick_a14924d4, "Send blue tick"));
+        item.setOnMenuItemClickListener(clicked -> {
+            boolean sent = BlueOnReplyHook.sendCapturedStatusReceipt(resolveCurrentStatusItem(sourceObject));
+            showToast(context, sent
+                    ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Blue tick sent")
+                    : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send"));
+            return true;
+        });
     }
 
     private void configureStatusMenuItem(MenuItem item, Object sourceObject) {
@@ -252,7 +269,7 @@ public class StatusDownloadHook extends BaseFeature {
             if (!acceptsMenu) continue;
             XposedBridge.hookMethod(method, new XC_MethodHook() {
                 @Override protected void afterHookedMethod(MethodHookParam param) {
-                    if (!isFeatureEnabled() || param.hasThrowable()) return;
+                    if ((!isFeatureEnabled() && !BlueOnReplyHook.isManualStatusSeenEnabled(prefs)) || param.hasThrowable()) return;
                     for (Object arg : param.args) {
                         if (arg instanceof Menu) injectDownloadMenuItem((Menu) arg, param.thisObject);
                     }

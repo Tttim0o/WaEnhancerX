@@ -165,6 +165,9 @@ fun GlobalPrivacySettingsScreen(
             else -> "0"
         })
     }
+    var manualStatusSeen by remember {
+        mutableStateOf(preferenceManager.getBoolean("manual_status_seen", false))
+    }
 
     var archiveOpenViaMenu by remember {
         mutableStateOf(preferenceManager.getBoolean("archive_open_via_menu", true))
@@ -224,6 +227,7 @@ fun GlobalPrivacySettingsScreen(
                 val enabled = readViewOnceDownload()
                 settingsState["downloadviewonce"] = enabled
                 settingsState["download_view_once"] = enabled
+                manualStatusSeen = preferenceManager.getBoolean("manual_status_seen", false)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -605,6 +609,40 @@ fun GlobalPrivacySettingsScreen(
                                         isUnlocked = isPro,
                                         modifier = Modifier.align(Alignment.TopEnd)
                                     )
+                                }
+                            }
+
+                            if (item.key == "stealth_status_view" && settingsState["stealth_status_view"] == true) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = colors.surfaceDim.copy(alpha = 0.6f),
+                                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = UiText.get(R.string.manual_status_seen_section, "STATUS VIEWING"),
+                                            style = typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.primary
+                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                                                Text(UiText.get(R.string.manual_status_seen_title, "Send status seen manually"), style = typography.bodyMd, fontWeight = FontWeight.Medium, color = colors.onSurface)
+                                                Text(UiText.get(R.string.manual_status_seen_desc, "Add a menu action to mark the current status as seen"), style = typography.labelSm, color = colors.onSurfaceVariant)
+                                            }
+                                            StitchSwitch(checked = manualStatusSeen, onCheckedChange = { checked ->
+                                                preferenceManager.putBoolean("manual_status_seen", checked)
+                                                manualStatusSeen = preferenceManager.getBoolean("manual_status_seen", false)
+                                            })
+                                        }
+                                    }
                                 }
                             }
 

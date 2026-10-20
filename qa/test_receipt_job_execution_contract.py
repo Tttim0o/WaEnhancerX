@@ -106,7 +106,8 @@ public class TestReceiptExecutionContract {
   static Object getAdditionalInstanceField(Object j,String k){return marks.get(j);}
   static void setAdditionalInstanceField(Object j,String k,Object v){marks.put(j,v);}
  }
- static class BlueOnReplyHook {static final List<String> captured=new ArrayList<>();static void captureSuppressedReadJob(String j,Constructor<?> c,Object[] a){captured.add(j);}}
+ static class BlueOnReplyHook {static final List<String> captured=new ArrayList<>();static void captureSuppressedReadJob(String j,Constructor<?> c,Object[] a){captured.add(j);}static boolean isManualStatusSeenEnabled(Object prefs){return false;}static void captureSuppressedStatusReadJob(Constructor<?> c,Object[] a){}static boolean isManualStatusReceipt(Object job){return false;}}
+ Object prefs=new Object();
  boolean blueEnabled;
  boolean isEnabled(String key,boolean value){return blueEnabled||value;}
  static String canonicalJid(String value){return ReceiptJidPolicy.canonical(value);}

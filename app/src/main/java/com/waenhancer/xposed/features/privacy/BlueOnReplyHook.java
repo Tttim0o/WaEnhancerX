@@ -35,6 +35,8 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Blue on Reply Hook:
@@ -52,6 +54,8 @@ public class BlueOnReplyHook extends BaseFeature {
     private static volatile Class<?> managerClass;
     private static volatile Object jobManager;
     private static final int MENU_SEND_BLUE_TICK = 0x7EAE0012;
+    private static final Map<String, ReadJobRecipe> PENDING_STATUS_RECEIPTS = new LinkedHashMap<>();
+    private static final Object MANUAL_STATUS_RECEIPT = new Object();
 
     private static final class ReadJobRecipe {
         final Constructor<?> constructor;
@@ -187,6 +191,53 @@ public class BlueOnReplyHook extends BaseFeature {
         }
         constructor.setAccessible(true);
         PENDING_JOBS.add(key, new ReadJobRecipe(constructor, copy));
+    }
+
+    public static void captureSuppressedStatusReadJob(Constructor<?> constructor, Object[] arguments) {
+        if (constructor == null || arguments == null) return;
+        ReadJobRecipe recipe = new ReadJobRecipe(constructor, copyArguments(arguments));
+        synchronized (PENDING_STATUS_RECEIPTS) {
+            for (Object argument : arguments) if (argument instanceof String[])
+                for (String id : (String[]) argument) if (id != null && !id.isEmpty()) {
+                    PENDING_STATUS_RECEIPTS.put(id, recipe);
+                    while (PENDING_STATUS_RECEIPTS.size() > 256)
+                        PENDING_STATUS_RECEIPTS.remove(PENDING_STATUS_RECEIPTS.keySet().iterator().next());
+                }
+        }
+    }
+
+    public static boolean sendCapturedStatusReceipt(Object statusItem) {
+        String id = findStatusId(statusItem, new java.util.IdentityHashMap<>(), 0);
+        ReadJobRecipe recipe;
+        synchronized (PENDING_STATUS_RECEIPTS) { recipe = id == null ? null : PENDING_STATUS_RECEIPTS.remove(id); }
+        if (recipe == null || enqueueJobMethod == null || getOrFindJobManager() == null) return false;
+        try {
+            Object job = recipe.constructor.newInstance(copyArguments(recipe.arguments));
+            XposedHelpers.setAdditionalInstanceField(job, "waex_manual_status_seen", MANUAL_STATUS_RECEIPT);
+            enqueueJobMethod.invoke(getOrFindJobManager(), job);
+            return true;
+        } catch (Throwable ignored) { return false; }
+    }
+
+    private static Object[] copyArguments(Object[] source) { Object[] copy = Arrays.copyOf(source, source.length); for (int i=0;i<copy.length;i++) if(copy[i] instanceof String[]) copy[i]=((String[])copy[i]).clone(); return copy; }
+    private static String findStatusId(Object value, java.util.IdentityHashMap<Object, Boolean> seen, int depth) {
+        if (value == null || depth > 5 || seen.put(value, Boolean.TRUE) != null) return null;
+        if (value instanceof String) { synchronized (PENDING_STATUS_RECEIPTS) { return PENDING_STATUS_RECEIPTS.containsKey(value) ? (String)value : null; } }
+        Class<?> type=value.getClass(); if (type.getName().startsWith("java.")) return null;
+        for (Class<?> c=type;c!=null&&c!=Object.class;c=c.getSuperclass()) for (Field f:c.getDeclaredFields()) {
+            if (Modifier.isStatic(f.getModifiers()) || f.getType().isPrimitive()) continue;
+            try { f.setAccessible(true); String found=findStatusId(f.get(value),seen,depth+1); if(found!=null)return found; } catch(Throwable ignored) {}
+        } return null;
+    }
+
+    public static boolean isManualStatusSeenEnabled(SharedPreferences prefs) {
+        return prefs != null && prefs.getBoolean("manual_status_seen", false)
+                && (prefs.getBoolean("stealth_status_view", false)
+                || prefs.getBoolean("hidestatusview", false));
+    }
+
+    public static boolean isManualStatusReceipt(Object job) {
+        return XposedHelpers.getAdditionalInstanceField(job, "waex_manual_status_seen") == MANUAL_STATUS_RECEIPT;
     }
 
     private static Object getOrFindJobManager() {

@@ -1,4 +1,5 @@
 [Added]
+- Send seen via status
 
 [Fixes]
 

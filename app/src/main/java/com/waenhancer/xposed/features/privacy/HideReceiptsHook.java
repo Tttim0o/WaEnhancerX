@@ -220,6 +220,9 @@ public class HideReceiptsHook extends BaseFeature {
                             if (isStatusTarget(jid, participant)) {
                                 String target = (participant != null && !participant.contains("@broadcast")) ? participant : jid;
                                 if (shouldHideStatusView(target)) {
+                                    if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)) {
+                                        BlueOnReplyHook.captureSuppressedStatusReadJob((Constructor<?>) param.method, param.args);
+                                    }
                                     XposedHelpers.setAdditionalInstanceField(job, "waex_hide_status_view", true);
                                 }
                             } else if ((isEnabled("blueonreply", false)
@@ -252,6 +255,7 @@ public class HideReceiptsHook extends BaseFeature {
                                 resolvedJobClass, executionMethod, param.method,
                                 param.thisObject, param.args)) return;
                         Object job = param.thisObject;
+                        if (BlueOnReplyHook.isManualStatusReceipt(job)) return;
                         if (Boolean.TRUE.equals(XposedHelpers.getAdditionalInstanceField(
                                 job, "waex_hide_status_view"))) {
                             param.setResult(null);
