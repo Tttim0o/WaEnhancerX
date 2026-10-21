@@ -55,6 +55,10 @@ public class BlueOnReplyHook extends BaseFeature {
     private static volatile Object jobManager;
     private static final int MENU_SEND_BLUE_TICK = 0x7EAE0012;
     private static final Map<String, ReadJobRecipe> PENDING_STATUS_RECEIPTS = new LinkedHashMap<>();
+    // Status player wrappers do not always retain the MessageKey. Keep the most recently
+    // suppressed host job as the playback-order fallback; the host creates it for the
+    // status that is being opened.
+    private static volatile ReadJobRecipe latestStatusReceipt;
     private static final Object MANUAL_STATUS_RECEIPT = new Object();
     private static final String PENDING_CHAT_RECEIPT = "waex_pending_chat_receipt";
 
@@ -247,12 +251,15 @@ public class BlueOnReplyHook extends BaseFeature {
         if (constructor == null || arguments == null) return;
         ReadJobRecipe recipe = new ReadJobRecipe(constructor, copyArguments(arguments));
         synchronized (PENDING_STATUS_RECEIPTS) {
+            boolean captured = false;
             for (Object argument : arguments) if (argument instanceof String[])
                 for (String id : (String[]) argument) if (id != null && !id.isEmpty()) {
                     PENDING_STATUS_RECEIPTS.put(id, recipe);
+                    captured = true;
                     while (PENDING_STATUS_RECEIPTS.size() > 256)
                         PENDING_STATUS_RECEIPTS.remove(PENDING_STATUS_RECEIPTS.keySet().iterator().next());
                 }
+            if (captured) latestStatusReceipt = recipe;
         }
     }
 
@@ -322,14 +329,39 @@ public class BlueOnReplyHook extends BaseFeature {
     public static boolean sendCapturedStatusReceipt(Object statusItem) {
         String id = findStatusId(statusItem, new java.util.IdentityHashMap<>(), 0);
         ReadJobRecipe recipe;
-        synchronized (PENDING_STATUS_RECEIPTS) { recipe = id == null ? null : PENDING_STATUS_RECEIPTS.remove(id); }
+        synchronized (PENDING_STATUS_RECEIPTS) {
+            if (id != null) {
+                recipe = PENDING_STATUS_RECEIPTS.get(id);
+            } else {
+                // Some playback pages expose no reachable MessageKey. The latest capture is
+                // the host job for the status just opened, unlike arbitrary map iteration.
+                recipe = latestStatusReceipt;
+                if (recipe != null && !PENDING_STATUS_RECEIPTS.containsValue(recipe)) {
+                    recipe = null;
+                }
+            }
+        }
         if (recipe == null || enqueueJobMethod == null || getOrFindJobManager() == null) return false;
         try {
             Object job = recipe.constructor.newInstance(copyArguments(recipe.arguments));
             XposedHelpers.setAdditionalInstanceField(job, "waex_manual_status_seen", MANUAL_STATUS_RECEIPT);
             enqueueJobMethod.invoke(getOrFindJobManager(), job);
+            synchronized (PENDING_STATUS_RECEIPTS) {
+                // A host status receipt can cover several message IDs. Remove every alias
+                // for the exact recipe so delivered entries cannot block later statuses.
+                java.util.Iterator<Map.Entry<String, ReadJobRecipe>> iterator =
+                        PENDING_STATUS_RECEIPTS.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    if (iterator.next().getValue() == recipe) iterator.remove();
+                }
+                if (latestStatusReceipt == recipe) latestStatusReceipt = null;
+            }
             return true;
-        } catch (Throwable ignored) { return false; }
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + " Error enqueueing status receipt: "
+                    + t.getClass().getSimpleName());
+            return false;
+        }
     }
 
     /** True only when this item exposes an exact receipt ID that was suppressed earlier. */

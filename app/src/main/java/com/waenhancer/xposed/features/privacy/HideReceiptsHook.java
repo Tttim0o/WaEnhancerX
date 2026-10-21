@@ -226,9 +226,11 @@ public class HideReceiptsHook extends BaseFeature {
                         String target = resolveConversationTarget(jid, participant);
 
                         if (isStatusTarget(jid, participant)) {
-                            if (shouldHideStatusView(target)) {
-                                param.setResult(null);
-                            }
+                            // Let WhatsApp construct its complete status receipt job. The
+                            // constructor hook retains that authentic recipe and the verified
+                            // execution hook below suppresses automatic delivery. Cancelling here
+                            // loses participant, receipt-class and timestamp metadata required by
+                            // an explicit status blue tick.
                             return;
                         }
 
