@@ -374,6 +374,7 @@
     <string name="waex_ui_hook_success" formatted="false">"HOOK SUCCESS"</string>
     <string name="waex_ui_hooks" formatted="false">"Hooks"</string>
     <string name="waex_ui_horizontal_margin" formatted="false">"Horizontal Margin"</string>
+    <string name="waex_ui_horizontal_inner_padding" formatted="false">"Horizontal Inner Padding"</string>
     <string name="waex_ui_how_to_configure_rules" formatted="false">"How to Configure Rules"</string>
     <string name="waex_ui_how_waex_items_appear_in_whatsapp_s_ho" formatted="false">"How WAEX items appear in WhatsApp\'s home menu"</string>
     <string name="waex_ui_hue" formatted="false">"Hue"</string>
@@ -382,6 +383,9 @@
     <string name="waex_ui_icons" formatted="false">"Icons"</string>
     <string name="waex_ui_icons_only" formatted="false">"Hide Tab Labels (Icons Only)"</string>
     <string name="waex_ui_icons_only_desc" formatted="false">"Display only navigation icons and center them vertically"</string>
+    <string name="waex_ui_selector_type" formatted="false">"Selector Type"</string>
+    <string name="waex_ui_default" formatted="false">"Default"</string>
+    <string name="waex_ui_oval" formatted="false">"Oval"</string>
     <string name="waex_ui_ignore_battery_optimizations" formatted="false">"Ignore Battery Optimizations"</string>
     <string name="waex_ui_ignore" formatted="false">"Ignore"</string>
     <string name="waex_ui_import_a_keybox_xml_before_enabling" formatted="false">"Import a keybox.xml before enabling"</string>

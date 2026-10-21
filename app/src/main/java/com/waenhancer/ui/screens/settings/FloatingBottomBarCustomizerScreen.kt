@@ -81,6 +81,9 @@ fun FloatingBottomBarCustomizerScreen() {
     var paddingVertical by remember {
         mutableFloatStateOf(preferenceManager.getInt("floating_bottom_bar_padding_vertical", 6).toFloat())
     }
+    var paddingHorizontal by remember {
+        mutableFloatStateOf(preferenceManager.getInt("floating_bottom_bar_padding_horizontal", 0).toFloat())
+    }
     var iconSize by remember {
         mutableFloatStateOf(preferenceManager.getInt("floating_bottom_bar_icon_size", 24).toFloat())
     }
@@ -92,6 +95,9 @@ fun FloatingBottomBarCustomizerScreen() {
     }
     var iconsOnly by remember {
         mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_icons_only", false))
+    }
+    var selectorType by remember {
+        mutableStateOf(preferenceManager.getString("floating_bottom_bar_selector_type", "default") ?: "default")
     }
     var scrollHideEnabled by remember {
         mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_scroll_hide", true))
@@ -202,7 +208,10 @@ fun FloatingBottomBarCustomizerScreen() {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = (paddingVertical * 0.8f).coerceAtLeast(4f).dp, horizontal = 8.dp),
+                                .padding(
+                                    vertical = (paddingVertical * 0.8f).coerceAtLeast(4f).dp,
+                                    horizontal = paddingHorizontal.coerceAtLeast(0f).dp
+                                ),
                             horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -228,7 +237,9 @@ fun FloatingBottomBarCustomizerScreen() {
                                             } else Modifier
                                         )
                                         .then(
-                                            if (iconsOnly) {
+                                            if (selectorType == "oval") {
+                                                Modifier.size(width = 60.dp, height = 42.dp)
+                                            } else if (iconsOnly) {
                                                 Modifier.size(width = 48.dp, height = 36.dp)
                                             } else {
                                                 Modifier.padding(
@@ -502,6 +513,21 @@ fun FloatingBottomBarCustomizerScreen() {
                                 }
                             )
 
+                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
+                            SliderItem(
+                                label = UiText.get(R.string.waex_ui_horizontal_inner_padding, "Horizontal Inner Padding"),
+                                value = paddingHorizontal,
+                                valueRange = 0f..32f,
+                                unit = "dp",
+                                onValueChange = {
+                                    paddingHorizontal = it
+                                    preferenceManager.putInt("floating_bottom_bar_padding_horizontal", it.toInt())
+                                }
+                            )
+
+                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
                             // Icon Size
                             SliderItem(
                                 label = UiText.get(R.string.waex_ui_icon_size, "Icon Size"),
@@ -513,6 +539,48 @@ fun FloatingBottomBarCustomizerScreen() {
                                     preferenceManager.putInt("floating_bottom_bar_icon_size", it.toInt())
                                 }
                             )
+
+                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
+                            Text(
+                                text = UiText.get(R.string.waex_ui_selector_type, "Selector Type"),
+                                style = typography.bodyMd,
+                                fontWeight = FontWeight.Medium,
+                                color = colors.onSurface
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                listOf(
+                                    "default" to UiText.get(R.string.waex_ui_default, "Default"),
+                                    "oval" to UiText.get(R.string.waex_ui_oval, "Oval")
+                                ).forEach { (typeKey, title) ->
+                                    val isSelected = selectorType == typeKey
+                                    Surface(
+                                        shape = radius.smShape,
+                                        color = if (isSelected) colors.primary.copy(alpha = 0.15f) else colors.surfaceDim,
+                                        border = BorderStroke(1.dp, if (isSelected) colors.primary else colors.outlineVariant),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(radius.smShape)
+                                            .clickable {
+                                                selectorType = typeKey
+                                                preferenceManager.putString("floating_bottom_bar_selector_type", typeKey)
+                                            }
+                                            .padding(vertical = 10.dp)
+                                    ) {
+                                        Text(
+                                            text = title,
+                                            style = typography.labelSm,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) colors.primary else colors.onSurfaceVariant,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
 
                             HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
 

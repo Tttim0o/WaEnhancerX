@@ -226,10 +226,12 @@ public final class PreferenceSchema {
         add(entries, "floating_bottom_bar_margin_bottom", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_margin_horizontal", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_padding_vertical", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_padding_horizontal", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_pill_design", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_radius", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_scroll_hide", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_scroll_hide_mode", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_selector_type", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_text_size", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_nav_bar", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floatingmenu", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

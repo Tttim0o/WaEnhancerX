@@ -95,6 +95,7 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static final WeakHashMap<View, Boolean> mainScrollableCache = new WeakHashMap<>();
     private static final WeakHashMap<Activity, Float> scrollGestureY = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> indicatorGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> ovalGeometryGuards = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, Integer> forcedSelectedTabs = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> renderedSelectedTabs = new WeakHashMap<>();
 
@@ -115,10 +116,12 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static int userSideMarginDp = 16;
     private static int userRadiusDp = 28;
     private static int userVerticalPaddingDp = 6;
+    private static int userHorizontalPaddingDp = 0;
     private static int userIconSizeDp = 24;
     private static int userTextSizeSp = 12;
     private static int userIconLabelSpacingDp = 2;
     private static boolean userIconsOnly = false;
+    private static boolean selectorOval = false;
 
     public FloatingBottomBarHook(@NonNull Context context, @NonNull ClassLoader classLoader, @NonNull SharedPreferences prefs) {
         super(context, classLoader, prefs);
@@ -149,10 +152,12 @@ public class FloatingBottomBarHook extends BaseFeature {
         userSideMarginDp = prefs.getInt("floating_bottom_bar_margin_horizontal", (int) SIDE_MARGIN_DP);
         userRadiusDp = prefs.getInt("floating_bottom_bar_radius", (int) CORNER_RADIUS_DP);
         userVerticalPaddingDp = prefs.getInt("floating_bottom_bar_padding_vertical", 6);
+        userHorizontalPaddingDp = prefs.getInt("floating_bottom_bar_padding_horizontal", 0);
         userIconSizeDp = prefs.getInt("floating_bottom_bar_icon_size", 24);
         userTextSizeSp = prefs.getInt("floating_bottom_bar_text_size", 12);
         userIconLabelSpacingDp = prefs.getInt("floating_bottom_bar_icon_label_spacing", 2);
         userIconsOnly = prefs.getBoolean("floating_bottom_bar_icons_only", false);
+        selectorOval = "oval".equals(prefs.getString("floating_bottom_bar_selector_type", "default"));
 
         // Resolve resource IDs
         bottomNavId = getResourceId("bottom_nav", "id");
@@ -593,12 +598,13 @@ public class FloatingBottomBarHook extends BaseFeature {
             float density = bar.getContext().getResources().getDisplayMetrics().density;
             int effectivePaddingDp = userVerticalPaddingDp + (pillDesignPro ? 2 : 0);
             int padV = (int) (effectivePaddingDp * density);
+            int padH = (int) (userHorizontalPaddingDp * density);
             int pillHeight = (int) ((56 + (effectivePaddingDp * 2)) * density);
             if (pillHeight < (int) (48 * density)) {
                 pillHeight = (int) (48 * density);
             }
 
-            bar.setPadding(0, 0, 0, 0);
+            bar.setPadding(padH, 0, padH, 0);
 
             int bottomMargin = navigationBarInset(rootView) + (int) (userBottomMarginDp * density);
 
@@ -648,12 +654,13 @@ public class FloatingBottomBarHook extends BaseFeature {
         float density = bar.getContext().getResources().getDisplayMetrics().density;
         int effectivePaddingDp = userVerticalPaddingDp + (pillDesignPro ? 2 : 0);
         int padV = (int) (effectivePaddingDp * density);
+        int padH = (int) (userHorizontalPaddingDp * density);
         int pillHeight = (int) ((56 + (effectivePaddingDp * 2)) * density);
         if (pillHeight < (int) (48 * density)) {
             pillHeight = (int) (48 * density);
         }
 
-        bar.setPadding(0, 0, 0, 0);
+        bar.setPadding(padH, 0, padH, 0);
 
         int bottomMargin = navigationBarInset(rootView) + (int) (userBottomMarginDp * density);
 
@@ -1118,7 +1125,72 @@ public class FloatingBottomBarHook extends BaseFeature {
         applyBackdropBlur(bar, useGlass, density);
 
         makeChildrenTransparent(bar);
+        if (selectorOval) {
+            customizeNativeOvalIndicator(bar, density);
+            installOvalGeometryGuard(bar, density);
+        }
         applyPresetTabIndicators(bar, density);
+    }
+
+    private static void customizeNativeOvalIndicator(View view, float density) {
+        if (view.getId() != View.NO_ID) {
+            try {
+                String name = view.getResources().getResourceEntryName(view.getId());
+                if (name != null && name.contains("active_indicator")) {
+                    ViewGroup.LayoutParams lp = view.getLayoutParams();
+                    if (lp != null) {
+                        int targetWidth = (int) (60f * density);
+                        int targetHeight = (int) (42f * density);
+                        if (lp.width != targetWidth || lp.height != targetHeight) {
+                            lp.width = targetWidth;
+                            lp.height = targetHeight;
+                            if (lp instanceof FrameLayout.LayoutParams) {
+                                ((FrameLayout.LayoutParams) lp).gravity = Gravity.CENTER;
+                            }
+                            view.setLayoutParams(lp);
+                        }
+                    }
+                    // The stock indicator lives inside a smaller icon container. Some menu items
+                    // clip that container while the first item does not, which cuts off the top of
+                    // an enlarged oval. Keep the native drawable but allow its full bounds to draw.
+                    ViewParent ancestor = view.getParent();
+                    int levels = 0;
+                    while (ancestor instanceof ViewGroup && levels++ < 5) {
+                        ViewGroup group = (ViewGroup) ancestor;
+                        group.setClipChildren(false);
+                        group.setClipToPadding(false);
+                        ancestor = group.getParent();
+                    }
+                    return;
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                customizeNativeOvalIndicator(group.getChildAt(i), density);
+            }
+        }
+    }
+
+    private static void installOvalGeometryGuard(ViewGroup bar, float density) {
+        if (ovalGeometryGuards.containsKey(bar)) return;
+        ViewTreeObserver.OnPreDrawListener guard = () -> {
+            customizeNativeOvalIndicator(bar, density);
+            return true;
+        };
+        ovalGeometryGuards.put(bar, guard);
+        bar.getViewTreeObserver().addOnPreDrawListener(guard);
+        bar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View view) {}
+
+            @Override public void onViewDetachedFromWindow(View view) {
+                ViewTreeObserver observer = view.getViewTreeObserver();
+                if (observer.isAlive()) observer.removeOnPreDrawListener(guard);
+                ovalGeometryGuards.remove(bar);
+                view.removeOnAttachStateChangeListener(this);
+            }
+        });
     }
 
     /**
@@ -1127,6 +1199,8 @@ public class FloatingBottomBarHook extends BaseFeature {
      * effect synchronized across both clicks and WhatsApp's pager swipes.
      */
     private static void applyPresetTabIndicators(ViewGroup bar, float density) {
+        // Oval is geometry-only and deliberately retains WhatsApp's native selector drawable/tint.
+        if (selectorOval) return;
         if (!pillDesignPro && !pillDesignIos) return;
         for (int i = 0; i < bar.getChildCount(); i++) {
             View child = bar.getChildAt(i);
