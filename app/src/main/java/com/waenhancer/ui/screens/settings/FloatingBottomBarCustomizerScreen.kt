@@ -212,7 +212,7 @@ fun FloatingBottomBarCustomizerScreen() {
                                     vertical = (paddingVertical * 0.8f).coerceAtLeast(4f).dp,
                                     horizontal = paddingHorizontal.coerceAtLeast(0f).dp
                                 ),
-                            horizontalArrangement = Arrangement.SpaceAround,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Tab 1: Chats (Active)

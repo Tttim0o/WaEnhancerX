@@ -604,7 +604,7 @@ public class FloatingBottomBarHook extends BaseFeature {
                 pillHeight = (int) (48 * density);
             }
 
-            bar.setPadding(padH, 0, padH, 0);
+            bar.setPadding(0, 0, 0, 0);
 
             int bottomMargin = navigationBarInset(rootView) + (int) (userBottomMarginDp * density);
 
@@ -641,6 +641,8 @@ public class FloatingBottomBarHook extends BaseFeature {
             }
 
             applyVerticalPaddingToTabItems(bar, padV);
+            applyHorizontalPaddingToTabItems(bar, padH);
+            bar.post(() -> applyHorizontalPaddingToTabItems(bar, padH));
             applyPillStyle(container, bar);
             positionFabsAboveBar(rootView, container);
             return true;
@@ -660,7 +662,7 @@ public class FloatingBottomBarHook extends BaseFeature {
             pillHeight = (int) (48 * density);
         }
 
-        bar.setPadding(padH, 0, padH, 0);
+        bar.setPadding(0, 0, 0, 0);
 
         int bottomMargin = navigationBarInset(rootView) + (int) (userBottomMarginDp * density);
 
@@ -692,6 +694,68 @@ public class FloatingBottomBarHook extends BaseFeature {
         }
 
         applyVerticalPaddingToTabItems(bar, padV);
+        applyHorizontalPaddingToTabItems(bar, padH);
+        bar.post(() -> applyHorizontalPaddingToTabItems(bar, padH));
+    }
+
+    /**
+     * WhatsApp centers every tab in an equal-width cell, so View padding=0 still leaves half a
+     * cell of apparent space at each edge. Position the tab contents against the requested visual
+     * inset instead: zero aligns the outer icon edges with the pill's inner bounds.
+     */
+    private static void applyHorizontalPaddingToTabItems(ViewGroup bar, int paddingPx) {
+        if (bar == null) return;
+        float density = bar.getResources().getDisplayMetrics().density;
+        bar.setClipChildren(false);
+        bar.setClipToPadding(false);
+
+        for (int i = 0; i < bar.getChildCount(); i++) {
+            View child = bar.getChildAt(i);
+            if (!(child instanceof ViewGroup)) continue;
+            ViewGroup menu = (ViewGroup) child;
+            int count = menu.getChildCount();
+            int barWidth = bar.getWidth();
+            if (count < 2 || barWidth <= 0) continue;
+
+            menu.setClipChildren(false);
+            menu.setClipToPadding(false);
+            float menuOffsetInBar = menu.getLeft() + menu.getTranslationX();
+            View firstItem = menu.getChildAt(0);
+            View lastItem = menu.getChildAt(count - 1);
+            float firstHalf = visualContentHalfWidth(firstItem, density);
+            float lastHalf = visualContentHalfWidth(lastItem, density);
+            float startCenter = paddingPx + firstHalf - menuOffsetInBar;
+            float endCenter = barWidth - paddingPx - lastHalf - menuOffsetInBar;
+            float interval = (endCenter - startCenter) / (count - 1f);
+            for (int j = 0; j < count; j++) {
+                View item = menu.getChildAt(j);
+                float currentCenter = item.getLeft() + item.getWidth() / 2f;
+                float targetCenter = startCenter + interval * j;
+                item.setTranslationX(0f);
+                float contentOffset = targetCenter - currentCenter;
+                if (item instanceof ViewGroup) {
+                    ViewGroup itemGroup = (ViewGroup) item;
+                    for (int k = 0; k < itemGroup.getChildCount(); k++) {
+                        itemGroup.getChildAt(k).setTranslationX(contentOffset);
+                    }
+                }
+            }
+        }
+    }
+
+    private static float visualContentHalfWidth(View item, float density) {
+        float width = userIconSizeDp * density;
+        if (selectorOval) width = Math.max(width, 60f * density);
+        if (item instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) item;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View child = group.getChildAt(i);
+                if (child.getVisibility() == View.VISIBLE && child.getWidth() > 0) {
+                    width = Math.max(width, child.getWidth());
+                }
+            }
+        }
+        return width / 2f;
     }
 
     private static void applyVerticalPaddingToTabItems(ViewGroup bar, final int padV) {
