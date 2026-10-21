@@ -248,6 +248,7 @@
     <string name="waex_ui_disable_see_more_button_and_show_all_l" formatted="false">"Disable \"See More\" button and show all long message"</string>
     <string name="waex_ui_disabled_uppercase" formatted="false">"DISABLED"</string>
     <string name="waex_ui_disabled_label" formatted="false">"Disabled"</string>
+    <string name="waex_ui_disabled" formatted="false">"Disabled"</string>
     <string name="waex_ui_dismiss" formatted="false">"Dismiss"</string>
     <string name="waex_ui_display_over_other_apps" formatted="false">"Display Over Other Apps"</string>
     <string name="waex_ui_displays_the_custom_privacy_shortcut_i" formatted="false">"Displays the custom privacy shortcut in both places"</string>
@@ -379,6 +380,8 @@
     <string name="waex_ui_icon_label_spacing" formatted="false">"Icon &amp; Label Spacing"</string>
     <string name="waex_ui_icon_size" formatted="false">"Icon Size"</string>
     <string name="waex_ui_icons" formatted="false">"Icons"</string>
+    <string name="waex_ui_icons_only" formatted="false">"Icons Only"</string>
+    <string name="waex_ui_icons_only_desc" formatted="false">"Hide tab labels and show icons only"</string>
     <string name="waex_ui_ignore_battery_optimizations" formatted="false">"Ignore Battery Optimizations"</string>
     <string name="waex_ui_ignore" formatted="false">"Ignore"</string>
     <string name="waex_ui_import_a_keybox_xml_before_enabling" formatted="false">"Import a keybox.xml before enabling"</string>

@@ -118,6 +118,7 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static int userIconSizeDp = 24;
     private static int userTextSizeSp = 12;
     private static int userIconLabelSpacingDp = 2;
+    private static boolean userIconsOnly = false;
 
     public FloatingBottomBarHook(@NonNull Context context, @NonNull ClassLoader classLoader, @NonNull SharedPreferences prefs) {
         super(context, classLoader, prefs);
@@ -151,6 +152,7 @@ public class FloatingBottomBarHook extends BaseFeature {
         userIconSizeDp = prefs.getInt("floating_bottom_bar_icon_size", 24);
         userTextSizeSp = prefs.getInt("floating_bottom_bar_text_size", 12);
         userIconLabelSpacingDp = prefs.getInt("floating_bottom_bar_icon_label_spacing", 2);
+        userIconsOnly = prefs.getBoolean("floating_bottom_bar_icons_only", false);
 
         // Resolve resource IDs
         bottomNavId = getResourceId("bottom_nav", "id");
@@ -740,6 +742,12 @@ public class FloatingBottomBarHook extends BaseFeature {
             labelsGroup = tabItem.getChildAt(1);
         }
 
+        if (userIconsOnly) {
+            if (labelsGroup != null) {
+                labelsGroup.setVisibility(View.GONE);
+            }
+        }
+
         applyCustomSizesToTabItem(tabItem, userIconSizeDp, userTextSizeSp, density);
 
         int itemHeight = tabItem.getHeight();
@@ -752,7 +760,7 @@ public class FloatingBottomBarHook extends BaseFeature {
                 : (int) (32 * density);
 
         int labelHeight = 0;
-        if (labelsGroup != null && labelsGroup.getVisibility() != View.GONE) {
+        if (!userIconsOnly && labelsGroup != null && labelsGroup.getVisibility() != View.GONE) {
             labelHeight = labelsGroup.getHeight();
             if (labelHeight <= 0) {
                 labelHeight = (int) (16 * density);
@@ -770,7 +778,7 @@ public class FloatingBottomBarHook extends BaseFeature {
             iconContainer.setTranslationY(iconOffsetY);
         }
 
-        if (labelsGroup != null && labelHeight > 0) {
+        if (!userIconsOnly && labelsGroup != null && labelHeight > 0) {
             int targetLabelTop = targetIconTop + iconHeight + spacing;
             int currentLabelTop = labelsGroup.getTop();
             int labelOffsetY = targetLabelTop - currentLabelTop;
@@ -955,10 +963,14 @@ public class FloatingBottomBarHook extends BaseFeature {
                     }
                 }
             } else if (child instanceof TextView) {
-                TextView tv = (TextView) child;
-                float targetPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSizeSp, tv.getResources().getDisplayMetrics());
-                if (Math.abs(tv.getTextSize() - targetPx) > 0.5f) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp);
+                if (userIconsOnly) {
+                    child.setVisibility(View.GONE);
+                } else {
+                    TextView tv = (TextView) child;
+                    float targetPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSizeSp, tv.getResources().getDisplayMetrics());
+                    if (Math.abs(tv.getTextSize() - targetPx) > 0.5f) {
+                        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp);
+                    }
                 }
             } else if (child instanceof ViewGroup) {
                 applyCustomSizesToTabItem((ViewGroup) child, iconSizeDp, textSizeSp, density);

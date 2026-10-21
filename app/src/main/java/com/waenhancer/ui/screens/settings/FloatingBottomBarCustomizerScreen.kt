@@ -84,6 +84,9 @@ fun FloatingBottomBarCustomizerScreen() {
     var iconLabelSpacing by remember {
         mutableFloatStateOf(preferenceManager.getInt("floating_bottom_bar_icon_label_spacing", 2).toFloat())
     }
+    var iconsOnly by remember {
+        mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_icons_only", false))
+    }
     var scrollHideEnabled by remember {
         mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_scroll_hide", true))
     }
@@ -200,7 +203,7 @@ fun FloatingBottomBarCustomizerScreen() {
                             // Tab 1: Chats (Active)
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp)
+                                verticalArrangement = if (!iconsOnly) Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp) else Arrangement.Center
                             ) {
                                 val activeShape = RoundedCornerShape(50)
                                 val activeFill = when {
@@ -230,18 +233,20 @@ fun FloatingBottomBarCustomizerScreen() {
                                         modifier = Modifier.size((iconSize * 0.8f).coerceIn(16f, 24f).dp)
                                     )
                                 }
-                                Text(
-                                    text = UiText.get(R.string.waex_ui_chats, "Chats"),
-                                    fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = activeTint
-                                )
+                                if (!iconsOnly) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_chats, "Chats"),
+                                        fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = activeTint
+                                    )
+                                }
                             }
 
                             // Tab 2: Updates
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp)
+                                verticalArrangement = if (!iconsOnly) Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp) else Arrangement.Center
                             ) {
                                 Icon(
                                     imageVector = WaexIcons.AutoAwesome,
@@ -249,17 +254,19 @@ fun FloatingBottomBarCustomizerScreen() {
                                     tint = Color(0xFF8696A0),
                                     modifier = Modifier.size((iconSize * 0.8f).coerceIn(16f, 24f).dp)
                                 )
-                                Text(
-                                    text = UiText.get(R.string.waex_ui_updates, "Updates"),
-                                    fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
-                                    color = Color(0xFF8696A0)
-                                )
+                                if (!iconsOnly) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_updates, "Updates"),
+                                        fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
+                                        color = Color(0xFF8696A0)
+                                    )
+                                }
                             }
 
                             // Tab 3: Communities
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp)
+                                verticalArrangement = if (!iconsOnly) Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp) else Arrangement.Center
                             ) {
                                 Icon(
                                     imageVector = WaexIcons.Contacts,
@@ -267,17 +274,19 @@ fun FloatingBottomBarCustomizerScreen() {
                                     tint = Color(0xFF8696A0),
                                     modifier = Modifier.size((iconSize * 0.8f).coerceIn(16f, 24f).dp)
                                 )
-                                Text(
-                                    text = UiText.get(R.string.waex_ui_communities, "Communities"),
-                                    fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
-                                    color = Color(0xFF8696A0)
-                                )
+                                if (!iconsOnly) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_communities, "Communities"),
+                                        fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
+                                        color = Color(0xFF8696A0)
+                                    )
+                                }
                             }
 
                             // Tab 4: Calls
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp)
+                                verticalArrangement = if (!iconsOnly) Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp) else Arrangement.Center
                             ) {
                                 Icon(
                                     imageVector = WaexIcons.Smartphone,
@@ -285,11 +294,13 @@ fun FloatingBottomBarCustomizerScreen() {
                                     tint = Color(0xFF8696A0),
                                     modifier = Modifier.size((iconSize * 0.8f).coerceIn(16f, 24f).dp)
                                 )
-                                Text(
-                                    text = UiText.get(R.string.waex_ui_calls, "Calls"),
-                                    fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
-                                    color = Color(0xFF8696A0)
-                                )
+                                if (!iconsOnly) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_calls, "Calls"),
+                                        fontSize = (textSize * 0.85f).coerceIn(9f, 13f).sp,
+                                        color = Color(0xFF8696A0)
+                                    )
+                                }
                             }
                         }
                     }
@@ -478,8 +489,6 @@ fun FloatingBottomBarCustomizerScreen() {
                                 }
                             )
 
-                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
-
                             // Icon Size
                             SliderItem(
                                 label = UiText.get(R.string.waex_ui_icon_size, "Icon Size"),
@@ -494,30 +503,64 @@ fun FloatingBottomBarCustomizerScreen() {
 
                             HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
 
-                            // Text Size
-                            SliderItem(
-                                label = UiText.get(R.string.waex_ui_text_size, "Text Size"),
-                                value = textSize,
-                                valueRange = 9f..15f,
-                                unit = "sp",
-                                onValueChange = {
-                                    textSize = it
-                                    preferenceManager.putInt("floating_bottom_bar_text_size", it.toInt())
+                            // Icons Only switch
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_icons_only, "Icons Only"),
+                                        style = typography.bodyMd,
+                                        fontWeight = FontWeight.Bold,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_icons_only_desc, "Hide tab labels and show icons only"),
+                                        style = typography.labelSm,
+                                        color = colors.onSurfaceVariant
+                                    )
                                 }
-                            )
+                                StitchSwitch(
+                                    checked = iconsOnly,
+                                    onCheckedChange = { isChecked ->
+                                        iconsOnly = isChecked
+                                        preferenceManager.putBoolean("floating_bottom_bar_icons_only", isChecked)
+                                    }
+                                )
+                            }
 
-                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+                            if (!iconsOnly) {
+                                HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
 
-                            SliderItem(
-                                label = UiText.get(R.string.waex_ui_icon_label_spacing, "Icon & Label Spacing"),
-                                value = iconLabelSpacing,
-                                valueRange = 0f..8f,
-                                unit = "dp",
-                                onValueChange = {
-                                    iconLabelSpacing = it
-                                    preferenceManager.putInt("floating_bottom_bar_icon_label_spacing", it.toInt())
-                                }
-                            )
+                                // Text Size
+                                SliderItem(
+                                    label = UiText.get(R.string.waex_ui_text_size, "Text Size"),
+                                    value = textSize,
+                                    valueRange = 9f..15f,
+                                    unit = "sp",
+                                    onValueChange = {
+                                        textSize = it
+                                        preferenceManager.putInt("floating_bottom_bar_text_size", it.toInt())
+                                    }
+                                )
+
+                                HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
+                                SliderItem(
+                                    label = UiText.get(R.string.waex_ui_icon_label_spacing, "Icon & Label Spacing"),
+                                    value = iconLabelSpacing,
+                                    valueRange = 0f..8f,
+                                    unit = "dp",
+                                    onValueChange = {
+                                        iconLabelSpacing = it
+                                        preferenceManager.putInt("floating_bottom_bar_icon_label_spacing", it.toInt())
+                                    }
+                                )
+                            }
                         }
                     }
 

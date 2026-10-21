@@ -206,6 +206,7 @@ public final class PreferenceSchema {
         add(entries, "floating_bottom_bar_horizontal_margin", Type.FLOAT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_icon_label_spacing", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_icon_size", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_icons_only", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_indicator_color", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_indicator_height", Type.FLOAT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_indicator_offset", Type.FLOAT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

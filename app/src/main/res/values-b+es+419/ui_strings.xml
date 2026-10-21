@@ -247,6 +247,7 @@
     <string name="waex_ui_disable_see_more_button_and_show_all_l" formatted="false">"Muestra completos los mensajes largos sin el botón Leer más"</string>
     <string name="waex_ui_disabled_uppercase" formatted="false">"Desactivado"</string>
     <string name="waex_ui_disabled_label" formatted="false">"Desactivado"</string>
+    <string name="waex_ui_disabled" formatted="false">"Desactivado"</string>
     <string name="waex_ui_dismiss" formatted="false">"Cerrar"</string>
     <string name="waex_ui_display_over_other_apps" formatted="false">"Mostrar sobre otras aplicaciones"</string>
     <string name="waex_ui_displays_the_custom_privacy_shortcut_i" formatted="false">"Muestra el acceso a la privacidad personalizada en ambas ubicaciones"</string>
@@ -378,6 +379,8 @@
     <string name="waex_ui_icon_label_spacing" formatted="false">"Espacio entre icono y texto"</string>
     <string name="waex_ui_icon_size" formatted="false">"Tamaño de los iconos"</string>
     <string name="waex_ui_icons" formatted="false">"Iconos"</string>
+    <string name="waex_ui_icons_only" formatted="false">"Solo iconos"</string>
+    <string name="waex_ui_icons_only_desc" formatted="false">"Ocultar el texto de las pestañas y mostrar solo los iconos"</string>
     <string name="waex_ui_ignore_battery_optimizations" formatted="false">"Sin restricciones de batería"</string>
     <string name="waex_ui_ignore" formatted="false">"Omitir"</string>
     <string name="waex_ui_import_a_keybox_xml_before_enabling" formatted="false">"Importa un archivo keybox.xml antes de activar esta opción"</string>
