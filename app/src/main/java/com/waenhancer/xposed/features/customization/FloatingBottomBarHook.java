@@ -1123,11 +1123,11 @@ public class FloatingBottomBarHook extends BaseFeature {
 
     /**
      * Refined and iOS Glass replace WhatsApp's stock active indicator with the liquid selection
-     * capsules used by the original WaEnhancerX implementation. A per-frame reconciler keeps the
-     * effect synchronized across both clicks and WhatsApp's pager swipes.
+     * capsules used by the original WaEnhancerX implementation. Icon-only mode uses this path for
+     * every preset so its selected-tab indicator can be truly circular.
      */
     private static void applyPresetTabIndicators(ViewGroup bar, float density) {
-        if (!pillDesignPro && !pillDesignIos) return;
+        if (!pillDesignPro && !pillDesignIos && !userIconsOnly) return;
         for (int i = 0; i < bar.getChildCount(); i++) {
             View child = bar.getChildAt(i);
             if (!(child instanceof ViewGroup)) continue;
@@ -1307,6 +1307,9 @@ public class FloatingBottomBarHook extends BaseFeature {
     }
 
     private static Drawable createPresetIndicator(View tab, float density) {
+        if (userIconsOnly) {
+            return new IconOnlyIndicatorDrawable(tab.getContext(), density);
+        }
         return pillDesignIos
                 ? new IosLiquidGlassDrawable(tab.getContext(), density)
                 : new LiquidOvalDrawable(tab.getContext(), density);
@@ -1388,6 +1391,43 @@ public class FloatingBottomBarHook extends BaseFeature {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             view.setTranslationZ(PILL_TRANSLATION_Z_DP * density);
         }
+    }
+
+    /** Draws a fixed circular thumb in the center of the full-width navigation item. */
+    private static final class IconOnlyIndicatorDrawable extends Drawable {
+        private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint shadow = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final float density;
+
+        IconOnlyIndicatorDrawable(Context context, float density) {
+            this.density = density;
+            boolean night = isNightMode(context);
+            fill.setColor(night ? 0x3D00A884 : 0x3300A884);
+            shadow.setColor(night ? 0x38000000 : 0x1F000000);
+        }
+
+        @Override public void draw(@NonNull Canvas canvas) {
+            Rect bounds = getBounds();
+            if (bounds.isEmpty()) return;
+            float radius = Math.min(22f * density,
+                    Math.max(1f, Math.min(bounds.width(), bounds.height()) / 2f - 4f * density));
+            float cx = bounds.exactCenterX();
+            float cy = bounds.exactCenterY();
+            canvas.drawCircle(cx, cy + 1.5f * density, radius, shadow);
+            canvas.drawCircle(cx, cy, radius, fill);
+        }
+
+        @Override public void setAlpha(int alpha) {
+            fill.setAlpha(alpha);
+            shadow.setAlpha(alpha);
+        }
+
+        @Override public void setColorFilter(@Nullable ColorFilter filter) {
+            fill.setColorFilter(filter);
+            shadow.setColorFilter(filter);
+        }
+
+        @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
     }
 
     private static final class LiquidOvalDrawable extends Drawable {

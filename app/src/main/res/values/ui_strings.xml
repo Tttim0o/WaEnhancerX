@@ -380,8 +380,8 @@
     <string name="waex_ui_icon_label_spacing" formatted="false">"Icon &amp; Label Spacing"</string>
     <string name="waex_ui_icon_size" formatted="false">"Icon Size"</string>
     <string name="waex_ui_icons" formatted="false">"Icons"</string>
-    <string name="waex_ui_icons_only" formatted="false">"Icons Only"</string>
-    <string name="waex_ui_icons_only_desc" formatted="false">"Hide tab labels and show icons only"</string>
+    <string name="waex_ui_icons_only" formatted="false">"Hide Tab Labels (Icons Only)"</string>
+    <string name="waex_ui_icons_only_desc" formatted="false">"Display only navigation icons and center them vertically"</string>
     <string name="waex_ui_ignore_battery_optimizations" formatted="false">"Ignore Battery Optimizations"</string>
     <string name="waex_ui_ignore" formatted="false">"Ignore"</string>
     <string name="waex_ui_import_a_keybox_xml_before_enabling" formatted="false">"Import a keybox.xml before enabling"</string>

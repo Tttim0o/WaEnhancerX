@@ -221,10 +221,17 @@ fun FloatingBottomBarCustomizerScreen() {
                                                 Modifier.border(1.dp, Color.White.copy(alpha = 0.32f), activeShape)
                                             } else Modifier
                                         )
-                                        .padding(
-                                            horizontal = if (isIosGlass || isRefined) 13.dp else 10.dp,
-                                            vertical = if (isIosGlass || isRefined) 5.dp else 2.dp
-                                        )
+                                        .then(
+                                            if (iconsOnly) {
+                                                Modifier.size(40.dp)
+                                            } else {
+                                                Modifier.padding(
+                                                    horizontal = if (isIosGlass || isRefined) 13.dp else 10.dp,
+                                                    vertical = if (isIosGlass || isRefined) 5.dp else 2.dp
+                                                )
+                                            }
+                                        ),
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = WaexIcons.GridView,
