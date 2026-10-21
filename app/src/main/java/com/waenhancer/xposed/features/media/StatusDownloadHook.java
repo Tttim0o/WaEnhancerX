@@ -234,7 +234,7 @@ public class StatusDownloadHook extends BaseFeature {
         item.setOnMenuItemClickListener(clicked -> {
             boolean sent = BlueOnReplyHook.sendCapturedStatusReceipt(resolveCurrentStatusItem(sourceObject));
             showToast(context, sent
-                    ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Blue tick sent")
+                    ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Seen sent")
                     : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send"));
             return true;
         });
@@ -466,7 +466,7 @@ public class StatusDownloadHook extends BaseFeature {
             }
         }
         showToast(statusContext, sent
-                ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Blue tick sent")
+                ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Seen sent")
                 : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send"));
     }
 

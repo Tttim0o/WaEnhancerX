@@ -583,7 +583,7 @@ public class BlueOnReplyHook extends BaseFeature {
                     ? (Context) conversation : context;
             Toast.makeText(toastContext,
                     jid == null ? UiText.get(R.string.waex_l10n_recipient_unconfirmed, "Cannot verify chat recipient")
-                            : (sent > 0 ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Blue tick sent") : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send")),
+                            : (sent > 0 ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Seen sent") : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send")),
                     Toast.LENGTH_SHORT).show();
             return true;
         });
