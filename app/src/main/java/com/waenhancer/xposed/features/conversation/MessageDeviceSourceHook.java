@@ -404,7 +404,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
             if (deviceId == 0) {
                 Toast.makeText(ctx, UiText.get(R.string.message_sent_via_phone, "This message was sent via Phone"), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(ctx, UiText.get(R.string.waex_ui_this_message_was_sent_via_a_linked_dev_7be749b8, "This message was sent via a Linked Device (Desktop/Phone)"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ctx, UiText.get(R.string.waex_ui_this_message_was_sent_via_a_linked_dev, "This message was sent via a Linked Device (Desktop/Phone)"), Toast.LENGTH_SHORT).show();
             }
         });
     }

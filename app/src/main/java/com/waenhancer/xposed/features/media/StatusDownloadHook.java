@@ -230,12 +230,12 @@ public class StatusDownloadHook extends BaseFeature {
     private void injectStatusSeenMenuItem(Menu menu, Object sourceObject) {
         if (menu.findItem(MENU_ID_STATUS_SEEN) != null) return;
         MenuItem item = menu.add(Menu.NONE, MENU_ID_STATUS_SEEN, Menu.NONE,
-                UiText.get(R.string.waex_ui_send_blue_tick_a14924d4, "Send blue tick"));
+                UiText.get(R.string.waex_ui_send_blue_tick, "Send blue tick"));
         item.setOnMenuItemClickListener(clicked -> {
             boolean sent = BlueOnReplyHook.sendCapturedStatusReceipt(resolveCurrentStatusItem(sourceObject));
             showToast(context, sent
-                    ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Seen sent")
-                    : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send"));
+                    ? UiText.get(R.string.waex_ui_blue_tick_sent, "Seen sent")
+                    : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send, "No hidden read receipt to send"));
             return true;
         });
     }
@@ -243,8 +243,8 @@ public class StatusDownloadHook extends BaseFeature {
     private void configureStatusMenuItem(MenuItem item, Object sourceObject) {
         boolean isTextStatus = isCurrentTextStatus(sourceObject);
         item.setTitle(isTextStatus
-                ? UiText.get(R.string.waex_ui_copy_text_b0ac9cea, "Copy text")
-                : UiText.get(R.string.waex_ui_download_d6eafe82, "Download"));
+                ? UiText.get(R.string.waex_ui_copy_text, "Copy text")
+                : UiText.get(R.string.waex_ui_download, "Download"));
         Drawable icon = MenuIconLoader.load(context,
                 isTextStatus ? "ic_waex_copy" : "ic_waex_download");
         if (icon != null) item.setIcon(icon);
@@ -256,7 +256,7 @@ public class StatusDownloadHook extends BaseFeature {
                         downloadCurrentStatus(sourceObject);
                     } catch (Throwable t) {
                         XposedBridge.log(TAG + " Download error: " + t.getClass().getSimpleName());
-                        showToast(context, UiText.get(R.string.waex_ui_failed_to_download_status_19426d76,
+                        showToast(context, UiText.get(R.string.waex_ui_failed_to_download_status,
                                 "Failed to download status"));
                     }
                 });
@@ -466,8 +466,8 @@ public class StatusDownloadHook extends BaseFeature {
             }
         }
         showToast(statusContext, sent
-                ? UiText.get(R.string.waex_ui_blue_tick_sent_22828691, "Seen sent")
-                : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send_15d6cfc0, "No hidden read receipt to send"));
+                ? UiText.get(R.string.waex_ui_blue_tick_sent, "Seen sent")
+                : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send, "No hidden read receipt to send"));
     }
 
     /** Retains any WhatsApp/WDS-specific LayoutParams subclass used by the heart control. */
@@ -529,7 +529,7 @@ public class StatusDownloadHook extends BaseFeature {
         } else {
             showToast(
                     context,
-                    UiText.get(R.string.waex_ui_please_wait_until_the_status_finishes_0ef2b7ff, "Please wait until the status finishes downloading, then try again"),
+                    UiText.get(R.string.waex_ui_please_wait_until_the_status_finishes, "Please wait until the status finishes downloading, then try again"),
                     Toast.LENGTH_LONG
             );
         }
@@ -880,12 +880,12 @@ public class StatusDownloadHook extends BaseFeature {
     private boolean exportStatus(Context ctx, File srcFile) {
         try {
             StatusMediaExporter.export(ctx, srcFile);
-            showToast(ctx, UiText.get(R.string.waex_ui_status_saved_to_gallery_waex_9f345669,
+            showToast(ctx, UiText.get(R.string.waex_ui_status_saved_to_gallery_waex,
                     "Status saved to Gallery (WAEX)"));
             return true;
         } catch (Exception failure) {
             XposedBridge.log(TAG + " status export failed: " + failure.getClass().getSimpleName());
-            showToast(ctx, UiText.get(R.string.waex_ui_failed_to_download_status_19426d76,
+            showToast(ctx, UiText.get(R.string.waex_ui_failed_to_download_status,
                     "Failed to download status: ") + failure.getClass().getSimpleName());
             return false;
         }
@@ -914,10 +914,10 @@ public class StatusDownloadHook extends BaseFeature {
         new Handler(Looper.getMainLooper()).post(() -> {
             try {
                 ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText(UiText.get(R.string.waex_ui_status_text_b35d0184, "Status Text"), text);
+                ClipData clip = ClipData.newPlainText(UiText.get(R.string.waex_ui_status_text, "Status Text"), text);
                 if (clipboard != null) {
                     clipboard.setPrimaryClip(clip);
-                    Toast.makeText(ctx, UiText.get(R.string.waex_ui_copied_status_text_to_clipboard_b81c6089, "Copied status text to clipboard"), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ctx, UiText.get(R.string.waex_ui_copied_status_text_to_clipboard, "Copied status text to clipboard"), Toast.LENGTH_SHORT).show();
                 }
             } catch (Throwable ignored) {}
         });

@@ -223,7 +223,7 @@ public final class SeparateGroupsHook extends BaseFeature {
                         || !CharSequence.class.isAssignableFrom(method.getReturnType())) continue;
                 XposedBridge.hookMethod(method, new XC_MethodHook() {
                     @Override protected void beforeHookedMethod(MethodHookParam param) {
-                        if ((int) param.args[0] == GROUPS) param.setResult(UiText.get(R.string.waex_ui_groups_39bbb719, "Groups"));
+                        if ((int) param.args[0] == GROUPS) param.setResult(UiText.get(R.string.waex_ui_groups, "Groups"));
                     }
                 });
             }
@@ -245,7 +245,7 @@ public final class SeparateGroupsHook extends BaseFeature {
                     @Override protected void afterHookedMethod(MethodHookParam param) {
                         MenuItem item = (MenuItem) param.getResult();
                         if (item != null && item.getItemId() == GROUPS) {
-                            item.setTitle(UiText.get(R.string.waex_ui_groups_39bbb719, UiText.get(R.string.waex_ui_groups_39bbb719, "Groups")));
+                            item.setTitle(UiText.get(R.string.waex_ui_groups, UiText.get(R.string.waex_ui_groups, "Groups")));
                             item.setIcon(communities);
                             item.setCheckable(true);
                         }

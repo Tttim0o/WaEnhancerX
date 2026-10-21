@@ -126,7 +126,7 @@ public class PresenceToastsHook extends BaseFeature {
                             if (!PresenceStateStore.isCurrentOnline(event.jid, transitionId)) return;
                             try {
                                 String name = ContactNameResolver.INSTANCE.resolveName(context, event.jid, null, null);
-                                showToastSafely(name + UiText.get(R.string.waex_ui_is_online_e0992fa5, " is online"), () -> isOnlineToastEnabled()
+                                showToastSafely(name + UiText.get(R.string.waex_ui_is_online, " is online"), () -> isOnlineToastEnabled()
                                         && PresenceStateStore.isCurrentOnline(event.jid, transitionId));
                             } catch (RuntimeException | LinkageError ignored) { /* Optional name lookup. */ }
                         });
@@ -356,11 +356,11 @@ public class PresenceToastsHook extends BaseFeature {
                         : null;
                 if (!ContactNameResolver.INSTANCE.isValidDisplayName(name)
                         || "Unknown".equalsIgnoreCase(name)) {
-                    name = UiText.get(R.string.waex_ui_a_contact_f7f0de9a, "A contact");
+                    name = UiText.get(R.string.waex_ui_a_contact, "A contact");
                 }
                 String text = name + ("status".equals(subject)
                         ? UiText.get(R.string.waex_ui_deleted_a_status, " deleted a status")
-                        : UiText.get(R.string.waex_ui_deleted_a_message_475dad17, " deleted a message"));
+                        : UiText.get(R.string.waex_ui_deleted_a_message, " deleted a message"));
                 handler.post(() -> {
                     try {
                         Toast.makeText(context, text, Toast.LENGTH_SHORT).show();

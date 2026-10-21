@@ -115,7 +115,7 @@ fun WaexColorPickerDialog(
                 .padding(bottom = 24.dp)
         ) {
                 Text(
-                    text = UiText.get(R.string.waex_ui_select_accent_color_ba07cfa2, "Select Accent Color"),
+                    text = UiText.get(R.string.waex_ui_select_accent_color, "Select Accent Color"),
                     style = typography.headlineMd,
                     color = colors.onSurface,
                     fontWeight = FontWeight.Bold
@@ -148,7 +148,7 @@ fun WaexColorPickerDialog(
                                 }
                             } catch (_: Throwable) {}
                         },
-                        label = { Text(UiText.get(R.string.waex_ui_hex_code_fc70e187, "Hex Code"), style = typography.labelSm) },
+                        label = { Text(UiText.get(R.string.waex_ui_hex_code, "Hex Code"), style = typography.labelSm) },
                         textStyle = typography.bodyMd.copy(fontWeight = FontWeight.Bold),
                         modifier = Modifier.weight(1f),
                         singleLine = true,
@@ -160,7 +160,7 @@ fun WaexColorPickerDialog(
 
                 // Presets Palette
                 Text(
-                    text = UiText.get(R.string.waex_ui_presets_954f93fe, "Presets"),
+                    text = UiText.get(R.string.waex_ui_presets, "Presets"),
                     style = typography.labelSm,
                     color = colors.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
@@ -203,7 +203,7 @@ fun WaexColorPickerDialog(
 
                 // Sliders (Hue, Saturation, Brightness)
                 Text(
-                    text = UiText.get(R.string.waex_ui_hue_4d7056f0, "Hue"),
+                    text = UiText.get(R.string.waex_ui_hue, "Hue"),
                     style = typography.labelSm,
                     color = colors.onSurfaceVariant
                 )
@@ -221,7 +221,7 @@ fun WaexColorPickerDialog(
                 )
 
                 Text(
-                    text = UiText.get(R.string.waex_ui_saturation_993f024b, "Saturation"),
+                    text = UiText.get(R.string.waex_ui_saturation, "Saturation"),
                     style = typography.labelSm,
                     color = colors.onSurfaceVariant
                 )
@@ -239,7 +239,7 @@ fun WaexColorPickerDialog(
                 )
 
                 Text(
-                    text = UiText.get(R.string.waex_ui_brightness_ec811d30, "Brightness"),
+                    text = UiText.get(R.string.waex_ui_brightness, "Brightness"),
                     style = typography.labelSm,
                     color = colors.onSurfaceVariant
                 )

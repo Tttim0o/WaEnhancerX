@@ -117,7 +117,7 @@ public final class PreferenceLabels {
             case "verify_blocked_contact": return UiText.get(R.string.feat_contact_blocked_verify_title, "Show Contact Added Status in Conversation");
             case "voice_transcription": return UiText.get(R.string.feat_voice_transcription_title, "Audio Transcription");
             case "waex_menu_style": return UiText.get(R.string.feat_quick_home_menu_title, "Quick Action Home Menu");
-            default: return UiText.get(R.string.waex_ui_setting_1_s_58e12775, "Setting: %1$s", key);
+            default: return UiText.get(R.string.waex_ui_setting_1_s, "Setting: %1$s", key);
         }
     }
 }

@@ -125,13 +125,13 @@ fun UpdateAvailableBottomSheet(
                 Spacer(modifier = Modifier.size(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = UiText.get(R.string.waex_ui_update_available_5ae200f9, "Update Available"),
+                        text = UiText.get(R.string.waex_ui_update_available, "Update Available"),
                         style = typography.titleLg,
                         fontWeight = FontWeight.Bold,
                         color = colors.onSurface
                     )
                     Text(
-                        text = UiText.get(R.string.waex_ui_version_1_s_b65bfa7f, "Version %1\$s", release.version),
+                        text = UiText.get(R.string.waex_ui_version_1_s, "Version %1\$s", release.version),
                         style = typography.bodyMd,
                         color = colors.primary,
                         fontWeight = FontWeight.SemiBold
@@ -155,7 +155,7 @@ fun UpdateAvailableBottomSheet(
                 ) {
                     if (sections.isEmpty()) {
                         Text(
-                            text = UiText.get(R.string.waex_ui_general_stability_improvements_and_bug_d6cabb44, "General stability improvements and bug fixes."),
+                            text = UiText.get(R.string.waex_ui_general_stability_improvements_and_bug, "General stability improvements and bug fixes."),
                             style = typography.bodyMd,
                             color = colors.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 12.dp)
@@ -194,7 +194,7 @@ fun UpdateAvailableBottomSheet(
                     colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                 ) {
                     Text(
-                        text = UiText.get(R.string.waex_ui_update_now_f96f4d46, "Update Now"),
+                        text = UiText.get(R.string.waex_ui_update_now, "Update Now"),
                         fontWeight = FontWeight.Bold,
                         color = colors.onPrimary
                     )
@@ -209,14 +209,14 @@ fun UpdateAvailableBottomSheet(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     ) {
-                        Text(UiText.get(R.string.waex_ui_view_details_90789c12, "View Details"))
+                        Text(UiText.get(R.string.waex_ui_view_details, "View Details"))
                     }
                     OutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     ) {
-                        Text(UiText.get(R.string.waex_ui_later_73b6e48a, "Later"))
+                        Text(UiText.get(R.string.waex_ui_later, "Later"))
                     }
                 }
             }
@@ -262,7 +262,7 @@ private fun NativeChangelogSectionRow(
 
             Icon(
                 imageVector = WaexIcons.ChevronRight,
-                contentDescription = if (isExpanded) UiText.get(R.string.waex_ui_collapse_be6eb1fc, "Collapse") else UiText.get(R.string.waex_ui_expand_07548c2c, "Expand"),
+                contentDescription = if (isExpanded) UiText.get(R.string.waex_ui_collapse, "Collapse") else UiText.get(R.string.waex_ui_expand, "Expand"),
                 tint = colors.onSurfaceVariant,
                 modifier = Modifier
                     .size(18.dp)

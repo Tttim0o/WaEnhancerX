@@ -197,7 +197,7 @@ fun ModuleSettingsScreen() {
                             if (selected) {
                                 Icon(
                                     imageVector = WaexIcons.Check,
-                                    contentDescription = UiText.get(R.string.waex_ui_selected_57fd7a0c, "Selected"),
+                                    contentDescription = UiText.get(R.string.waex_ui_selected, "Selected"),
                                     tint = colors.primary,
                                     modifier = Modifier.size(20.dp)
                                 )

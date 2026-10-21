@@ -302,7 +302,7 @@ fun MainContainerScreen() {
                 (context as? Activity)?.finish()
             } else {
                 lastBackPressTime = currentTime
-                Toast.makeText(context, UiText.get(R.string.waex_ui_press_back_again_to_exit_c151b888, "Press back again to exit"), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, UiText.get(R.string.waex_ui_press_back_again_to_exit, "Press back again to exit"), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -428,8 +428,8 @@ fun MainContainerScreen() {
                                 }
                                 val chipLabel = when (licenseState) {
                                     "pro" -> UiText.get(R.string.pro_feature_tag, "Pro")
-                                    "trial" -> UiText.get(R.string.waex_ui_trial_98a66e97, "Trial")
-                                    else -> UiText.get(R.string.waex_ui_free_f411a1fb, "Free")
+                                    "trial" -> UiText.get(R.string.waex_ui_trial, "Trial")
+                                    else -> UiText.get(R.string.waex_ui_free, "Free")
                                 }
 
                                 Box(
@@ -478,7 +478,7 @@ fun MainContainerScreen() {
                                 ) {
                                     Icon(
                                         imageVector = WaexIcons.MoreVert,
-                                        contentDescription = UiText.get(R.string.waex_ui_more_options_6285ce5d, "More Options"),
+                                        contentDescription = UiText.get(R.string.waex_ui_more_options, "More Options"),
                                         tint = colors.onBackground,
                                         modifier = Modifier.size(20.dp)
                                     )

@@ -490,7 +490,7 @@ fun AutomationTaskerScreen() {
                             // Provider Dropdown selection
                             Column {
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_ai_transcription_provider_39d10f0b, "AI Transcription Provider"),
+                                    text = UiText.get(R.string.waex_ui_ai_transcription_provider, "AI Transcription Provider"),
                                     style = typography.labelSm,
                                     color = colors.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 6.dp)
@@ -531,7 +531,7 @@ fun AutomationTaskerScreen() {
                             if (transcriptionProvider == "Groq") {
                                 Column {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_groq_api_key_af3ea8bb, "Groq API Key"),
+                                        text = UiText.get(R.string.waex_ui_groq_api_key, "Groq API Key"),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant,
                                         modifier = Modifier.padding(bottom = 6.dp)
@@ -567,7 +567,7 @@ fun AutomationTaskerScreen() {
                             } else {
                                 Column {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_assemblyai_api_key_1a41b574, "AssemblyAI API Key"),
+                                        text = UiText.get(R.string.waex_ui_assemblyai_api_key, "AssemblyAI API Key"),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant,
                                         modifier = Modifier.padding(bottom = 6.dp)
@@ -612,7 +612,7 @@ fun AutomationTaskerScreen() {
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                                     ) {
-                                        Text(text = UiText.get(R.string.waex_ui_connection_status_3693e288, "Connection Status"), style = typography.bodyMd, color = colors.onSurfaceVariant)
+                                        Text(text = UiText.get(R.string.waex_ui_connection_status, "Connection Status"), style = typography.bodyMd, color = colors.onSurfaceVariant)
                                         if (assemblyStatus == "ok") {
                                             Icon(
                                                 imageVector = WaexIcons.Success,
@@ -620,7 +620,7 @@ fun AutomationTaskerScreen() {
                                                 tint = Color(0xFF22C55E),
                                                 modifier = Modifier.size(13.dp)
                                             )
-                                            Text(text = UiText.get(R.string.waex_ui_connected_22965568, "Connected"), style = typography.labelSm, color = Color(0xFF22C55E), fontWeight = FontWeight.Bold)
+                                            Text(text = UiText.get(R.string.waex_ui_connected, "Connected"), style = typography.labelSm, color = Color(0xFF22C55E), fontWeight = FontWeight.Bold)
                                         } else if (assemblyStatus == "verifying") {
                                             CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = colors.primary)
                                         }
@@ -642,7 +642,7 @@ fun AutomationTaskerScreen() {
                                         ),
                                         modifier = Modifier.height(36.dp)
                                     ) {
-                                        Text(text = UiText.get(R.string.waex_ui_test_532eaabd, "Test"), style = typography.bodyMd)
+                                        Text(text = UiText.get(R.string.waex_ui_test, "Test"), style = typography.bodyMd)
                                     }
                                 }
                             }

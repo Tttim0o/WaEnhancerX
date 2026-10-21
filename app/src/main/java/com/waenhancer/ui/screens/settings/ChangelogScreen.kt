@@ -104,7 +104,7 @@ fun ChangelogScreen() {
         error = null
         runCatching { ReleaseRepository.fetchReleases() }
             .onSuccess { releases = it }
-            .onFailure { error = it.message ?: UiText.get(R.string.waex_ui_unable_to_load_releases_4dd4eff4, "Unable to load releases.") }
+            .onFailure { error = it.message ?: UiText.get(R.string.waex_ui_unable_to_load_releases, "Unable to load releases.") }
         loading = false
     }
 
@@ -115,11 +115,11 @@ fun ChangelogScreen() {
     Scaffold(
         topBar = {
             WaexTopBar(
-                UiText.get(R.string.waex_ui_changelog_releases_f404e373, "Changelog & Releases"),
+                UiText.get(R.string.waex_ui_changelog_releases, "Changelog & Releases"),
                 onBackClick = { navController.popBack() },
                 actions = {
                     IconButton(onClick = { navController.navigateTo(Screen.UpdateSettings) }) {
-                        Icon(WaexIcons.Settings, contentDescription = UiText.get(R.string.waex_ui_update_settings_46ed6957, "Update settings"), tint = colors.onSurface)
+                        Icon(WaexIcons.Settings, contentDescription = UiText.get(R.string.waex_ui_update_settings, "Update settings"), tint = colors.onSurface)
                     }
                 }
             )
@@ -131,14 +131,14 @@ fun ChangelogScreen() {
             error != null -> Column(Modifier.fillMaxSize().padding(insets).padding(spacing.pageMargin), Arrangement.Center, Alignment.CenterHorizontally) {
                 Text(error!!, color = colors.onSurfaceVariant, style = typography.bodyMd)
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = { reloadKey++ }) { Text(UiText.get(R.string.waex_ui_try_again_d8b8392e, "Try again")) }
+                Button(onClick = { reloadKey++ }) { Text(UiText.get(R.string.waex_ui_try_again, "Try again")) }
             }
             else -> LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(insets),
                 contentPadding = PaddingValues(horizontal = spacing.pageMargin, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (releases.isEmpty()) item { Text(UiText.get(R.string.waex_ui_no_releases_found_d8feb500, "No releases found."), color = colors.onSurfaceVariant) }
+                if (releases.isEmpty()) item { Text(UiText.get(R.string.waex_ui_no_releases_found, "No releases found."), color = colors.onSurfaceVariant) }
                 items(releases, key = { it.tagName }) { release ->
                     val installed = release.version.equals(normalizeVersion(installedVersion), true)
                     val comparison = ReleaseRepository.versionCode(release.version).compareTo(ReleaseRepository.versionCode(installedVersion))
@@ -169,15 +169,15 @@ fun ChangelogScreen() {
                                 IconButton(onClick = { navController.navigateTo(Screen.ReleaseDetails(release.tagName)) }) {
                                     Icon(
                                         WaexIcons.ChevronRight,
-                                        contentDescription = UiText.get(R.string.waex_ui_view_release_details_12e6eae8, "View release details"),
+                                        contentDescription = UiText.get(R.string.waex_ui_view_release_details, "View release details"),
                                         tint = colors.onSurfaceVariant
                                     )
                                 }
                             }
                             if (installed || release.tagName == availableUpdate?.tagName) {
                                 Row(Modifier.padding(top = 8.dp)) {
-                                    if (installed) Badge(UiText.get(R.string.waex_ui_installed_f8b32f4e, "Installed"), Color(0xFF10B981))
-                                    if (release.tagName == availableUpdate?.tagName) Badge(UiText.get(R.string.waex_ui_update_c1c1009d, "Update"), colors.primary)
+                                    if (installed) Badge(UiText.get(R.string.waex_ui_installed, "Installed"), Color(0xFF10B981))
+                                    if (release.tagName == availableUpdate?.tagName) Badge(UiText.get(R.string.waex_ui_update, "Update"), colors.primary)
                                 }
                             }
                             Spacer(Modifier.height(14.dp))
@@ -231,8 +231,8 @@ fun ChangelogScreen() {
                                 ) {
                                     val buttonText = when {
                                         canSwitchMode -> if (BuildConfig.DEBUG) UiText.get(R.string.waex_l10n_switch_release, "Switch to Release") else UiText.get(R.string.waex_l10n_switch_debug, "Switch to Debug")
-                                        comparison > 0 -> UiText.get(R.string.waex_ui_upgrade_7ec0261b, "Upgrade")
-                                        else -> UiText.get(R.string.waex_ui_downgrade_d955b7e8, "Downgrade")
+                                        comparison > 0 -> UiText.get(R.string.waex_ui_upgrade, "Upgrade")
+                                        else -> UiText.get(R.string.waex_ui_downgrade, "Downgrade")
                                     }
                                     Text(buttonText)
                                 }
@@ -293,7 +293,7 @@ fun ChangelogBodyView(
 
     if (sections.isEmpty()) {
         MarkdownText(
-            body.ifBlank { UiText.get(R.string.waex_ui_no_changelog_available_d334743e, "No changelog available.") },
+            body.ifBlank { UiText.get(R.string.waex_ui_no_changelog_available, "No changelog available.") },
             colors.onSurfaceVariant.toArgb(),
             maxLines = 8,
             modifier = modifier.padding(vertical = 8.dp)
@@ -345,7 +345,7 @@ private fun ChangelogSectionRow(
             )
             Icon(
                 WaexIcons.ChevronRight,
-                contentDescription = if (expanded) UiText.get(R.string.waex_ui_collapse_1_s_a0b382ed, "Collapse %1\$s", com.waenhancer.utils.InternalLabels.text(section.title)) else UiText.get(R.string.waex_ui_expand_1_s_e144bd52, "Expand %1\$s", com.waenhancer.utils.InternalLabels.text(section.title)),
+                contentDescription = if (expanded) UiText.get(R.string.waex_ui_collapse_1_s, "Collapse %1\$s", com.waenhancer.utils.InternalLabels.text(section.title)) else UiText.get(R.string.waex_ui_expand_1_s, "Expand %1\$s", com.waenhancer.utils.InternalLabels.text(section.title)),
                 tint = colors.onSurfaceVariant,
                 modifier = Modifier.rotate(rotation)
             )

@@ -97,7 +97,7 @@ fun WaexEmojiPickerDialog(
                 )
 
                 Text(
-                    text = UiText.get(R.string.waex_ui_select_or_type_the_default_emoji_sent_1489519d, "Select or type the default emoji sent when double-tapping a message."),
+                    text = UiText.get(R.string.waex_ui_select_or_type_the_default_emoji_sent, "Select or type the default emoji sent when double-tapping a message."),
                     style = typography.bodySm,
                     color = colors.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
@@ -105,7 +105,7 @@ fun WaexEmojiPickerDialog(
 
                 // Quick Presets
                 Text(
-                    text = UiText.get(R.string.waex_ui_popular_reactions_c2b82def, "Popular Reactions"),
+                    text = UiText.get(R.string.waex_ui_popular_reactions, "Popular Reactions"),
                     style = typography.labelSm,
                     color = colors.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -142,7 +142,7 @@ fun WaexEmojiPickerDialog(
 
                 // Custom Input Field
                 Text(
-                    text = UiText.get(R.string.waex_ui_or_enter_custom_emoji_8442012c, "Or enter custom emoji"),
+                    text = UiText.get(R.string.waex_ui_or_enter_custom_emoji, "Or enter custom emoji"),
                     style = typography.labelSm,
                     color = colors.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 6.dp)
@@ -162,7 +162,7 @@ fun WaexEmojiPickerDialog(
                         unfocusedTextColor = colors.onSurface
                     ),
                     placeholder = {
-                        Text(UiText.get(R.string.waex_ui_e_g_007cd8a1, "e.g. 👍"), color = colors.onSurfaceVariant)
+                        Text(UiText.get(R.string.waex_ui_e_g, "e.g. 👍"), color = colors.onSurfaceVariant)
                     }
                 )
 

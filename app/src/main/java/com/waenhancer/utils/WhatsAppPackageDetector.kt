@@ -283,7 +283,7 @@ object WhatsAppPackageDetector {
                     HookedAppInfo(
                         packageName = pkg,
                         appName = friendlyName,
-                        versionName = "v${pInfo.versionName ?: UiText.get(R.string.waex_ui_unknown_b764cdc0, "Unknown")}",
+                        versionName = "v${pInfo.versionName ?: UiText.get(R.string.waex_ui_unknown, "Unknown")}",
                         isInstalled = true,
                         isHooked = isInjected,
                         injectedHooks = injectedHooks,
@@ -303,7 +303,7 @@ object WhatsAppPackageDetector {
                         HookedAppInfo(
                             packageName = pkg,
                             appName = name,
-                            versionName = UiText.get(R.string.waex_ui_not_installed_d08041a7, "Not Installed"),
+                            versionName = UiText.get(R.string.waex_ui_not_installed, "Not Installed"),
                             isInstalled = false,
                             isHooked = false,
                             injectedHooks = emptyList(),

@@ -261,7 +261,7 @@ fun AboutScreen() {
             val request = Request.Builder()
                 .url("https://api.github.com/repos/WaEnhancerX/WaEnhancerX/contributors")
                 .header("User-Agent", "WaEnhancerX-App")
-                .header(UiText.get(R.string.waex_ui_accept_89713b9c, "Accept"), "application/vnd.github.v3+json")
+                .header(UiText.get(R.string.waex_ui_accept, "Accept"), "application/vnd.github.v3+json")
                 .build()
 
             try {
@@ -312,7 +312,7 @@ fun AboutScreen() {
             val request = Request.Builder()
                 .url("https://api.github.com/users/${contributor.login}")
                 .header("User-Agent", "WaEnhancerX-App")
-                .header(UiText.get(R.string.waex_ui_accept_89713b9c, "Accept"), "application/vnd.github.v3+json")
+                .header(UiText.get(R.string.waex_ui_accept, "Accept"), "application/vnd.github.v3+json")
                 .build()
 
             try {
@@ -371,7 +371,7 @@ fun AboutScreen() {
             val request = Request.Builder()
                 .url("https://api.github.com/repos/Xposed-Modules-Repo/com.waenhancer/releases/stats/contributors")
                 .header("User-Agent", "WaEnhancerX-App")
-                .header(UiText.get(R.string.waex_ui_accept_89713b9c, "Accept"), "application/vnd.github.v3+json")
+                .header(UiText.get(R.string.waex_ui_accept, "Accept"), "application/vnd.github.v3+json")
                 .build()
 
             try {
@@ -412,7 +412,7 @@ fun AboutScreen() {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             context.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(context, UiText.get(R.string.waex_ui_could_not_open_link_dfa30a8f, "Could not open link"), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, UiText.get(R.string.waex_ui_could_not_open_link, "Could not open link"), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -448,7 +448,7 @@ fun AboutScreen() {
                     // App Launcher Icon
                     Image(
                         painter = painterResource(id = R.drawable.ic_app_logo),
-                        contentDescription = UiText.get(R.string.waex_ui_app_logo_c1fa6ccf, "App Logo"),
+                        contentDescription = UiText.get(R.string.waex_ui_app_logo, "App Logo"),
                         modifier = Modifier
                             .size(88.dp)
                             .clip(RoundedCornerShape(12.dp))
@@ -513,7 +513,7 @@ fun AboutScreen() {
                                 fontSize = 10.sp
                             )
                             Text(
-                                text = UiText.get(R.string.waex_ui_maintainer_ba79e198, "MAINTAINER"),
+                                text = UiText.get(R.string.waex_ui_maintainer, "MAINTAINER"),
                                 color = Color(0xFF10B981),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -685,7 +685,7 @@ fun AboutScreen() {
                         }
                     } else if (contributors.isEmpty()) {
                         Text(
-                            text = UiText.get(R.string.waex_ui_no_contributors_found_faee6c16, "No contributors found"),
+                            text = UiText.get(R.string.waex_ui_no_contributors_found, "No contributors found"),
                             style = typography.bodyMd,
                             color = colors.onSurfaceVariant
                         )
@@ -870,14 +870,14 @@ fun AboutScreen() {
                                 }
                                 if (profile.followers > 0) {
                                     Text(
-                                        text = if (profile.location.isNotEmpty()) UiText.get(R.string.waex_ui_1_s_followers_3e4e03fd, " • %1\$s followers", profile.followers) else UiText.get(R.string.waex_ui_1_s_followers_3024eca2, "%1\$s followers", profile.followers),
+                                        text = if (profile.location.isNotEmpty()) UiText.get(R.string.waex_ui_followers_count_compact, " • %1\$s followers", profile.followers) else UiText.get(R.string.waex_ui_followers_count, "%1\$s followers", profile.followers),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant
                                     )
                                 }
                                 if (user.contributions > 0) {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_1_s_commits_6a8c37d2, " • %1\$s commits", user.contributions),
+                                        text = UiText.get(R.string.waex_ui_1_s_commits, " • %1\$s commits", user.contributions),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant
                                     )
@@ -917,7 +917,7 @@ fun AboutScreen() {
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 Text(
-                                                    text = UiText.get(R.string.waex_ui_open_to_hire_c4863654, "Open to hire"),
+                                                    text = UiText.get(R.string.waex_ui_open_to_hire, "Open to hire"),
                                                     fontSize = 12.sp,
                                                     fontWeight = FontWeight.Medium,
                                                     color = colors.primary
@@ -965,7 +965,7 @@ fun AboutScreen() {
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_view_github_profile_1a49fe64, "View GitHub Profile"),
+                                    text = UiText.get(R.string.waex_ui_view_github_profile, "View GitHub Profile"),
                                     fontWeight = FontWeight.SemiBold,
                                     color = colors.onSurface
                                 )
@@ -989,7 +989,7 @@ fun AboutScreen() {
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_visit_website_584aa47f, "Visit Website"),
+                                        text = UiText.get(R.string.waex_ui_visit_website, "Visit Website"),
                                         fontWeight = FontWeight.SemiBold,
                                         color = colors.onSurface
                                     )
@@ -1009,7 +1009,7 @@ fun AboutScreen() {
                                     )
                                 ) {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_view_detailed_contributions_606cb13b, "View Detailed Contributions"),
+                                        text = UiText.get(R.string.waex_ui_view_detailed_contributions, "View Detailed Contributions"),
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -1031,7 +1031,7 @@ fun AboutScreen() {
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = UiText.get(R.string.waex_ui_1_s_s_contributions_7a33f895, "%1\$s's Contributions", userProfileData?.name ?: user.login),
+                            text = UiText.get(R.string.waex_ui_1_s_s_contributions, "%1\$s's Contributions", userProfileData?.name ?: user.login),
                             style = typography.headlineMd,
                             fontWeight = FontWeight.Bold,
                             color = colors.onSurface
@@ -1072,7 +1072,7 @@ fun AboutScreen() {
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_total_commits_fe2d82f4, "Total Commits"),
+                                        text = UiText.get(R.string.waex_ui_total_commits, "Total Commits"),
                                         style = typography.bodyLg,
                                         color = colors.onSurfaceVariant
                                     )
@@ -1092,7 +1092,7 @@ fun AboutScreen() {
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Text(
-                                            text = UiText.get(R.string.waex_ui_lines_added_caa510fe, "Lines Added"),
+                                            text = UiText.get(R.string.waex_ui_lines_added, "Lines Added"),
                                             style = typography.bodyLg,
                                             color = colors.onSurfaceVariant
                                         )
@@ -1111,7 +1111,7 @@ fun AboutScreen() {
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Text(
-                                            text = UiText.get(R.string.waex_ui_lines_deleted_0bfbeabe, "Lines Deleted"),
+                                            text = UiText.get(R.string.waex_ui_lines_deleted, "Lines Deleted"),
                                             style = typography.bodyLg,
                                             color = colors.onSurfaceVariant
                                         )

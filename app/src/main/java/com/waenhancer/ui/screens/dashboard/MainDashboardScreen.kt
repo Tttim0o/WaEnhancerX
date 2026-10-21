@@ -136,26 +136,26 @@ fun MainDashboardScreen(
     ) { uri ->
         if (uri != null) {
             runCatching { preferenceManager.exportSettings(uri) }
-                .onSuccess { Toast.makeText(context, UiText.get(R.string.waex_ui_1_s_settings_backed_up_1a3f7819, "%1\$s settings backed up", it), Toast.LENGTH_SHORT).show() }
-                .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_backup_failed_1_s_5a9e913e, "Backup failed: %1\$s", it.message), Toast.LENGTH_LONG).show() }
+                .onSuccess { Toast.makeText(context, UiText.get(R.string.waex_ui_1_s_settings_backed_up, "%1\$s settings backed up", it), Toast.LENGTH_SHORT).show() }
+                .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_backup_failed_1_s, "Backup failed: %1\$s", it.message), Toast.LENGTH_LONG).show() }
         }
     }
     val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
             runCatching { preferenceManager.importSettings(uri) }
-                .onSuccess { Toast.makeText(context, UiText.get(R.string.waex_ui_1_s_settings_restored_restart_whatsapp_09d38d41, "%1\$s settings restored. Restart WhatsApp to apply.", it), Toast.LENGTH_LONG).show() }
-                .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_restore_failed_1_s_995c8df5, "Restore failed: %1\$s", it.message), Toast.LENGTH_LONG).show() }
+                .onSuccess { Toast.makeText(context, UiText.get(R.string.waex_ui_1_s_settings_restored_restart_whatsapp, "%1\$s settings restored. Restart WhatsApp to apply.", it), Toast.LENGTH_LONG).show() }
+                .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_restore_failed_1_s, "Restore failed: %1\$s", it.message), Toast.LENGTH_LONG).show() }
         }
     }
     val startBackup = {
         val stamp = SimpleDateFormat("yyyyMMdd-HHmm", Locale.US).format(Date())
         runCatching { backupLauncher.launch("WAEX-settings-$stamp.waex") }
-            .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_could_not_open_file_picker_1_s_5bc514b4, "Could not open file picker: %1\$s", it.message), Toast.LENGTH_LONG).show() }
+            .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_could_not_open_file_picker_1_s, "Could not open file picker: %1\$s", it.message), Toast.LENGTH_LONG).show() }
         Unit
     }
     val startRestore = {
         runCatching { restoreLauncher.launch(arrayOf("application/octet-stream", "*/*")) }
-            .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_could_not_open_file_picker_1_s_5bc514b4, "Could not open file picker: %1\$s", it.message), Toast.LENGTH_LONG).show() }
+            .onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_could_not_open_file_picker_1_s, "Could not open file picker: %1\$s", it.message), Toast.LENGTH_LONG).show() }
         Unit
     }
 
@@ -467,7 +467,7 @@ fun MainDashboardScreen(
                                             ) {
                                                 Icon(
                                                     imageVector = WaexIcons.Refresh,
-                                                    contentDescription = UiText.get(R.string.waex_ui_restart_app_07fe185c, "Restart App"),
+                                                    contentDescription = UiText.get(R.string.waex_ui_restart_app, "Restart App"),
                                                     tint = colors.onSurfaceVariant,
                                                     modifier = Modifier.size(15.dp)
                                                 )
@@ -675,7 +675,7 @@ fun MainDashboardScreen(
                     refreshTrigger++
                     diagnosticsRefreshTrigger++
                     showResetSettingsDialog = false
-                    Toast.makeText(context, UiText.get(R.string.waex_ui_all_settings_reset_to_default_75452587, "All settings reset to default"), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, UiText.get(R.string.waex_ui_all_settings_reset_to_default, "All settings reset to default"), Toast.LENGTH_SHORT).show()
                 }
             )
         }
@@ -1512,7 +1512,7 @@ private fun DashboardDiagnosticsCard(
             ) {
                 DiagnosticMetric(
                     label = stringResource(R.string.diag_label_android),
-                    value = diagnostics?.let { UiText.get(R.string.waex_ui_api_1_s_7ed74ebc, "API %1\$s", it.sdk) } ?: "—",
+                    value = diagnostics?.let { UiText.get(R.string.waex_ui_api_1_s, "API %1\$s", it.sdk) } ?: "—",
                     modifier = Modifier.weight(1f)
                 )
                 DiagnosticMetric(
@@ -1836,7 +1836,7 @@ fun InjectedHookRow(hook: InjectedHookItem) {
                 if (!hook.error.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = UiText.get(R.string.waex_ui_error_1_s_81a2d6c7, "Error: %1\$s", hook.error),
+                        text = UiText.get(R.string.waex_ui_error_1_s, "Error: %1\$s", hook.error),
                         style = typography.labelSm,
                         fontSize = 10.sp,
                         color = colors.error,
@@ -1849,7 +1849,7 @@ fun InjectedHookRow(hook: InjectedHookItem) {
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = if (isSuccess) UiText.get(R.string.diag_status_active, "Active") else UiText.get(R.string.waex_ui_failed_031a8f0f, "Failed"),
+                text = if (isSuccess) UiText.get(R.string.diag_status_active, "Active") else UiText.get(R.string.waex_ui_failed_label, "Failed"),
                 style = typography.labelSm,
                 fontWeight = FontWeight.Medium,
                 color = dotColor,

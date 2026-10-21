@@ -180,12 +180,12 @@ fun CallsHubScreen() {
             }.apply {
                 type = "audio/*"
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                clipData = ClipData.newRawUri(UiText.get(R.string.waex_ui_call_recording_bb8d55c9, "Call recording"), uris.first())
+                clipData = ClipData.newRawUri(UiText.get(R.string.waex_ui_call_recording, "Call recording"), uris.first())
             }
-            context.startActivity(Intent.createChooser(intent, UiText.get(R.string.waex_ui_share_call_recording_692216ae, "Share call recording")))
+            context.startActivity(Intent.createChooser(intent, UiText.get(R.string.waex_ui_share_call_recording, "Share call recording")))
             clearRecordingSelection()
         }.onFailure {
-            Toast.makeText(context, UiText.get(R.string.waex_ui_couldn_t_share_the_selected_recording_d260dfd9, "Couldn't share the selected recording"), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, UiText.get(R.string.waex_ui_couldn_t_share_the_selected_recording, "Couldn't share the selected recording"), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -241,7 +241,7 @@ fun CallsHubScreen() {
                     name = file.nameWithoutExtension,
                     dateStr = dateStr,
                     sizeStr = sizeStr,
-                    durationStr = UiText.get(R.string.waex_ui_audio_call_edd60bff, "Audio Call")
+                    durationStr = UiText.get(R.string.waex_ui_audio_call, "Audio Call")
                 )
             )
         }
@@ -259,7 +259,7 @@ fun CallsHubScreen() {
     Scaffold(
         topBar = {
             WaexTopBar(
-                title = if (selectedRecordingPaths.isEmpty()) UiText.get(R.string.waex_ui_calls_recording_6042880c, "Calls & Recording") else UiText.get(R.string.waex_ui_1_s_selected_5f9d5da8, "%1\$s selected", selectedRecordingPaths.size),
+                title = if (selectedRecordingPaths.isEmpty()) UiText.get(R.string.waex_ui_calls_recording, "Calls & Recording") else UiText.get(R.string.waex_ui_1_s_selected, "%1\$s selected", selectedRecordingPaths.size),
                 onBackClick = if (selectedRecordingPaths.isEmpty()) {
                     { navController.popBack() }
                 } else {
@@ -268,10 +268,10 @@ fun CallsHubScreen() {
                 actions = if (selectedRecordingPaths.isEmpty()) null else {
                     {
                         IconButton(onClick = { shareSelectedRecordings() }) {
-                            Icon(WaexIcons.Share, contentDescription = UiText.get(R.string.waex_ui_share_selected_e3040dd9, "Share selected"), tint = colors.onSurface)
+                            Icon(WaexIcons.Share, contentDescription = UiText.get(R.string.waex_ui_share_selected, "Share selected"), tint = colors.onSurface)
                         }
                         IconButton(onClick = { deleteSelectedRecordings() }) {
-                            Icon(WaexIcons.Clear, contentDescription = UiText.get(R.string.waex_ui_delete_selected_d2ab5d46, "Delete selected"), tint = colors.error)
+                            Icon(WaexIcons.Clear, contentDescription = UiText.get(R.string.waex_ui_delete_selected, "Delete selected"), tint = colors.error)
                         }
                     }
                 }
@@ -384,7 +384,7 @@ fun CallsHubScreen() {
                         // ── SECTION 1: WHO CAN CALL ME ─────────────────────────────────
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                text = UiText.get(R.string.waex_ui_who_can_call_me_14ebef24, "WHO CAN CALL ME"),
+                                text = UiText.get(R.string.waex_ui_who_can_call_me, "WHO CAN CALL ME"),
                                 style = typography.labelSm,
                                 fontWeight = FontWeight.Bold,
                                 color = colors.onSurfaceVariant,
@@ -399,9 +399,9 @@ fun CallsHubScreen() {
                             ) {
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     val blockerOptions = listOf(
-                                        "0" to (UiText.get(R.string.waex_ui_everyone_no_block_f8505494, "Everyone (No Block)") to UiText.get(R.string.waex_ui_allow_all_whatsapp_incoming_voice_vide_3f8889bd, "Allow all WhatsApp incoming voice & video calls")),
-                                        "1" to (UiText.get(R.string.waex_ui_block_all_calls_f74be201, "Block All Calls") to UiText.get(R.string.waex_ui_automatically_drop_every_incoming_what_52316223, "Automatically drop every incoming WhatsApp call")),
-                                        "2" to (UiText.get(R.string.waex_ui_unknown_contacts_only_0adb8d96, "Unknown Contacts Only") to UiText.get(R.string.waex_ui_only_allow_numbers_saved_in_your_phone_504e2e53, "Only allow numbers saved in your phone address book"))
+                                        "0" to (UiText.get(R.string.waex_ui_everyone_no_block, "Everyone (No Block)") to UiText.get(R.string.waex_ui_allow_all_whatsapp_incoming_voice_vide, "Allow all WhatsApp incoming voice & video calls")),
+                                        "1" to (UiText.get(R.string.waex_ui_block_all_calls, "Block All Calls") to UiText.get(R.string.waex_ui_automatically_drop_every_incoming_what, "Automatically drop every incoming WhatsApp call")),
+                                        "2" to (UiText.get(R.string.waex_ui_unknown_contacts_only, "Unknown Contacts Only") to UiText.get(R.string.waex_ui_only_allow_numbers_saved_in_your_phone, "Only allow numbers saved in your phone address book"))
                                     )
 
                                     blockerOptions.forEachIndexed { index, (value, details) ->
@@ -473,7 +473,7 @@ fun CallsHubScreen() {
                         if (callPrivacyMode != "0") {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_call_rejection_appearance_4b21bb01, "CALL REJECTION APPEARANCE"),
+                                    text = UiText.get(R.string.waex_ui_call_rejection_appearance, "CALL REJECTION APPEARANCE"),
                                     style = typography.labelSm,
                                     fontWeight = FontWeight.Bold,
                                     color = colors.onSurfaceVariant,
@@ -488,10 +488,10 @@ fun CallsHubScreen() {
                                 ) {
                                     Column(modifier = Modifier.fillMaxWidth()) {
                                         val rejectOptions = listOf(
-                                            "no_internet" to (UiText.get(R.string.waex_ui_no_internet_connection_13a21216, "No Internet Connection") to UiText.get(R.string.waex_ui_caller_sees_calling_without_connection_78bae289, "Caller sees 'Calling...' without connection tone")),
-                                            "busy" to (UiText.get(R.string.waex_ui_user_busy_0ee28857, "User Busy") to UiText.get(R.string.waex_ui_simulates_immediate_line_busy_tone_983e3462, "Simulates immediate line busy tone")),
-                                            "declined" to (UiText.get(R.string.waex_ui_call_declined_f695a2f2, "Call Declined") to UiText.get(R.string.waex_ui_instantly_rejects_and_shows_call_decli_f15c55b2, "Instantly rejects and shows call declined")),
-                                            "uncallable" to (UiText.get(R.string.waex_ui_not_available_2ab64517, "Not Available") to UiText.get(R.string.waex_ui_simulates_caller_not_reachable_fd5240bd, "Simulates caller not reachable"))
+                                            "no_internet" to (UiText.get(R.string.waex_ui_no_internet_connection, "No Internet Connection") to UiText.get(R.string.waex_ui_caller_sees_calling_without_connection, "Caller sees 'Calling...' without connection tone")),
+                                            "busy" to (UiText.get(R.string.waex_ui_user_busy, "User Busy") to UiText.get(R.string.waex_ui_simulates_immediate_line_busy_tone, "Simulates immediate line busy tone")),
+                                            "declined" to (UiText.get(R.string.waex_ui_call_declined, "Call Declined") to UiText.get(R.string.waex_ui_instantly_rejects_and_shows_call_decli, "Instantly rejects and shows call declined")),
+                                            "uncallable" to (UiText.get(R.string.waex_ui_not_available_title, "Not Available") to UiText.get(R.string.waex_ui_simulates_caller_not_reachable, "Simulates caller not reachable"))
                                         )
 
                                         rejectOptions.forEachIndexed { index, (typeVal, details) ->
@@ -562,7 +562,7 @@ fun CallsHubScreen() {
                         // ── SECTION 3: CALL CONTROLS & DIAGNOSTICS ─────────────────────
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text(
-                                text = UiText.get(R.string.waex_ui_call_enhancements_2ffe1444, "CALL ENHANCEMENTS"),
+                                text = UiText.get(R.string.waex_ui_call_enhancements, "CALL ENHANCEMENTS"),
                                 style = typography.labelSm,
                                 fontWeight = FontWeight.Bold,
                                 color = colors.onSurfaceVariant,
@@ -585,13 +585,13 @@ fun CallsHubScreen() {
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = UiText.get(R.string.waex_ui_additional_call_information_c9b77d50, "Additional Call Information"),
+                                                text = UiText.get(R.string.waex_ui_additional_call_information, "Additional Call Information"),
                                                 style = typography.bodyLg,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = colors.onSurface
                                             )
                                             Text(
-                                                text = UiText.get(R.string.waex_ui_receive_detailed_notification_with_cal_e55e211d, "Receive detailed notification with caller IP, location, device & version after calls end"),
+                                                text = UiText.get(R.string.waex_ui_receive_detailed_notification_with_cal, "Receive detailed notification with caller IP, location, device & version after calls end"),
                                                 style = typography.bodyMd,
                                                 color = colors.onSurfaceVariant,
                                                 fontSize = 12.sp
@@ -622,13 +622,13 @@ fun CallsHubScreen() {
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = UiText.get(R.string.waex_ui_record_whatsapp_calls_edeb6ac1, "Record WhatsApp Calls"),
+                                                text = UiText.get(R.string.waex_ui_record_whatsapp_calls, "Record WhatsApp Calls"),
                                                 style = typography.bodyLg,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = colors.onSurface
                                             )
                                             Text(
-                                                text = UiText.get(R.string.waex_ui_automatically_capture_incoming_outgoin_892737f9, "Automatically capture incoming & outgoing voice calls"),
+                                                text = UiText.get(R.string.waex_ui_automatically_capture_incoming_outgoin, "Automatically capture incoming & outgoing voice calls"),
                                                 style = typography.bodyMd,
                                                 color = colors.onSurfaceVariant,
                                                 fontSize = 12.sp
@@ -651,7 +651,7 @@ fun CallsHubScreen() {
                         if (callRecordingEnabled) {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_recording_configuration_40230390, "RECORDING CONFIGURATION"),
+                                    text = UiText.get(R.string.waex_ui_recording_configuration, "RECORDING CONFIGURATION"),
                                     style = typography.labelSm,
                                     fontWeight = FontWeight.Bold,
                                     color = colors.onSurfaceVariant,
@@ -667,7 +667,7 @@ fun CallsHubScreen() {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         // Capture engine row
                                         Text(
-                                            text = UiText.get(R.string.waex_ui_audio_capture_engine_2219d349, "Audio Capture Engine"),
+                                            text = UiText.get(R.string.waex_ui_audio_capture_engine, "Audio Capture Engine"),
                                             style = typography.bodyMd,
                                             fontWeight = FontWeight.SemiBold,
                                             color = colors.onSurface,
@@ -729,7 +729,7 @@ fun CallsHubScreen() {
 
                                         // Encoding Format Row
                                         Text(
-                                            text = UiText.get(R.string.waex_ui_encoding_format_414693ab, "Encoding Format"),
+                                            text = UiText.get(R.string.waex_ui_encoding_format, "Encoding Format"),
                                             style = typography.bodyMd,
                                             fontWeight = FontWeight.SemiBold,
                                             color = colors.onSurface,
@@ -742,8 +742,8 @@ fun CallsHubScreen() {
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             listOf(
-                                                "m4a" to UiText.get(R.string.waex_ui_aac_m4a_512c810e, "AAC (.m4a)"),
-                                                "opus" to UiText.get(R.string.waex_ui_opus_opus_f43733be, "Opus (.opus)")
+                                                "m4a" to UiText.get(R.string.waex_ui_aac_m4a, "AAC (.m4a)"),
+                                                "opus" to UiText.get(R.string.waex_ui_opus_opus, "Opus (.opus)")
                                             ).forEach { (formatKey, label) ->
                                                 val active = audioFormat == formatKey
                                                 Box(
@@ -806,14 +806,14 @@ fun CallsHubScreen() {
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = UiText.get(R.string.waex_ui_no_call_recordings_yet_1a95417c, "No Call Recordings Yet"),
+                                text = UiText.get(R.string.waex_ui_no_call_recordings_yet, "No Call Recordings Yet"),
                                 style = typography.headlineMd,
                                 fontWeight = FontWeight.Bold,
                                 color = colors.onSurface
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = UiText.get(R.string.waex_ui_when_whatsapp_calls_are_placed_or_rece_a10b5a50, "When WhatsApp calls are placed or received with Call Recording enabled, the audio files will appear here automatically."),
+                                text = UiText.get(R.string.waex_ui_when_whatsapp_calls_are_placed_or_rece, "When WhatsApp calls are placed or received with Call Recording enabled, the audio files will appear here automatically."),
                                 style = typography.bodyMd,
                                 color = colors.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
@@ -874,7 +874,7 @@ fun CallsHubScreen() {
                                                         mediaPlayer = mp
                                                         currentlyPlayingPath = item.file.absolutePath
                                                     } catch (e: Exception) {
-                                                        Toast.makeText(context, UiText.get(R.string.waex_ui_playback_error_1_s_158f296a, "Playback error: %1\$s", e.message), Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, UiText.get(R.string.waex_ui_playback_error_1_s, "Playback error: %1\$s", e.message), Toast.LENGTH_SHORT).show()
                                                         stopAudio()
                                                     }
                                                 }
@@ -886,7 +886,7 @@ fun CallsHubScreen() {
                                         ) {
                                             Icon(
                                                 imageVector = if (isPlaying) WaexIcons.Clear else WaexIcons.Play,
-                                                contentDescription = if (isPlaying) UiText.get(R.string.waex_ui_stop_cae7d57b, "Stop") else UiText.get(R.string.waex_ui_play_436e6101, "Play"),
+                                                contentDescription = if (isPlaying) UiText.get(R.string.waex_ui_stop, "Stop") else UiText.get(R.string.waex_ui_play, "Play"),
                                                 tint = if (isPlaying) Color.White else colors.primary,
                                                 modifier = Modifier.size(20.dp)
                                             )
@@ -932,7 +932,7 @@ fun CallsHubScreen() {
                                         if (isSelected) {
                                             Icon(
                                                 imageVector = WaexIcons.Check,
-                                                contentDescription = UiText.get(R.string.waex_ui_selected_57fd7a0c, "Selected"),
+                                                contentDescription = UiText.get(R.string.waex_ui_selected, "Selected"),
                                                 tint = colors.primary,
                                                 modifier = Modifier.size(24.dp)
                                             )
@@ -944,7 +944,7 @@ fun CallsHubScreen() {
                                                 try {
                                                     item.file.delete()
                                                     recordingsList.remove(item)
-                                                    Toast.makeText(context, UiText.get(R.string.waex_ui_recording_deleted_ded881bb, "Recording deleted"), Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, UiText.get(R.string.waex_ui_recording_deleted, "Recording deleted"), Toast.LENGTH_SHORT).show()
                                                 } catch (_: Throwable) {}
                                             },
                                             modifier = Modifier.size(36.dp)

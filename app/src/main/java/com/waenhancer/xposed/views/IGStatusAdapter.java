@@ -154,7 +154,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
                         return;
                     }
                 } catch (Throwable t) {
-                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error_8eecdde0, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } else {
                 // Otherwise directly open write text status composer screen
@@ -171,7 +171,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
                         activity.startActivity(intent);
                     }
                 } catch (Throwable t) {
-                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error_8eecdde0, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
             return;
@@ -235,7 +235,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
                 activity.startActivity(intent);
             }
         } catch (Throwable t) {
-            Toast.makeText(activity, UiText.get(R.string.waex_ui_error_opening_status_768e80f2, "Error opening status: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, UiText.get(R.string.waex_ui_error_opening_status, "Error opening status: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -359,7 +359,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
             if (addBadge != null) {
                 addBadge.setVisibility(hasActive ? View.GONE : View.VISIBLE);
             }
-            if (nameView != null) nameView.setText(UiText.get(R.string.waex_ui_my_status_43503c17, "My Status"));
+            if (nameView != null) nameView.setText(UiText.get(R.string.waex_ui_my_status, "My Status"));
 
             Drawable preview = hasActive ? loadMyLatestStatusPreview() : null;
             if (preview != null && photoView != null) {

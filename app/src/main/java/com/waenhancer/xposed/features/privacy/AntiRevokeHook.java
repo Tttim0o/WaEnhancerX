@@ -1838,7 +1838,7 @@ public class AntiRevokeHook extends BaseFeature {
 
             if (indicatorType == 1) { // Show "Deleted" text
                 dateTextView.setCompoundDrawables(null, null, null, null);
-                String newText = UiText.get(R.string.waex_ui_deleted_576d3831, "Deleted • ") + originalDate;
+                String newText = UiText.get(R.string.waex_ui_deleted, "Deleted • ") + originalDate;
                 dateTextView.setText(newText);
             } else { // indicatorType == 2 (Default: Show deleted icon)
                 Drawable deleteDrawable = getDeletedIconDrawable(rowContext);
@@ -1862,7 +1862,7 @@ public class AntiRevokeHook extends BaseFeature {
                 String formattedTime = TIME_FORMAT.get().format(new Date(deletedTimestamp));
                 dateTextView.getPaint().setUnderlineText(true);
                 dateTextView.setOnClickListener(v ->
-                        Toast.makeText(rowContext, UiText.get(R.string.waex_ui_deleted_at_36fa22d4, "Deleted at: ") + formattedTime, Toast.LENGTH_LONG).show()
+                        Toast.makeText(rowContext, UiText.get(R.string.waex_ui_deleted_at, "Deleted at: ") + formattedTime, Toast.LENGTH_LONG).show()
                 );
             }
         } catch (Throwable t) {
@@ -1882,7 +1882,7 @@ public class AntiRevokeHook extends BaseFeature {
             }
             dateTextView.setCompoundDrawables(null, null, null, null);
             dateTextView.setCompoundDrawablePadding(0);
-            dateTextView.setText(UiText.get(R.string.waex_ui_deleted_504973e7, "🚫 Deleted • ") + originalDate);
+            dateTextView.setText(UiText.get(R.string.waex_ui_deleted_message_prefix, "🚫 Deleted • ") + originalDate);
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Status emoji decoration failed: " + t.getClass().getSimpleName());
         }

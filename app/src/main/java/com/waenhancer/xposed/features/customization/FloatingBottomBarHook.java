@@ -1206,7 +1206,7 @@ public class FloatingBottomBarHook extends BaseFeature {
             View child = bar.getChildAt(i);
             if (!(child instanceof ViewGroup)) continue;
             ViewGroup menu = (ViewGroup) child;
-            if (menu.getChildCount() < 2 || !(containsText(menu.getChildAt(1), "Groups") || containsText(menu.getChildAt(1), UiText.get(R.string.waex_ui_groups_39bbb719, "Groups")))) continue;
+            if (menu.getChildCount() < 2 || !(containsText(menu.getChildAt(1), "Groups") || containsText(menu.getChildAt(1), UiText.get(R.string.waex_ui_groups, "Groups")))) continue;
 
             boolean firstReconciliation = !forcedSelectedTabs.containsKey(menu);
             int selectedIndex;

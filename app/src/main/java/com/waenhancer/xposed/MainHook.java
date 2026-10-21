@@ -369,7 +369,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                         if (!INJECTION_TOAST_SHOWN.compareAndSet(false, true)) return;
                         activity.runOnUiThread(() -> android.widget.Toast.makeText(
                                 activity,
-                                UiText.get(R.string.waex_ui_waex_hooks_injected_0b677cb2, "WAEX hooks injected"),
+                                UiText.get(R.string.waex_ui_waex_hooks_injected, "WAEX hooks injected"),
                                 android.widget.Toast.LENGTH_SHORT
                         ).show());
                     }
@@ -492,22 +492,22 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
             new com.waenhancer.xposed.core.components.WaexBottomSheet(activity)
                     .asBottomSheet()
-                    .setTitle(UiText.get(R.string.waex_ui_waenhancer_x_injection_failed_8387f7f8, "WaEnhancer X injection failed"))
+                    .setTitle(UiText.get(R.string.waex_ui_waenhancer_x_injection_failed, "WaEnhancer X injection failed"))
                     .setMessage(
-                            UiText.get(R.string.waex_ui_waenhancer_x_could_not_finish_loading_b154030c, "WaEnhancer X could not finish loading its hooks.\n\n")
+                            UiText.get(R.string.waex_ui_waenhancer_x_could_not_finish_loading, "WaEnhancer X could not finish loading its hooks.\n\n")
                                     + error
-                                    + UiText.get(R.string.waex_ui_copy_the_error_details_when_reporting_8ec1cba5, "\n\nCopy the error details when reporting this issue.")
+                                    + UiText.get(R.string.waex_ui_copy_the_error_details_when_reporting, "\n\nCopy the error details when reporting this issue.")
                     )
-                    .setPositiveButton(UiText.get(R.string.waex_ui_copy_error_19dc540f, "Copy error"), (dialog, which) -> {
+                    .setPositiveButton(UiText.get(R.string.waex_ui_copy_error, "Copy error"), (dialog, which) -> {
                         android.content.ClipboardManager clipboard =
                                 (android.content.ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
                         if (clipboard != null) {
                             clipboard.setPrimaryClip(
-                                    android.content.ClipData.newPlainText(UiText.get(R.string.waex_ui_waenhancer_x_injection_error_87f8b907, "WaEnhancer X injection error"), diagnostic)
+                                    android.content.ClipData.newPlainText(UiText.get(R.string.waex_ui_waenhancer_x_injection_error, "WaEnhancer X injection error"), diagnostic)
                             );
                         }
                     })
-                    .setNegativeButton(UiText.get(R.string.waex_ui_close_7d9eb7ac, "Close"), (dialog, which) -> dialog.dismiss())
+                    .setNegativeButton(UiText.get(R.string.waex_ui_close, "Close"), (dialog, which) -> dialog.dismiss())
                     .show();
         });
     }

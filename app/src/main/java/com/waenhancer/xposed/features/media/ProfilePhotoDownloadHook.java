@@ -113,7 +113,7 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
 
     private void installMenuAction(Activity activity, Menu menu) {
         if (menu.findItem(MENU_ID) != null) return;
-        MenuItem item = menu.add(Menu.NONE, MENU_ID, Menu.NONE, UiText.get(R.string.waex_ui_download_d6eafe82, "Download"));
+        MenuItem item = menu.add(Menu.NONE, MENU_ID, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
         item.setIcon(android.R.drawable.stat_sys_download_done);
         item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         item.setOnMenuItemClickListener(ignored -> {
@@ -133,7 +133,7 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
                 // allocate and queue another full-resolution copy while one save runs.
                 captured = captureDisplayedPhoto(activity);
                 if (captured == null) {
-                    Toast.makeText(activity, UiText.get(R.string.waex_ui_profile_photo_is_not_ready_yet_8ff494b5,
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_profile_photo_is_not_ready_yet,
                             "Profile photo is not ready yet"), Toast.LENGTH_SHORT).show();
                     return true;
                 }
@@ -146,7 +146,7 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
                 submitted = true;
             } catch (RuntimeException | LinkageError failure) {
                 logFailure("capture or scheduling", failure);
-                Toast.makeText(activity, UiText.get(R.string.waex_ui_couldn_t_save_profile_photo_296d0ed9,
+                Toast.makeText(activity, UiText.get(R.string.waex_ui_couldn_t_save_profile_photo,
                         "Couldn't save profile photo"), Toast.LENGTH_LONG).show();
             } finally {
                 if (!submitted) {
@@ -281,9 +281,9 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
                     Activity current = owner.get();
                     if (current == null || current.isFinishing() || current.isDestroyed()) return;
                     Toast.makeText(current,
-                            saved ? UiText.get(R.string.waex_ui_profile_photo_saved_to_pictures_waex_p_a8c4bd76,
+                            saved ? UiText.get(R.string.waex_ui_profile_photo_saved_to_pictures_waex_p,
                                     "Profile photo saved to Pictures/WAEX/Profile Photos")
-                                    : UiText.get(R.string.waex_ui_couldn_t_save_profile_photo_296d0ed9,
+                                    : UiText.get(R.string.waex_ui_couldn_t_save_profile_photo,
                                     "Couldn't save profile photo"), Toast.LENGTH_LONG).show();
                 });
             }
