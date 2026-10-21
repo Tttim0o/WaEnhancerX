@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feat_metaai_title">Скрыть кнопку Meta AI</string>
+    <string name="feat_metaai_desc">Скрыть кнопку Meta AI на экране чатов.</string>
+</resources>

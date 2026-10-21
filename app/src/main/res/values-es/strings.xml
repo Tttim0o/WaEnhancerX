@@ -368,4 +368,21 @@
     <string name="stargazers_last_updated">"Última actualización: %1$s"</string>
     <string name="feat_status_style_title">Estilo de Estados e Historias</string>
     <string name="feat_status_style_desc">Personaliza el diseño de historias y estados con modelos nativos de WhatsApp</string>
+    <string name="manual_status_seen_section">VISUALIZACIÓN DE ESTADOS</string>
+    <string name="manual_status_seen_title">Enviar confirmación de visto manualmente</string>
+    <string name="manual_status_seen_desc">Elige cómo marcar el estado actual como visto</string>
+    <string name="manual_status_seen_placement_title">MOSTRAR ACCIÓN COMO</string>
+    <string name="manual_status_seen_menu">Opción de menú</string>
+    <string name="manual_status_seen_icon">Botón de visto</string>
+    <string name="profile_photo_already_saved">La foto de perfil ya está guardada</string>
+    <string name="profile_photo_saving">GUARDADO DE FOTOS DE PERFIL</string>
+    <string name="save_profile_duplicates">Guardar duplicados</string>
+    <string name="save_profile_duplicates_desc">Guardar un archivo nuevo cada vez</string>
+    <string name="status_already_saved">El estado ya está guardado</string>
+    <string name="status_download_saving">GUARDADO DE DESCARGAS DE ESTADOS</string>
+    <string name="save_status_duplicates">Guardar duplicados</string>
+    <string name="save_status_duplicates_desc">Guardar un archivo nuevo cada vez</string>
+    <string name="feat_app_interface_size_title">@string/interface_size_title</string>
+    <string name="feat_app_interface_size_desc">@string/interface_size_desc</string>
+    <string name="sending_read_blue_tick">Enviando confirmación de lectura…</string>
 </resources>

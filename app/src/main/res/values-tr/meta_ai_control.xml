@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feat_metaai_title">Meta AI düğmesini gizle</string>
+    <string name="feat_metaai_desc">Sohbetler ekranındaki Meta AI düğmesini gizleyin.</string>
+</resources>

@@ -370,4 +370,21 @@
     <string name="title_call_recordings">Posnetki</string>
     <string name="view_once_setting_save_failed">Nastavitve ni bilo mogoče shraniti</string>
     <string name="waex_l10n_builtin_match">"Podprto"</string>
+    <string name="manual_status_seen_section">OGLED STANJA</string>
+    <string name="manual_status_seen_title">Ročno pošlji potrdilo o ogledu stanja</string>
+    <string name="manual_status_seen_desc">Izberite, kako označiti trenutno stanje kot ogledano</string>
+    <string name="manual_status_seen_placement_title">PRIKAŽI DEJANJE KOT</string>
+    <string name="manual_status_seen_menu">Možnost v meniju</string>
+    <string name="manual_status_seen_icon">Gumb za ogledano</string>
+    <string name="profile_photo_already_saved">Profilna slika je že shranjena</string>
+    <string name="profile_photo_saving">SHRANJEVANJE PROFILNIH SLIK</string>
+    <string name="save_profile_duplicates">Shrani dvojnike</string>
+    <string name="save_profile_duplicates_desc">Vsakič shrani novo datoteko</string>
+    <string name="status_already_saved">Stanje je že shranjeno</string>
+    <string name="status_download_saving">SHRANJEVANJE PRENOSOV STANJ</string>
+    <string name="save_status_duplicates">Shrani dvojnike</string>
+    <string name="save_status_duplicates_desc">Vsakič shrani novo datoteko</string>
+    <string name="feat_app_interface_size_title">@string/interface_size_title</string>
+    <string name="feat_app_interface_size_desc">@string/interface_size_desc</string>
+    <string name="sending_read_blue_tick">Pošiljanje modre kljukice za branje…</string>
 </resources>

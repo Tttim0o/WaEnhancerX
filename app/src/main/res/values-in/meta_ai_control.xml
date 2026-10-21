@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feat_metaai_title">Sembunyikan tombol Meta AI</string>
+    <string name="feat_metaai_desc">Sembunyikan tombol Meta AI di layar Obrolan.</string>
+</resources>

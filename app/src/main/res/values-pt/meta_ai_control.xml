@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feat_metaai_title">Ocultar botão da Meta AI</string>
+    <string name="feat_metaai_desc">Oculta o botão da Meta AI na tela de conversas.</string>
+</resources>

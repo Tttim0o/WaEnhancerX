@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feat_metaai_title">隐藏 Meta AI 按钮</string>
+    <string name="feat_metaai_desc">在聊天页面中隐藏 Meta AI 按钮。</string>
+</resources>

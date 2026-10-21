@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feat_metaai_title">Masquer le bouton Meta AI</string>
+    <string name="feat_metaai_desc">Masque le bouton Meta AI sur l'écran des discussions.</string>
+</resources>

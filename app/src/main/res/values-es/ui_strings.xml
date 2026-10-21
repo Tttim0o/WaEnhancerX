@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Static resource references from UiText call sites. Do not translate keys. -->
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="waex_ui_1_open_any_chat_or_contact_info_page_i" formatted="false">"1. Abre un chat o la información de un contacto en WhatsApp.\n2. Toca «Privacidad personalizada» para definir ajustes específicos.\n3. Las reglas guardadas tienen prioridad sobre los ajustes generales de privacidad."</string>
     <string name="waex_ui_1_s_2_s_followers_3_s_repositories">"%1$sSeguidores: %2$s | Repositorios: %3$s"</string>
@@ -120,7 +119,7 @@
     <string name="waex_ui_block_all_calls" formatted="false">"Bloquear todas las llamadas"</string>
     <string name="waex_ui_blue_on_reply_title" formatted="false">"Confirmar lectura al responder"</string>
     <string name="waex_ui_blue_on_reply_label" formatted="false">"Confirmar lectura al responder"</string>
-    <string name="waex_ui_blue_tick_sent" formatted="false">"Se envió la confirmación de lectura"</string>
+    <string name="waex_ui_blue_tick_sent" formatted="false">"Visto enviado"</string>
     <string name="waex_ui_bootloader_spoofing_integrity" formatted="false">"Simulación del cargador de arranque e integridad"</string>
     <string name="waex_ui_both_info_screen_3_dot_menu" formatted="false">"Ambas ubicaciones"</string>
     <string name="waex_ui_bottom_margin" formatted="false">"Margen inferior"</string>
