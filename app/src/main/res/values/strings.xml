@@ -399,4 +399,5 @@
     <string name="status_style_vertical_compact">Vertical List (Compact)</string>
     <string name="status_style_vertical_circle">Vertical List (Circular Avatars)</string>
     <string name="status_style_vertical_square">Vertical List (Square Cards)</string>
+    <string name="sending_read_blue_tick">Sending read blue tick…</string>
 </resources>

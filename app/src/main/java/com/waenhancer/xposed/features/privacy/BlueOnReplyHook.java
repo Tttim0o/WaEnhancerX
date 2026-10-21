@@ -56,6 +56,7 @@ public class BlueOnReplyHook extends BaseFeature {
     private static final int MENU_SEND_BLUE_TICK = 0x7EAE0012;
     private static final Map<String, ReadJobRecipe> PENDING_STATUS_RECEIPTS = new LinkedHashMap<>();
     private static final Object MANUAL_STATUS_RECEIPT = new Object();
+    private static final String PENDING_CHAT_RECEIPT = "waex_pending_chat_receipt";
 
     private static final class ReadJobRecipe {
         final Constructor<?> constructor;
@@ -179,18 +180,67 @@ public class BlueOnReplyHook extends BaseFeature {
         return isHideBlueTicksEnabled() && isEnabled(PREF_KEY, false);
     }
 
-    public static void captureSuppressedReadJob(String jid, Constructor<?> constructor,
-                                                Object[] constructorArgs) {
+    /**
+     * Stage a receipt on its job instance. It becomes a manual-send candidate only when
+     * HideReceipts confirms that this job actually reached the hidden-read execution path.
+     */
+    public static void prepareSuppressedReadJob(String jid, Constructor<?> constructor,
+                                                Object[] constructorArgs, Object constructedJob) {
         String key = canonicalJid(jid);
-        if (key == null || constructor == null || constructorArgs == null) return;
-        Object[] copy = Arrays.copyOf(constructorArgs, constructorArgs.length);
-        for (int i = 0; i < copy.length; i++) {
-            if (copy[i] instanceof String[]) {
-                copy[i] = ((String[]) copy[i]).clone();
-            }
+        if (key == null || constructor == null || constructorArgs == null) {
+            XposedBridge.log(TAG + " chat receipt not staged: incomplete job contract");
+            return;
+        }
+        // WhatsApp's constructor arguments have changed across builds. The completed
+        // SendReadReceiptJob is the authoritative source of its message IDs, just as it
+        // is for the actual suppression hook. Do not assume a particular argument slot.
+        if (readReceiptMessageIds(constructedJob).isEmpty()) {
+            XposedBridge.log(TAG + " chat receipt not staged: job has no message IDs");
+            return;
         }
         constructor.setAccessible(true);
-        PENDING_JOBS.add(key, new ReadJobRecipe(constructor, copy));
+        XposedHelpers.setAdditionalInstanceField(constructedJob, PENDING_CHAT_RECEIPT,
+                new PendingChatReceipt(key, new ReadJobRecipe(constructor, copyArguments(constructorArgs))));
+    }
+
+    /** Called by the verified SendReadReceiptJob execution hook once hiding is confirmed. */
+    public static void recordSuppressedReadJob(Object job) {
+        Object value = XposedHelpers.getAdditionalInstanceField(job, PENDING_CHAT_RECEIPT);
+        if (!(value instanceof PendingChatReceipt)) {
+            return;
+        }
+        PendingChatReceipt pending = (PendingChatReceipt) value;
+        PENDING_JOBS.add(pending.recipient, pending.recipe);
+        XposedHelpers.removeAdditionalInstanceField(job, PENDING_CHAT_RECEIPT);
+    }
+
+    private static final class PendingChatReceipt {
+        final String recipient;
+        final ReadJobRecipe recipe;
+
+        PendingChatReceipt(String recipient, ReadJobRecipe recipe) {
+            this.recipient = recipient;
+            this.recipe = recipe;
+        }
+    }
+
+    public static Set<String> readReceiptMessageIds(Object job) {
+        Set<String> ids = new LinkedHashSet<>();
+        if (job == null) return ids;
+        for (Class<?> type = job.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+            for (Field field : type.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers()) || field.getType() != String[].class) continue;
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(job);
+                    if (!(value instanceof String[])) continue;
+                    for (String id : (String[]) value) {
+                        if (id != null && !id.isEmpty()) ids.add(id);
+                    }
+                } catch (Throwable ignored) {}
+            }
+        }
+        return ids;
     }
 
     public static void captureSuppressedStatusReadJob(Constructor<?> constructor, Object[] arguments) {
@@ -204,6 +254,69 @@ public class BlueOnReplyHook extends BaseFeature {
                         PENDING_STATUS_RECEIPTS.remove(PENDING_STATUS_RECEIPTS.keySet().iterator().next());
                 }
         }
+    }
+
+    /**
+     * Called by HideReceiptsHook when a message arrives via the type-9 in-chat dispatch path.
+     * WhatsApp skips SendReadReceiptJob for messages received while the user is in the chat,
+     * so we build a single-ID job recipe here using the same constructor we already resolved.
+     * sendPendingReadJobs will replay it when the user taps "Send blue tick".
+     */
+    public static void recordObservedReceipt(String jid, Object typedJid,
+                                             String messageId) {
+        String key = canonicalJid(jid);
+        if (key == null || typedJid == null || messageId == null || messageId.isEmpty()) return;
+        Constructor<?> ctor = sendReadConstructor;
+        if (ctor == null) {
+            XposedBridge.log(TAG + " Cannot record observed receipt: constructor unavailable");
+            return;
+        }
+        // Build args: find an existing pending recipe for this jid to reuse its constructor shape,
+        // or construct minimal args with just the messageId array.
+        Object[] args = buildMinimalConstructorArgs(
+                ctor, typedJid, new String[]{messageId});
+        if (args == null) return;
+        ReadJobRecipe recipe = new ReadJobRecipe(ctor, args);
+        PENDING_JOBS.add(key, recipe);
+    }
+
+    /**
+     * Creates the smallest valid direct-chat recipe using the typed JID retained
+     * from the decrypted message. Optional participant/recipient fields stay null.
+     */
+    private static Object[] buildMinimalConstructorArgs(Constructor<?> ctor, Object typedJid,
+                                                        String[] messageIds) {
+        Class<?>[] params = ctor.getParameterTypes();
+        Object[] args = new Object[params.length];
+        boolean jidSet = false;
+        boolean idsSet = false;
+        for (int i = 0; i < params.length; i++) {
+            Class<?> p = params[i];
+            if (!idsSet && p == String[].class) {
+                args[i] = messageIds;
+                idsSet = true;
+            } else if (!jidSet && typedJid != null
+                    && !(typedJid instanceof String) && p.isInstance(typedJid)) {
+                // The current SendReadReceiptJob constructor requires the host's
+                // typed JID as its first argument. The remaining participant and
+                // recipient JID parameters are optional for a direct chat.
+                args[i] = typedJid;
+                jidSet = true;
+            } else if (p == boolean.class || p == Boolean.class) {
+                args[i] = false;
+            } else if (p == int.class || p == Integer.class) {
+                args[i] = 0;
+            } else if (p == long.class || p == Long.class) {
+                args[i] = 0L;
+            } else {
+                args[i] = null; // Reference types default to null
+            }
+        }
+        if (!idsSet || !jidSet) {
+            XposedBridge.log(TAG + " buildMinimalConstructorArgs: required argument unavailable");
+            return null;
+        }
+        return args;
     }
 
     public static boolean sendCapturedStatusReceipt(Object statusItem) {
@@ -268,6 +381,11 @@ public class BlueOnReplyHook extends BaseFeature {
         return XposedHelpers.getAdditionalInstanceField(job, "waex_manual_status_seen") == MANUAL_STATUS_RECEIPT;
     }
 
+    /** Explicit chat receipt created by the manual/blue-on-reply action. */
+    public static boolean isManualChatReceipt(Object job) {
+        return Boolean.TRUE.equals(XposedHelpers.getAdditionalInstanceField(job, "blue_on_reply"));
+    }
+
     private static Object getOrFindJobManager() {
         if (jobManager != null) return jobManager;
         if (managerClass != null) {
@@ -305,7 +423,10 @@ public class BlueOnReplyHook extends BaseFeature {
         // Exact canonical JID match only. @lid, @s.whatsapp.net and @g.us are
         // distinct identity namespaces; same local user part is NOT proof that
         // their queued read receipts belong to the same recipient.
-        List<ReadJobRecipe> pending = PENDING_JOBS.drain(key);
+        // Keep records until WhatsApp has accepted their explicit jobs. This mirrors the
+        // reliable chat flow: a temporary manager/constructor failure must not make a
+        // user's hidden messages impossible to mark read on the next tap or reply.
+        List<ReadJobRecipe> pending = PENDING_JOBS.snapshot(key);
         if (pending.isEmpty()) {
             return 0;
         }
@@ -315,9 +436,10 @@ public class BlueOnReplyHook extends BaseFeature {
         for (ReadJobRecipe recipe : pending) {
             try {
                 HideReceiptsHook.allowExplicitReceiptIds(key, recipe.arguments);
-                Object job = recipe.constructor.newInstance(recipe.arguments);
+                Object job = recipe.constructor.newInstance(copyArguments(recipe.arguments));
                 XposedHelpers.setAdditionalInstanceField(job, "blue_on_reply", true);
                 enqueue.invoke(manager, job);
+                PENDING_JOBS.remove(key, recipe);
                 sent++;
             } catch (Throwable t) {
                 // Constructor or dispatch failure must not leave a stale permission.

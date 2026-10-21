@@ -35,10 +35,20 @@ final class PendingReadReceiptStore<T> {
         }
     }
 
-    synchronized List<T> drain(String recipient) {
+    /** Return a stable view for dispatch; entries remain held until acknowledged. */
+    synchronized List<T> snapshot(String recipient) {
         if (recipient == null || recipient.isEmpty()) return Collections.emptyList();
-        ArrayDeque<T> pending = queues.remove(recipient);
+        ArrayDeque<T> pending = queues.get(recipient);
         return pending == null ? Collections.emptyList() : new ArrayList<>(pending);
+    }
+
+    /** Remove exactly the recipe that was successfully handed to WhatsApp's job queue. */
+    synchronized boolean remove(String recipient, T job) {
+        if (recipient == null || recipient.isEmpty() || job == null) return false;
+        ArrayDeque<T> pending = queues.get(recipient);
+        if (pending == null || !pending.removeFirstOccurrence(job)) return false;
+        if (pending.isEmpty()) queues.remove(recipient);
+        return true;
     }
 
     synchronized int pendingCount(String recipient) {
