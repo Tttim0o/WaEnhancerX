@@ -114,9 +114,9 @@
     <string name="feat_hide_delivery_receipts_title">Masquer Livré</string>
     <string name="feat_hide_delivery_receipts_desc">Les utilisateurs ne sauront pas que leurs messages vous ont été remis</string>
     <string name="feat_hide_seen_receipts_title">Masquer la lecture des messages vocaux</string>
-    <string name="feat_hide_seen_receipts_desc">Masque l'envoi de la confirmation d'écoute lorsque vous écoutez un message vocal</string>
-    <string name="feat_hideonceseen_title">Masquer l'ouverture des médias à vue unique</string>
-    <string name="feat_hideonceseen_desc">Empêche l'expéditeur de savoir que vous avez ouvert une photo ou vidéo à vue unique</string>
+    <string name="feat_hide_seen_receipts_desc">Masque l\'envoi de la confirmation d\'écoute lorsque vous écoutez un message vocal</string>
+    <string name="feat_hideonceseen_title">Masquer l\'ouverture des médias à vue unique</string>
+    <string name="feat_hideonceseen_desc">Empêche l\'expéditeur de savoir que vous avez ouvert une photo ou vidéo à vue unique</string>
     <string name="feat_anti_revoke_title">Messages anti-révocation</string>
     <string name="feat_anti_revoke_desc">Les messages ne seront pas supprimés pour vous</string>
     <string name="feat_hide_anti_revoke_title">Ajouter Masquer l\'anti-révocation au menu de discussion</string>
@@ -246,7 +246,7 @@
     <string name="feat_dotonline_title">Afficher le point en ligne dans la liste de conversations</string>
     <string name="feat_dotonline_desc">Afficher un point vert en ligne sur l\'écran d\'accueil</string>
     <string name="feat_showonlinetext_title">Afficher En ligne/Dernière présence dans la liste des discussions</string>
-    <string name="feat_showonlinetext_desc">Affiche le statut En ligne ou la dernière présence directement sur l'écran d'accueil</string>
+    <string name="feat_showonlinetext_desc">Affiche le statut En ligne ou la dernière présence directement sur l\'écran d\'accueil</string>
     <string name="feat_typing_online_toasts_title">Afficher un toast lors d\'un contact en ligne</string>
     <string name="feat_typing_online_toasts_desc">Afficher un toast lorsqu\'un contact est en ligne</string>
     <string name="feat_channels_enhancements_title">Supprimer les recommandations de chaîne</string>
@@ -370,7 +370,7 @@
     <string name="manual_status_seen_section">AFFICHAGE DES STATUTS</string>
     <string name="manual_status_seen_title">Envoyer la confirmation de statut manuellement</string>
     <string name="manual_status_seen_desc">Choisissez comment marquer le statut actuel comme vu</string>
-    <string name="manual_status_seen_placement_title">AFFICHER L'ACTION COMME</string>
+    <string name="manual_status_seen_placement_title">AFFICHER L\'ACTION COMME</string>
     <string name="manual_status_seen_menu">Option de menu</string>
     <string name="manual_status_seen_icon">Bouton Vu</string>
     <string name="profile_photo_already_saved">Photo de profil déjà enregistrée</string>
