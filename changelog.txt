@@ -7,6 +7,7 @@
 - Removed obsolete Facebook Grid and Compact List status layouts
 - Enhanced Download Profile Picture with optional "Save Duplicates" confirmation
 - Enhanced Download Status with optional "Save Duplicates" confirmation
+- Improved Floating bottom navigation customization
 
 [Community contribution]
 - Thanks to @TheKillerMax for valuable contributions in this update.

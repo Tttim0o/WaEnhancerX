@@ -22,6 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -698,6 +704,7 @@ fun FloatingBottomBarCustomizerScreen() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SliderItem(
     label: String,
@@ -708,6 +715,77 @@ private fun SliderItem(
 ) {
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
+    var showValueEditor by remember { mutableStateOf(false) }
+    var inputValue by remember { mutableStateOf("") }
+    var hasInputError by remember { mutableStateOf(false) }
+
+    fun openValueEditor() {
+        inputValue = value.toInt().toString()
+        hasInputError = false
+        showValueEditor = true
+    }
+
+    fun applyInputValue() {
+        val parsed = inputValue.trim().toFloatOrNull()
+        if (parsed == null || !parsed.isFinite()) {
+            hasInputError = true
+            return
+        }
+        onValueChange(parsed)
+        showValueEditor = false
+    }
+
+    if (showValueEditor) {
+        ModalBottomSheet(
+            onDismissRequest = { showValueEditor = false },
+            containerColor = colors.surface
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 28.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = label,
+                    style = typography.bodyLg,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onSurface
+                )
+                OutlinedTextField(
+                    value = inputValue,
+                    onValueChange = {
+                        inputValue = it
+                        hasInputError = false
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Custom value ($unit)") },
+                    supportingText = if (hasInputError) {
+                        { Text(UiText.get(R.string.waex_ui_invalid_value, "Invalid value")) }
+                    } else null,
+                    isError = hasInputError,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { applyInputValue() })
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showValueEditor = false }) {
+                        Text("Cancel")
+                    }
+                    TextButton(onClick = { applyInputValue() }) {
+                        Text("Apply")
+                    }
+                }
+            }
+        }
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(
@@ -725,13 +803,17 @@ private fun SliderItem(
                 text = "${value.toInt()} $unit",
                 style = typography.labelSm,
                 fontWeight = FontWeight.Bold,
-                color = colors.primary
+                color = colors.primary,
+                modifier = Modifier.pointerInput(value) {
+                    detectTapGestures(onDoubleTap = { openValueEditor() })
+                }
             )
         }
         Slider(
-            value = value,
+            // Keep custom negative values intact; only the visual slider position becomes zero.
+            value = value.coerceAtLeast(0f).coerceAtMost(valueRange.endInclusive),
             onValueChange = onValueChange,
-            valueRange = valueRange,
+            valueRange = 0f..valueRange.endInclusive,
             colors = SliderDefaults.colors(
                 thumbColor = colors.primary,
                 activeTrackColor = colors.primary,
