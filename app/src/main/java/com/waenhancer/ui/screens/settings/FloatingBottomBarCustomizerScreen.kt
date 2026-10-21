@@ -223,7 +223,7 @@ fun FloatingBottomBarCustomizerScreen() {
                                         )
                                         .then(
                                             if (iconsOnly) {
-                                                Modifier.size(40.dp)
+                                                Modifier.size(width = 48.dp, height = 36.dp)
                                             } else {
                                                 Modifier.padding(
                                                     horizontal = if (isIosGlass || isRefined) 13.dp else 10.dp,
