@@ -55,6 +55,18 @@ public class LocalModelsTest {
     }
 
     @Test
+    public void cpuBackendNeedsEveryListedFeature() {
+        String a55 = " fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm lrcpc dcpop asimddp ";
+        String a53 = " fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid ";
+        assertTrue(WhisperNative.hasAll(a55, "asimddp asimdhp"));
+        assertFalse(WhisperNative.hasAll(a55, "asimddp asimdhp i8mm"));
+        assertFalse(WhisperNative.hasAll(a53, "asimddp"));
+        assertTrue(WhisperNative.hasAll(a53, ""));
+        assertTrue(WhisperNative.hasAll(null, ""));
+        assertFalse(WhisperNative.hasAll(" asimddpx ", "asimddp"));
+    }
+
+    @Test
     public void resamplerDownmixesAndConvertsRate() {
         // One second of 48 kHz stereo 16-bit: left 0.5, right -0.5 -> mono 0.
         AudioDecoder.Resampler resampler = new AudioDecoder.Resampler(48_000, 2, AudioFormat.ENCODING_PCM_16BIT);

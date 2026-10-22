@@ -91,7 +91,8 @@ fun LocalModelsSection(language: String) {
         }
         Text(
             text = UiText.get(R.string.waex_ui_this_phone_154bf57e, "This phone") + ": " +
-                    recommendation.reason.substringBefore(':') + " · " + cores + " cores",
+                    recommendation.reason.substringBefore(':') + " · " + cores + " cores" +
+                    (WhisperNative.backendName()?.let { " · $it" } ?: ""),
             style = typography.bodyMd,
             color = colors.onSurface
         )

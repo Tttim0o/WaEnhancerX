@@ -49,10 +49,11 @@ data class WaexRelease(
 }
 
 object ReleaseRepository {
-    const val RELEASE_REPOSITORY = "Xposed-Modules-Repo/com.waenhancer"
-    const val RELEASES_URL = "https://github.com/$RELEASE_REPOSITORY/releases"
-    const val RELEASES_API = "https://api.github.com/repos/$RELEASE_REPOSITORY/releases?per_page=100"
-    private const val RELEASE_ASSET_PATH_PREFIX = "/$RELEASE_REPOSITORY/releases/download/"
+    /** Set per build: official builds use Xposed-Modules-Repo/com.waenhancer. */
+    val RELEASE_REPOSITORY: String = com.waenhancer.app.BuildConfig.UPDATE_REPOSITORY
+    val RELEASES_URL = "https://github.com/$RELEASE_REPOSITORY/releases"
+    val RELEASES_API = "https://api.github.com/repos/$RELEASE_REPOSITORY/releases?per_page=100"
+    private val RELEASE_ASSET_PATH_PREFIX = "/$RELEASE_REPOSITORY/releases/download/"
     private val versionPattern = Regex("^\\d+\\.\\d+(\\.\\d+)?(-[a-zA-Z0-9.-]+)?$")
     private val client = OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).build()
 

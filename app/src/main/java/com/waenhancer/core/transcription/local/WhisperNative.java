@@ -14,6 +14,21 @@ public final class WhisperNative {
 
     private static volatile Boolean sSupported;
     private static volatile String sUnsupportedReason;
+    private static volatile String sBackend;
+
+    /**
+     * ggml CPU backend libraries, best first, with the /proc/cpuinfo features each needs
+     * (asimddp = dot product, asimdhp = fp16 arithmetic, i8mm = int8 matrix multiply).
+     */
+    private static final String[][] CPU_BACKENDS = {
+            {"android_armv9.2_2", "asimddp i8mm asimdhp sve sve2 sme"},
+            {"android_armv9.2_1", "asimddp i8mm asimdhp sve sme"},
+            {"android_armv9.0_1", "asimddp i8mm asimdhp sve2"},
+            {"android_armv8.6_1", "asimddp asimdhp i8mm"},
+            {"android_armv8.2_2", "asimddp asimdhp"},
+            {"android_armv8.2_1", "asimddp"},
+            {"android_armv8.0_1", ""},
+    };
 
     private WhisperNative() {}
 
@@ -26,10 +41,13 @@ public final class WhisperNative {
 
     static native String systemInfo();
 
+    private static native boolean loadCpuBackend(String libraryName);
+
     /**
-     * True when this phone can run the bundled library: 64-bit ARM with the dot-product and
-     * fp16 instructions it was compiled for. Checked before loading it, because running it on
-     * an older CPU would end in an illegal-instruction crash instead of an exception.
+     * True when the library loaded and a CPU backend matching this phone was found. Every
+     * 64-bit ARM phone has at least the ARMv8.0 backend; newer CPUs get faster variants. A
+     * variant is only tried when /proc/cpuinfo lists its instructions, so an unsupported one
+     * can never run and crash with an illegal instruction.
      */
     public static synchronized boolean isSupported() {
         if (sSupported != null) return sSupported;
@@ -38,17 +56,39 @@ public final class WhisperNative {
             if ("arm64-v8a".equals(abi)) arm64 = true;
         }
         if (!arm64) return unsupported("needs a 64-bit ARM phone");
-        String features = cpuFeatures();
-        if (features == null) return unsupported("CPU features unknown");
-        if (!features.contains(" asimddp ") || !(features.contains(" asimdhp ") || features.contains(" fphp "))) {
-            return unsupported("CPU is too old (no dot-product instructions)");
-        }
         try {
             System.loadLibrary("waexwhisper");
         } catch (Throwable t) {
             return unsupported("native library missing");
         }
-        sSupported = true;
+        String features = cpuFeatures();
+        for (String[] backend : CPU_BACKENDS) {
+            if (!hasAll(features, backend[1])) continue;
+            try {
+                if (loadCpuBackend("libggml-cpu-" + backend[0] + ".so")) {
+                    sBackend = backend[0].replace("android_", "");
+                    sSupported = true;
+                    return true;
+                }
+            } catch (Throwable ignored) {
+                // Try the next, more basic variant.
+            }
+        }
+        return unsupported("no CPU backend could be loaded");
+    }
+
+    /** The CPU backend in use, e.g. "armv8.2_2"; null before or without support. */
+    @Nullable
+    public static String backendName() {
+        return sBackend;
+    }
+
+    static boolean hasAll(@Nullable String features, String required) {
+        if (required.isEmpty()) return true;
+        if (features == null) return false;
+        for (String feature : required.split(" ")) {
+            if (!features.contains(" " + feature + " ")) return false;
+        }
         return true;
     }
 
