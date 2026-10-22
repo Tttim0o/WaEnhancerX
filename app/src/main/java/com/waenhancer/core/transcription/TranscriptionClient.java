@@ -25,6 +25,8 @@ public final class TranscriptionClient {
     public static final String PROVIDER_GROQ = "Groq";
     public static final String PROVIDER_ASSEMBLY = "AssemblyAI";
     public static final String PROVIDER_CUSTOM = "Custom";
+    /** On-device whisper.cpp; handled by LocalTranscriber, never by this HTTP client. */
+    public static final String PROVIDER_LOCAL = "Local";
 
     /**
      * Kept well below the ~1 MB Binder buffer the audio crosses on its way here (about four

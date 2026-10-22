@@ -139,6 +139,7 @@
     <string name="waex_ui_caller_sees_calling_without_connection_78bae289" formatted="false">"Caller sees \'Calling...\' without connection tone"</string>
     <string name="waex_ui_calls_b73a5e2c" formatted="false">"Calls"</string>
     <string name="waex_ui_calls_recording_6042880c" formatted="false">"Calls &amp; Recording"</string>
+    <string name="waex_ui_cancel_19766ed6" formatted="false">"Cancel"</string>
     <string name="waex_ui_certificate_is_current_581ed686" formatted="false">"Certificate is current"</string>
     <string name="waex_ui_certificates_parsed_9c645673" formatted="false">"Certificates parsed"</string>
     <string name="waex_ui_change_c0bf75bd" formatted="false">"Change"</string>
@@ -157,6 +158,7 @@
     <string name="waex_ui_check_when_module_opens_147ecac4" formatted="false">"Check when module opens"</string>
     <string name="waex_ui_check_when_whatsapp_opens_112f6dcc" formatted="false">"Check when WhatsApp opens"</string>
     <string name="waex_ui_checking_root_access_76c86676" formatted="false">"Checking root access"</string>
+    <string name="waex_ui_choose_a_downloaded_model_to_use_3e3f82a7" formatted="false">"Choose a downloaded model to use."</string>
     <string name="waex_ui_choose_color_f2cd02c5" formatted="false">"Choose Color"</string>
     <string name="waex_ui_choose_where_to_show_the_waex_settings_44afa3ae" formatted="false">"Choose where to show the WAEX settings entry point"</string>
     <string name="waex_ui_classic_regular_2f519419" formatted="false">"Classic (Regular)"</string>
@@ -238,6 +240,7 @@
     <string name="waex_ui_debug_1a03bd2f" formatted="false">"Debug"</string>
     <string name="waex_ui_default_dpi_9037cbe6" formatted="false">"Default DPI"</string>
     <string name="waex_ui_default_language_28bee244" formatted="false">"Default Language"</string>
+    <string name="waex_ui_delete_e2d0a549" formatted="false">"Delete"</string>
     <string name="waex_ui_delete_filter_9cb0dfa6" formatted="false">"Delete Filter"</string>
     <string name="waex_ui_delete_selected_d2ab5d46" formatted="false">"Delete selected"</string>
     <string name="waex_ui_deleted_504973e7" formatted="false">"🚫 Deleted • "</string>
@@ -286,6 +289,7 @@
     <string name="waex_ui_end_hour_37f91306" formatted="false">"End Hour"</string>
     <string name="waex_ui_enforcing_1ca5672a" formatted="false">"Enforcing"</string>
     <string name="waex_ui_engine_running_11ac7787" formatted="false">"Engine Running"</string>
+    <string name="waex_ui_english_only_eda32f28" formatted="false">"English only"</string>
     <string name="waex_ui_enhanced_adaptive_shadows_and_refined_107eefd1" formatted="false">"Enhanced adaptive shadows and refined padding"</string>
     <string name="waex_ui_enter_0_or_a_number_from_120_to_1000_b5a85be0" formatted="false">"Enter 0 or a number from 120 to 1000"</string>
     <string name="waex_ui_enter_0_to_use_the_device_default_or_a_2e3826cd" formatted="false">"Enter 0 to use the device default, or a DPI value from 120 to 1000."</string>
@@ -395,6 +399,7 @@
     <string name="waex_ui_imported_keybox_selected_1ba384df" formatted="false">"Imported keybox selected"</string>
     <string name="waex_ui_in_app_shortcut_placement_08e2621d" formatted="false">"IN-APP SHORTCUT PLACEMENT"</string>
     <string name="waex_ui_in_progress_c1f88e9d" formatted="false">"In progress"</string>
+    <string name="waex_ui_in_use_750af77a" formatted="false">"In use"</string>
     <string name="waex_ui_indicator_style_7b2d18a3" formatted="false">"INDICATOR STYLE"</string>
     <string name="waex_ui_indicator_text_color_55dfa1d7" formatted="false">"Indicator &amp; Text Color"</string>
     <string name="waex_ui_individuals_d64d3d99" formatted="false">"Individuals"</string>
@@ -521,6 +526,8 @@
     <string name="waex_ui_not_reported_yet_355b4779" formatted="false">"Not reported yet"</string>
     <string name="waex_ui_note_resizing_view_elements_dynamicall_95d239ba" formatted="false">"Note: Resizing view elements dynamically requires extra layout rendering. This may cause screens containing these elements to load with a minor delay."</string>
     <string name="waex_ui_off_each_new_voice_note_sent_or_receiv_efafc048" formatted="false">"Off: each new voice note, sent or received, gets a notification with a Transcribe button."</string>
+    <string name="waex_ui_on_device_models_2c7e25e0" formatted="false">"On-device models"</string>
+    <string name="waex_ui_on_device_transcription_isn_t_availabl_678d16ae" formatted="false">"On-device transcription isn't available on this phone"</string>
     <string name="waex_ui_online_presence_indicators_05934fbe" formatted="false">"Online Presence Indicators"</string>
     <string name="waex_ui_only_allow_numbers_saved_in_your_phone_504e2e53" formatted="false">"Only allow numbers saved in your phone address book"</string>
     <string name="waex_ui_opacity_0_100_e19bed46" formatted="false">"Opacity (0 - 100)"</string>
@@ -580,6 +587,7 @@
     <string name="waex_ui_rec_a29ea413" formatted="false">"Rec"</string>
     <string name="waex_ui_receive_detailed_notification_with_cal_e55e211d" formatted="false">"Receive detailed notification with caller IP, location, device &amp; version after calls end"</string>
     <string name="waex_ui_recommended_baa505ce" formatted="false">"RECOMMENDED"</string>
+    <string name="waex_ui_recommended_d70604e8" formatted="false">"Recommended"</string>
     <string name="waex_ui_record_whatsapp_calls_edeb6ac1" formatted="false">"Record WhatsApp Calls"</string>
     <string name="waex_ui_recording_configuration_40230390" formatted="false">"RECORDING CONFIGURATION"</string>
     <string name="waex_ui_recording_deleted_ded881bb" formatted="false">"Recording deleted"</string>
@@ -633,6 +641,7 @@
     <string name="waex_ui_rule_scope_010c9afb" formatted="false">"RULE SCOPE"</string>
     <string name="waex_ui_rules_apply_at_all_times_5fbfcc41" formatted="false">"Rules apply at all times"</string>
     <string name="waex_ui_run_an_eligible_update_check_when_waen_57552a51" formatted="false">"Run an eligible update check when WaEnhancerX opens"</string>
+    <string name="waex_ui_runs_on_your_phone_nothing_is_uploaded_086e584c" formatted="false">"Runs on your phone, nothing is uploaded. Larger models are more accurate but slower."</string>
     <string name="waex_ui_runtime_api_captured_2625bdc2" formatted="false">"Runtime API captured"</string>
     <string name="waex_ui_saturation_993f024b" formatted="false">"Saturation"</string>
     <string name="waex_ui_save_33_with_full_pro_access_for_365_d_9ab320db" formatted="false">"Save 33% with full Pro access for 365 days"</string>
@@ -725,6 +734,7 @@
     <string name="waex_ui_this_device_7a0686d7" formatted="false">"This Device"</string>
     <string name="waex_ui_this_is_a_local_configuration_audit_no_9ae8e494" formatted="false">"This is a local configuration audit, not a live Google Play Integrity verdict."</string>
     <string name="waex_ui_this_message_was_sent_via_a_linked_dev_7be749b8" formatted="false">"This message was sent via a Linked Device (Desktop/Phone)"</string>
+    <string name="waex_ui_this_phone_154bf57e" formatted="false">"This phone"</string>
     <string name="waex_ui_this_will_disconnect_1_s_from_your_lic_83c7968b">"This will disconnect \'%1$s\' from your license key and free up a device slot."</string>
     <string name="waex_ui_this_will_unlink_this_device_remove_th_a2b62c79" formatted="false">"This will unlink this device, remove the saved license, and return WAEX to the Free tier."</string>
     <string name="waex_ui_today_1_40_pm_3985c17d" formatted="false">"Today, 1:40 PM"</string>
@@ -783,6 +793,7 @@
     <string name="waex_ui_updates_22e2bada" formatted="false">"Updates"</string>
     <string name="waex_ui_updates_every_1_s_hours_afe94996">"Updates every %1$s hours"</string>
     <string name="waex_ui_upgrade_7ec0261b" formatted="false">"Upgrade"</string>
+    <string name="waex_ui_use_c36d819e" formatted="false">"Use"</string>
     <string name="waex_ui_use_custom_keybox_5b599ff8" formatted="false">"Use Custom Keybox"</string>
     <string name="waex_ui_use_gemini_nano_to_write_bulleted_abst_ab74bf14" formatted="false">"Use Gemini nano to write bulleted abstracts for long notes."</string>
     <string name="waex_ui_user_busy_0ee28857" formatted="false">"User Busy"</string>

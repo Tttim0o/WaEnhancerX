@@ -612,7 +612,7 @@ fun AutomationTaskerScreen() {
                                         expanded = showProviderDropdown,
                                         onDismissRequest = { showProviderDropdown = false }
                                     ) {
-                                        listOf("Groq", "AssemblyAI", "Custom").forEach { provider ->
+                                        listOf("Groq", "AssemblyAI", "Custom", "Local").forEach { provider ->
                                             DropdownMenuItem(
                                                 text = { Text(text = provider, style = typography.bodyMd) },
                                                 onClick = {
@@ -665,6 +665,8 @@ fun AutomationTaskerScreen() {
                                         )
                                     }
                                 }
+                            } else if (transcriptionProvider == "Local") {
+                                LocalModelsSection(language = transcriptionLanguage)
                             } else if (transcriptionProvider == "Custom") {
                                 Text(
                                     text = UiText.get(R.string.waex_ui_uses_the_openai_audio_transcriptions_r_d7f9316b, "Uses the OpenAI /audio/transcriptions request format."),

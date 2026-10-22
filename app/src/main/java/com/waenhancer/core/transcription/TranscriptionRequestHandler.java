@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.waenhancer.config.PreferenceStores;
+import com.waenhancer.core.transcription.local.LocalTranscriber;
 
 /**
  * Runs in the module process for the {@code transcribe_audio} provider call. API keys live in
@@ -33,9 +34,11 @@ public final class TranscriptionRequestHandler {
     @NonNull
     public static Bundle ready(@NonNull Context context) {
         TranscriptionClient.Config config = configFor(context);
-        boolean ready = readBoolean(context, "voice_transcription", true)
-                && !config.apiKey.isEmpty()
-                && (!TranscriptionClient.PROVIDER_CUSTOM.equals(config.provider) || !config.url.isEmpty());
+        boolean configured = TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)
+                ? LocalTranscriber.usableModel(context, readString(context, "local_model", "")) != null
+                : !config.apiKey.isEmpty()
+                        && (!TranscriptionClient.PROVIDER_CUSTOM.equals(config.provider) || !config.url.isEmpty());
+        boolean ready = readBoolean(context, "voice_transcription", true) && configured;
         Bundle result = new Bundle();
         result.putBoolean(RESULT_READY, ready);
         return result;
@@ -53,11 +56,17 @@ public final class TranscriptionRequestHandler {
         TranscriptionClient.Config config = configFor(context);
         try {
             String text;
-            SLOTS.acquire();
-            try {
-                text = new TranscriptionClient().transcribe(config, audio, fileName);
-            } finally {
-                SLOTS.release();
+            if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
+                // Serialized inside LocalTranscriber; it must not take a slot from network calls.
+                text = LocalTranscriber.transcribe(context, readString(context, "local_model", ""),
+                        audio, fileName, config.language);
+            } else {
+                SLOTS.acquire();
+                try {
+                    text = new TranscriptionClient().transcribe(config, audio, fileName);
+                } finally {
+                    SLOTS.release();
+                }
             }
             result.putString(RESULT_TEXT, text);
         } catch (TranscriptionClient.TranscriptionException e) {
@@ -78,7 +87,12 @@ public final class TranscriptionRequestHandler {
     public static String testConnection(@NonNull Context context) {
         TranscriptionClient.Config config = configFor(context);
         try {
-            new TranscriptionClient().transcribe(config, TranscriptionClient.silentWav(), "waex-test.wav");
+            if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
+                LocalTranscriber.transcribe(context, readString(context, "local_model", ""),
+                        TranscriptionClient.silentWav(), "waex-test.wav", config.language);
+            } else {
+                new TranscriptionClient().transcribe(config, TranscriptionClient.silentWav(), "waex-test.wav");
+            }
             return null;
         } catch (TranscriptionClient.TranscriptionException e) {
             String message = e.getMessage() == null ? "Failed" : e.getMessage();
@@ -98,6 +112,9 @@ public final class TranscriptionRequestHandler {
             case TranscriptionClient.PROVIDER_ASSEMBLY:
                 config = new TranscriptionClient.Config(provider, "",
                         firstNonEmpty(context, "assembly_key", "assemblyai_key"), "", language);
+                break;
+            case TranscriptionClient.PROVIDER_LOCAL:
+                config = new TranscriptionClient.Config(provider, "", "", "", language);
                 break;
             case TranscriptionClient.PROVIDER_CUSTOM:
                 config = new TranscriptionClient.Config(provider,

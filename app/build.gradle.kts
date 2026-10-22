@@ -36,6 +36,15 @@ android {
 
         val devGh = project.findProperty("DEV_GH")?.toString()?.trim() ?: "mubashardev"
         buildConfigField("String", "DEV_GH", "\"$devGh\"")
+
+        // On-device transcription (whisper.cpp) is built for 64-bit ARM only. This filter
+        // applies to the CMake build alone; prebuilt libraries keep all their ABIs.
+        externalNativeBuild {
+            cmake {
+                abiFilters += "arm64-v8a"
+                arguments += listOf("-DANDROID_STL=c++_static")
+            }
+        }
     }
 
     signingConfigs {
@@ -101,6 +110,14 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    ndkVersion = "27.2.12479018"
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     packaging {
