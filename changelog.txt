@@ -1,13 +1,44 @@
 [Added]
 - Send seen via status
-
-[Fixes]
+- Added module settings for Hooking method
 
 [Improvements]
 - Removed obsolete Facebook Grid and Compact List status layouts
 - Enhanced Download Profile Picture with optional "Save Duplicates" confirmation
 - Enhanced Download Status with optional "Save Duplicates" confirmation
 - Improved Floating bottom navigation customization
+
+[Fixed]
+- Send blue ticks
+
+
+[Feature: Floating bottom bar]
+- Horizontal Inner Padding
+- Selector type: Default, Oval
+- Selector Color
+- Hide Tab Labels (Icons Only)
+- Other improvements
+
+[Feature: Hooking Method]
+- Hooking method is a new feature that allows you to hook WhatsApp in different ways. 
+- You can choose between 3 different hooking methods:
+  - Balanced: Hooking some features on Startup, some features on demand (lazy injecting) for a balance between battery consumption and compatibility.
+  - Maximum: Hooking every feature on Startup for maximum compatibility.
+  - Lightweight (Pro): Hooking minimal features on Startup and more features on demand (lazy injecting) for minimum battery consumption.
+  - Customized (Pro): You can customize the hooking method for each feature.
+
+
+[Notes]
+- Floating bar new features are inspired from WhatsApp's soon upcoming update of Floating bottom bar design.
+- You can enjoy the same experience before WhatsApp even launches in beta. 
+- Use these values to get a similar experince :
+  - Horizontal Inner Padding: 5dp
+  - Vertical Inner Padding: 0dp
+  - Selector type: Oval
+  - Selector Color: App Default or by your choice
+  - Hide Tab Labels (Icons Only): True
+  - Icon Size: 26dp
+
 
 [Community contribution]
 - Thanks to @TheKillerMax for valuable contributions in this update.

@@ -49,7 +49,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.waenhancer.xposed.core.BaseFeature;
+import com.waenhancer.hooking.ScreenScopedFeature;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
+import com.waenhancer.xposed.utils.ActivityTracker;
 
 import org.luckypray.dexkit.query.FindClass;
 import org.luckypray.dexkit.query.enums.StringMatchType;
@@ -74,7 +76,7 @@ import java.util.WeakHashMap;
  * Supports configurable corner radius, margins, vertical padding, icon & text sizes,
  * scroll-based hide/show animations, custom fill color, and FAB positioning.
  */
-public class FloatingBottomBarHook extends BaseFeature {
+public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFeature {
 
     private static final String TAG = "[WAEX][FloatingBottomBar]";
 
@@ -243,6 +245,60 @@ public class FloatingBottomBarHook extends BaseFeature {
 
         if (scrollHideEnabled) {
             hookTouchScrollGestures(homeClass);
+        }
+        installIntoCurrentHome(homeClass, 0);
+    }
+
+    /** A lazy hook can be registered after Home's views already attached. Apply it immediately. */
+    private void installIntoCurrentHome(Class<?> homeClass, int attempt) {
+        if (!isEnabled("floating_bottom_bar", false)) return;
+        Activity activity = ActivityTracker.getCurrentActivity();
+        if (activity == null || homeClass == null || !homeClass.isInstance(activity)) return;
+        activity.runOnUiThread(() -> {
+            if (!isEnabled("floating_bottom_bar", false)) return;
+            if (activity.isFinishing() || activity.isDestroyed()) return;
+            View decor = activity.getWindow().getDecorView();
+            if (!(decor instanceof ViewGroup)) return;
+            View bottomBar = findBottomNavInRoot((ViewGroup) decor);
+            if (bottomBar instanceof ViewGroup) {
+                scheduleSetup((ViewGroup) bottomBar);
+            } else if (attempt < 8) {
+                // A lazy feature may finish resolving while Home is still inflating its nav tree.
+                decor.postDelayed(() -> installIntoCurrentHome(homeClass, attempt + 1), 100L);
+            }
+            for (int fabId : fabIds) {
+                View fab = decor.findViewById(fabId);
+                if (fab != null) positionFabAboveCurrentBar(fab);
+            }
+        });
+    }
+
+    @Override
+    public void onScreenDisposed(@NonNull Activity activity) {
+        scrollGestureY.remove(activity);
+        View decor = activity.getWindow().getDecorView();
+        if (!(decor instanceof ViewGroup)) return;
+        clearViewState((ViewGroup) decor);
+    }
+
+    private static void clearViewState(ViewGroup root) {
+        processedBars.remove(root);
+        setupAttempts.remove(root);
+        styledBottomBars.remove(root);
+        targetHideStates.remove(root);
+        targetTranslations.remove(root);
+        scrollableBottomBarCache.remove(root);
+        mainScrollableCache.remove(root);
+        forcedSelectedTabs.remove(root);
+        for (int index = 0; index < root.getChildCount(); index++) {
+            View child = root.getChildAt(index);
+            styledBottomBars.remove(child);
+            targetHideStates.remove(child);
+            targetTranslations.remove(child);
+            scrollableBottomBarCache.remove(child);
+            mainScrollableCache.remove(child);
+            renderedSelectedTabs.remove(child);
+            if (child instanceof ViewGroup) clearViewState((ViewGroup) child);
         }
     }
 
@@ -1787,7 +1843,9 @@ public class FloatingBottomBarHook extends BaseFeature {
         if (root == null) return null;
         for (int i = 0; i < root.getChildCount(); i++) {
             View child = root.getChildAt(i);
-            if (styledBottomBars.containsKey(child)) {
+            int id = child.getId();
+            if (styledBottomBars.containsKey(child)
+                    || (id > 0 && (id == bottomNavId || id == navigationBarId || id == tabLayoutId))) {
                 return child;
             }
             if (child instanceof ViewGroup) {

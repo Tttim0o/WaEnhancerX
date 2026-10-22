@@ -89,6 +89,7 @@ import com.waenhancer.ui.screens.settings.ReleaseDetailsScreen
 import com.waenhancer.ui.screens.settings.AboutScreen
 import com.waenhancer.ui.screens.settings.StargazersScreen
 import com.waenhancer.ui.screens.settings.ModuleSettingsScreen
+import com.waenhancer.ui.screens.settings.HookingModeHelpScreen
 import com.waenhancer.ui.screens.settings.UpdateSettingsScreen
 import com.waenhancer.ui.screens.settings.SupportedVersionsScreen
 import com.waenhancer.ui.screens.settings.BootloaderSpooferScreen
@@ -1030,6 +1031,7 @@ fun WaexAppNavigation(
         Screen.About -> AboutScreen()
         Screen.Stargazers -> StargazersScreen()
         Screen.ModuleSettings -> ModuleSettingsScreen()
+        Screen.HookingModeHelp -> HookingModeHelpScreen()
         Screen.UpdateSettings -> UpdateSettingsScreen()
         Screen.SupportedVersions -> SupportedVersionsScreen()
         Screen.DeletedMessages -> DeletedMessagesVaultScreen()

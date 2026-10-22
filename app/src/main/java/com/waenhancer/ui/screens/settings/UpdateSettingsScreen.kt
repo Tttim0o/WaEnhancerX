@@ -23,10 +23,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +55,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.navigationBarsPadding
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateSettingsScreen() {
     val navController = LocalWaexNavController.current
@@ -71,6 +76,7 @@ fun UpdateSettingsScreen() {
     var checkModuleOpen by remember { mutableStateOf(prefManager.getBoolean("update_check_module_open", true)) }
     var checkWhatsAppOpen by remember { mutableStateOf(prefManager.getBoolean("update_check_whatsapp_open", true)) }
     var ignoredBehavior by remember { mutableStateOf(prefManager.getString("update_ignored_behavior", "next_release")) }
+    var selector by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -159,11 +165,9 @@ fun UpdateSettingsScreen() {
 
                     HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f), modifier = Modifier.padding(vertical = 14.dp))
 
-                    val frequencies = listOf("every_open", "six_hours", "daily", "weekly")
                     Row(
                         modifier = Modifier.fillMaxWidth().clickable {
-                            updateFrequency = frequencies[(frequencies.indexOf(updateFrequency).coerceAtLeast(0) + 1) % frequencies.size]
-                            prefManager.putString("update_frequency", updateFrequency)
+                            selector = "frequency"
                         },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -176,11 +180,9 @@ fun UpdateSettingsScreen() {
 
                     HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f), modifier = Modifier.padding(vertical = 14.dp))
 
-                    val ignoredOptions = listOf("next_release", "next_check", "after_day", "after_week")
                     Row(
                         modifier = Modifier.fillMaxWidth().clickable {
-                            ignoredBehavior = ignoredOptions[(ignoredOptions.indexOf(ignoredBehavior).coerceAtLeast(0) + 1) % ignoredOptions.size]
-                            prefManager.putString("update_ignored_behavior", ignoredBehavior)
+                            selector = "ignored"
                         },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -278,6 +280,59 @@ fun UpdateSettingsScreen() {
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+
+    selector?.let { selectionType ->
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val isFrequency = selectionType == "frequency"
+        val options = if (isFrequency) updateFrequencyOptions() else ignoredUpdateOptions()
+        val selectedValue = if (isFrequency) updateFrequency else ignoredBehavior
+        ModalBottomSheet(
+            onDismissRequest = { selector = null },
+            sheetState = sheetState,
+            containerColor = colors.surface,
+            shape = radius.bottomSheetShape
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = if (isFrequency) UiText.get(R.string.waex_ui_check_frequency, "Check frequency")
+                    else UiText.get(R.string.waex_ui_after_ignoring_an_update, "After ignoring an update"),
+                    style = typography.titleLg,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onSurface
+                )
+                options.forEach { option ->
+                    val selected = selectedValue == option.first
+                    Surface(
+                        shape = radius.cardShape,
+                        color = if (selected) colors.primary.copy(alpha = 0.12f) else colors.surfaceDim,
+                        border = BorderStroke(1.dp, if (selected) colors.primary else colors.outlineVariant),
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            if (isFrequency) {
+                                updateFrequency = option.first
+                                prefManager.putString("update_frequency", option.first)
+                            } else {
+                                ignoredBehavior = option.first
+                                prefManager.putString("update_ignored_behavior", option.first)
+                            }
+                            selector = null
+                        }
+                    ) {
+                        Text(
+                            text = option.second,
+                            style = typography.bodyLg,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (selected) colors.primary else colors.onSurface,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -305,9 +360,23 @@ private fun frequencyLabel(value: String) = when (value) {
     else -> UiText.get(R.string.waex_ui_at_most_once_a_day, "At most once a day")
 }
 
+private fun updateFrequencyOptions(): List<Pair<String, String>> = listOf(
+    "every_open" to UiText.get(R.string.waex_ui_every_eligible_app_open, "Every eligible app open"),
+    "six_hours" to UiText.get(R.string.waex_ui_at_most_every_6_hours, "At most every 6 hours"),
+    "daily" to UiText.get(R.string.waex_ui_at_most_once_a_day, "At most once a day"),
+    "weekly" to UiText.get(R.string.waex_ui_at_most_once_a_week, "At most once a week")
+)
+
 private fun ignoredLabel(value: String) = when (value) {
     "next_check" -> UiText.get(R.string.waex_ui_show_it_again_on_the_next_check, "Show it again on the next check")
     "after_day" -> UiText.get(R.string.waex_ui_remind_me_again_after_one_day, "Remind me again after one day")
     "after_week" -> UiText.get(R.string.waex_ui_remind_me_again_after_one_week, "Remind me again after one week")
     else -> UiText.get(R.string.waex_ui_wait_until_a_newer_release_is_availabl, "Wait until a newer release is available")
 }
+
+private fun ignoredUpdateOptions(): List<Pair<String, String>> = listOf(
+    "next_release" to UiText.get(R.string.waex_ui_wait_until_a_newer_release_is_availabl, "Wait until a newer release is available"),
+    "next_check" to UiText.get(R.string.waex_ui_show_it_again_on_the_next_check, "Show it again on the next check"),
+    "after_day" to UiText.get(R.string.waex_ui_remind_me_again_after_one_day, "Remind me again after one day"),
+    "after_week" to UiText.get(R.string.waex_ui_remind_me_again_after_one_week, "Remind me again after one week")
+)

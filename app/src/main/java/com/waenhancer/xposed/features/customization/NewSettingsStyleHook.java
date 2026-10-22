@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import com.waenhancer.xposed.core.BaseFeature;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
+import com.waenhancer.xposed.utils.ActivityTracker;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import org.luckypray.dexkit.query.FindClass;
@@ -80,9 +81,16 @@ public class NewSettingsStyleHook extends BaseFeature {
                     }
                 }
             });
+            refreshCurrentHomeMenu(homeActivityClass);
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Failed to hook HomeActivity menu for me_tab_menu_item: " + t.getMessage());
         }
+    }
+
+    private void refreshCurrentHomeMenu(@NonNull Class<?> homeActivityClass) {
+        Activity activity = ActivityTracker.getCurrentActivity();
+        if (activity == null || !homeActivityClass.isInstance(activity)) return;
+        activity.runOnUiThread(activity::invalidateOptionsMenu);
     }
 
     private Class<?> resolveHomeActivityClass() {

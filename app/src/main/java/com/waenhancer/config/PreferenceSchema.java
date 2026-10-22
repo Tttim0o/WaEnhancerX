@@ -424,6 +424,7 @@ public final class PreferenceSchema {
         add(entries, "download_view_once", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "enable_media_preview", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_recording", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "hooking_mode", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_typing", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "media_upload_quality", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "open_wae", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

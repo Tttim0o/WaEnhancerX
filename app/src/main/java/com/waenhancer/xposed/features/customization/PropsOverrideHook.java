@@ -48,6 +48,24 @@ public final class PropsOverrideHook extends BaseFeature {
         hookPropertyMethod(integerGetter);
     }
 
+    /** Applies a declarative early MobileConfig boolean override from the feature registry. */
+    public static void setBooleanOverride(int id, boolean enabled, boolean value) {
+        if (enabled) {
+            BOOLEANS.put(id, value);
+        } else {
+            BOOLEANS.remove(id);
+        }
+    }
+
+    /** Applies a declarative early MobileConfig integer override from the feature registry. */
+    public static void setIntegerOverride(int id, boolean enabled, int value) {
+        if (enabled) {
+            INTEGERS.put(id, value);
+        } else {
+            INTEGERS.remove(id);
+        }
+    }
+
     private Method findFallbackGetter(String cacheKey, String anchor) {
         try {
             return DexSearchEngine.getInstance().findMethodWithCache(

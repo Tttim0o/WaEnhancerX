@@ -47,6 +47,11 @@ public final class ActivityTracker implements Application.ActivityLifecycleCallb
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
         sCurrentActivity = new WeakReference<>(activity);
+        for (ActivityListener listener : sListeners) {
+            try {
+                listener.onActivityCreated(activity);
+            } catch (Throwable ignored) {}
+        }
     }
 
     @Override
@@ -55,7 +60,11 @@ public final class ActivityTracker implements Application.ActivityLifecycleCallb
     }
 
     public interface ActivityListener {
+        default void onActivityCreated(@NonNull Activity activity) {}
+
         void onActivityResumed(@NonNull Activity activity);
+
+        default void onActivityDestroyed(@NonNull Activity activity) {}
     }
 
     private static final List<ActivityListener> sListeners = new CopyOnWriteArrayList<>();
@@ -106,6 +115,11 @@ public final class ActivityTracker implements Application.ActivityLifecycleCallb
     public void onActivityDestroyed(@NonNull Activity activity) {
         if (sCurrentActivity.get() == activity) {
             sCurrentActivity = new WeakReference<>(null);
+        }
+        for (ActivityListener listener : sListeners) {
+            try {
+                listener.onActivityDestroyed(activity);
+            } catch (Throwable ignored) {}
         }
     }
 }

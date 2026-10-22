@@ -81,6 +81,20 @@ public final class SeparateGroupsHook extends BaseFeature {
         hookFragments(getTab, conversations);
         hookTabName(getTab);
         hookTabIcon(engine);
+
+        refreshCurrentHomeActivity();
+    }
+
+    private void refreshCurrentHomeActivity() {
+        android.app.Activity activity = com.waenhancer.xposed.utils.ActivityTracker.getCurrentActivity();
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+        String name = activity.getClass().getName().toLowerCase(java.util.Locale.ROOT);
+        if (!name.contains("home") && !name.contains("main")) return;
+        activity.runOnUiThread(() -> {
+            if (!activity.isFinishing() && !activity.isDestroyed()) {
+                activity.recreate();
+            }
+        });
     }
 
     private Method resolveTabList(DexSearchEngine engine) throws Throwable {

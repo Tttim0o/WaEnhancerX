@@ -1768,8 +1768,13 @@ fun InjectedHookRow(hook: InjectedHookItem) {
     val typography = WaexTheme.typography
     val radius = WaexTheme.radius
 
-    val isSuccess = (hook.status == "ACTIVE")
-    val dotColor = if (isSuccess) colors.primary else colors.error
+    val status = hook.status.uppercase()
+    val dotColor = when (status) {
+        "ACTIVE" -> colors.primary
+        "FAILED" -> colors.error
+        "WAITING", "PENDING" -> colors.secondary
+        else -> colors.onSurfaceVariant
+    }
 
     Surface(
         shape = radius.defaultShape,
@@ -1849,7 +1854,11 @@ fun InjectedHookRow(hook: InjectedHookItem) {
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = if (isSuccess) UiText.get(R.string.diag_status_active, "Active") else UiText.get(R.string.waex_ui_failed_label, "Failed"),
+                text = when (status) {
+                    "ACTIVE" -> UiText.get(R.string.diag_status_active, "Active")
+                    "FAILED" -> UiText.get(R.string.waex_ui_failed_label, "Failed")
+                    else -> com.waenhancer.utils.InternalLabels.text(status)
+                },
                 style = typography.labelSm,
                 fontWeight = FontWeight.Medium,
                 color = dotColor,

@@ -43,6 +43,7 @@ public final class InternalLabels {
             case "FAILED": return UiText.get(R.string.waex_ui_failed_uppercase, "FAILED");
             case "DISABLED": return UiText.get(R.string.waex_ui_disabled_uppercase, "DISABLED");
             case "PENDING": return UiText.get(R.string.waex_ui_pending, "PENDING");
+            case "WAITING": return "WAITING";
             case "Active": return UiText.get(R.string.diag_status_active, "Active");
             case "Failed": return UiText.get(R.string.waex_ui_failed_label, "Failed");
             case "Disabled": return UiText.get(R.string.waex_ui_disabled_label, "Disabled");
