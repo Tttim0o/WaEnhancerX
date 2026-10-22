@@ -3,7 +3,22 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ggml-backend.h"
 #include "whisper.h"
+
+/**
+ * Loads one ggml CPU backend library by file name (resolved from the app's own libraries).
+ * ggml refuses a variant whose instructions this CPU lacks, so callers try best-first.
+ */
+JNIEXPORT jboolean JNICALL
+Java_com_waenhancer_core_transcription_local_WhisperNative_loadCpuBackend(JNIEnv *env, jclass cls, jstring name) {
+    (void) cls;
+    const char *library = (*env)->GetStringUTFChars(env, name, NULL);
+    if (library == NULL) return JNI_FALSE;
+    ggml_backend_reg_t reg = ggml_backend_load(library);
+    (*env)->ReleaseStringUTFChars(env, name, library);
+    return reg != NULL ? JNI_TRUE : JNI_FALSE;
+}
 
 JNIEXPORT jlong JNICALL
 Java_com_waenhancer_core_transcription_local_WhisperNative_init(JNIEnv *env, jclass cls, jstring path) {

@@ -37,12 +37,19 @@ android {
         val devGh = project.findProperty("DEV_GH")?.toString()?.trim() ?: "mubashardev"
         buildConfigField("String", "DEV_GH", "\"$devGh\"")
 
+        // GitHub repository the in-app updater reads releases from (owner/name). Test builds of
+        // a fork point it at the fork; official builds keep the default.
+        val updateRepository = project.findProperty("UPDATE_REPOSITORY")?.toString()?.trim()
+            ?.takeIf { it.matches(Regex("[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")) }
+            ?: "Xposed-Modules-Repo/com.waenhancer"
+        buildConfigField("String", "UPDATE_REPOSITORY", "\"$updateRepository\"")
+
         // On-device transcription (whisper.cpp) is built for 64-bit ARM only. This filter
         // applies to the CMake build alone; prebuilt libraries keep all their ABIs.
         externalNativeBuild {
             cmake {
                 abiFilters += "arm64-v8a"
-                arguments += listOf("-DANDROID_STL=c++_static")
+                arguments += listOf("-DANDROID_STL=c++_shared") // several native libraries share one C++ runtime
             }
         }
     }

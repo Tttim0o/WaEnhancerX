@@ -17,8 +17,9 @@ class ReleaseRepositoryTest {
 
     @Test
     fun `only official repository APK assets are accepted`() {
+        // The configured repository (official by default, a fork's in its test builds).
         assertTrue(ReleaseRepository.isOfficialReleaseAssetUrl(
-            "https://github.com/Xposed-Modules-Repo/com.waenhancer/releases/download/20300-2.0.3/WaEnhancerX-v2.0.3_release.apk"
+            "https://github.com/${ReleaseRepository.RELEASE_REPOSITORY}/releases/download/20300-2.0.3/WaEnhancerX-v2.0.3_release.apk"
         ))
         assertFalse(ReleaseRepository.isOfficialReleaseAssetUrl(
             "https://github.com/another-owner/another-repo/releases/download/2.0.3/WaEnhancerX-v2.0.3_release.apk"

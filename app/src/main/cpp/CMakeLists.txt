@@ -1,5 +1,5 @@
 # On-device speech-to-text for the WAEX app process (never loaded into WhatsApp).
-# whisper.cpp is fetched at a pinned commit instead of being vendored.
+# whisper.cpp is fetched at a pinned tag instead of being vendored.
 cmake_minimum_required(VERSION 3.22.1)
 project(waexwhisper C CXX)
 
@@ -11,18 +11,23 @@ FetchContent_Declare(
     GIT_SHALLOW    TRUE
 )
 
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+# ggml builds one CPU backend per Android ARM generation (ARMv8.0 up to ARMv9.2 with
+# dotprod, fp16, i8mm, SVE/SVE2, SME) as separate libraries; WhisperNative loads the best one
+# this phone supports, so every 64-bit phone works and newer ones run faster.
+set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+set(GGML_BACKEND_DL ON CACHE BOOL "" FORCE)
+set(GGML_CPU_ALL_VARIANTS ON CACHE BOOL "" FORCE)
+set(GGML_NATIVE OFF CACHE BOOL "" FORCE)
+set(GGML_OPENMP OFF CACHE BOOL "" FORCE)
 set(WHISPER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(WHISPER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(WHISPER_BUILD_SERVER OFF CACHE BOOL "" FORCE)
 set(WHISPER_ALL_WARNINGS OFF CACHE BOOL "" FORCE)
-set(GGML_NATIVE OFF CACHE BOOL "" FORCE)
-set(GGML_OPENMP OFF CACHE BOOL "" FORCE)
-# Phones since ~2018 (Cortex-A55/A75 and newer) have dot-product and fp16 arithmetic,
-# which make quantized models 2-3x faster. The app checks /proc/cpuinfo before loading this.
-set(GGML_CPU_ARM_ARCH "armv8.2-a+dotprod+fp16" CACHE STRING "" FORCE)
+# Backend modules are written to the runtime output directory; make that the directory the
+# Android Gradle plugin packages libraries from.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 FetchContent_MakeAvailable(whisper)
 
 add_library(waexwhisper SHARED waex_whisper.c)
-target_link_libraries(waexwhisper PRIVATE whisper log)
+target_link_libraries(waexwhisper PRIVATE whisper ggml log)
 target_compile_options(waexwhisper PRIVATE -O3)
