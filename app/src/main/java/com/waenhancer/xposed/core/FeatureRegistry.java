@@ -164,8 +164,10 @@ public final class FeatureRegistry {
         // with the injected WhatsApp context: that would read WhatsApp's unrelated private
         // preferences and incorrectly downgrade Lightweight to Maximum.
         final boolean isProActive = prefs.getBoolean("waex_pro_active", false);
-        this.hookingMode = HookingModePolicy.normalize(
-                prefs.getString(HookingModePolicy.KEY, HookingModePolicy.COMPATIBILITY), isProActive);
+        String storedHookingMode = prefs.getString(HookingModePolicy.KEY, HookingModePolicy.BALANCED);
+        this.hookingMode = HookingModePolicy.normalize(storedHookingMode, isProActive);
+        XposedBridge.log("[WAEX][HookingMode] stored=" + storedHookingMode
+                + " effective=" + this.hookingMode + " pro=" + isProActive);
         if (HookingModePolicy.CUSTOMIZED.equals(this.hookingMode)) {
             try {
                 JSONObject custom = new JSONObject(prefs.getString(
@@ -472,6 +474,14 @@ public final class FeatureRegistry {
             entry.error = t.getMessage();
             features.add(entry);
         }
+        int startupCount = 0;
+        int lazyCount = 0;
+        for (FeatureEntry entry : features) {
+            if (entry.factory == null || entry.installation == Installation.STARTUP) startupCount++;
+            else lazyCount++;
+        }
+        XposedBridge.log("[WAEX][HookingMode] plan mode=" + hookingMode
+                + " startup=" + startupCount + " lazy=" + lazyCount);
     }
 
     private void registerFeature(Class<? extends BaseFeature> type, String category,
@@ -482,15 +492,16 @@ public final class FeatureRegistry {
     private void registerFeature(Class<? extends BaseFeature> type, String category,
                                  FeatureEnabled enabled,
                                  FeatureFactory factory) {
-        FeaturePolicy policy = HookingEngine.policyFor(type.getSimpleName());
-        Installation effectiveInstallation = effectiveInstallation(policy, type.getSimpleName(), category);
-        FeatureEntry entry = new FeatureEntry(type.getSimpleName(), category,
+        String className = type.getSimpleName();
+        FeaturePolicy policy = HookingEngine.policyFor(className);
+        Installation effectiveInstallation = effectiveInstallation(policy, className, category);
+        FeatureEntry entry = new FeatureEntry(className, category,
                 effectiveInstallation, policy, enabled, factory);
         features.add(entry);
         if (effectiveInstallation != Installation.STARTUP) {
             lazyHooks.register(screenFor(effectiveInstallation), () -> install(entry));
             lazyHooks.registerDisposer(screenFor(effectiveInstallation),
-                    activity -> uninstallLazy(entry, activity));
+                    activity -> disposeLazyEntry(entry, activity));
         }
     }
 
@@ -540,6 +551,9 @@ public final class FeatureRegistry {
             @Override public void onActivityResumed(@NonNull Activity activity) {
                 lazyHooks.onActivityResumed(activity);
             }
+            @Override public void onActivityStopped(@NonNull Activity activity) {
+                lazyHooks.onActivityStopped(activity);
+            }
             @Override public void onActivityDestroyed(@NonNull Activity activity) {
                 lazyHooks.onActivityDestroyed(activity);
             }
@@ -565,6 +579,12 @@ public final class FeatureRegistry {
     }
 
     private void install(FeatureEntry entry) {
+        synchronized (entry) {
+            installLocked(entry);
+        }
+    }
+
+    private void installLocked(FeatureEntry entry) {
         if (entry.factory == null || !isEntryEnabled(entry)) {
             markDisabled(entry);
             return;
@@ -573,9 +593,20 @@ public final class FeatureRegistry {
         try {
             entry.feature = entry.factory.create();
             entry.name = entry.feature.getName();
-            entry.feature.hook();
+            entry.feature.beginHookTracking();
+            try {
+                entry.feature.hook();
+            } finally {
+                entry.feature.endHookTracking();
+            }
             entry.status = "ACTIVE";
+            if (entry.installation != Installation.STARTUP) {
+                XposedBridge.log("[WAEX][LazyHooks] " + entry.className + " ACTIVE");
+            }
         } catch (Throwable t) {
+            if (entry.feature != null) entry.feature.unhookAll();
+            entry.feature = null;
+            entry.installationStarted.set(false);
             entry.status = "FAILED";
             entry.error = t.getMessage() != null ? t.getMessage() : t.getClass().getName();
             XposedBridge.log("[WAEX] Error initializing feature [" + entry.name + "]: " + entry.error);
@@ -584,12 +615,11 @@ public final class FeatureRegistry {
             if (entry.installation != Installation.STARTUP) {
                 DexSearchEngine.getInstance().close();
             }
-            // The manager must see a lazy feature transition without waiting for a process restart.
             reportInjectedHooks(reportingContext, reportingPackage);
         }
     }
 
-    private void uninstallLazy(FeatureEntry entry, @NonNull Activity activity) {
+    private void disposeLazyEntry(FeatureEntry entry, @NonNull Activity activity) {
         if (entry.installation == Installation.STARTUP) return;
         synchronized (entry) {
             BaseFeature feature = entry.feature;
@@ -598,17 +628,17 @@ public final class FeatureRegistry {
                 if (feature instanceof ScreenScopedFeature) {
                     ((ScreenScopedFeature) feature).onScreenDisposed(activity);
                 }
+                feature.unhookAll();
+                entry.feature = null;
+                entry.installationStarted.set(false);
+                entry.status = isEntryEnabled(entry) ? "WAITING" : "DISABLED";
+                entry.error = null;
+                XposedBridge.log("[WAEX][LazyHooks] " + entry.className + " " + entry.status);
             } catch (Throwable error) {
-                XposedBridge.log("[WAEX] Lazy cleanup failed for " + entry.className + ": "
+                XposedBridge.log("[WAEX] Lazy dispose failed for " + entry.className + ": "
                         + error.getClass().getSimpleName());
             }
-            feature.unhookAll();
-            entry.feature = null;
-            entry.installationStarted.set(false);
-            entry.status = isEntryEnabled(entry) ? "WAITING" : "DISABLED";
-            entry.error = null;
         }
-        DexSearchEngine.getInstance().close();
         reportInjectedHooks(reportingContext, reportingPackage);
     }
 
@@ -663,6 +693,7 @@ public final class FeatureRegistry {
             Bundle extras = new Bundle();
             extras.putString("package", packageName);
             extras.putString("hooks_json", array.toString());
+            extras.putString("hooking_mode", hookingMode);
             extras.putLong("timestamp", System.currentTimeMillis());
 
             context.getContentResolver().call(uri, "register_injected_hooks", packageName, extras);

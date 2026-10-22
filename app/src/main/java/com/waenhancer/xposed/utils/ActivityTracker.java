@@ -64,6 +64,8 @@ public final class ActivityTracker implements Application.ActivityLifecycleCallb
 
         void onActivityResumed(@NonNull Activity activity);
 
+        default void onActivityStopped(@NonNull Activity activity) {}
+
         default void onActivityDestroyed(@NonNull Activity activity) {}
     }
 
@@ -106,7 +108,13 @@ public final class ActivityTracker implements Application.ActivityLifecycleCallb
     }
 
     @Override
-    public void onActivityStopped(@NonNull Activity activity) {}
+    public void onActivityStopped(@NonNull Activity activity) {
+        for (ActivityListener listener : sListeners) {
+            try {
+                listener.onActivityStopped(activity);
+            } catch (Throwable ignored) {}
+        }
+    }
 
     @Override
     public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}

@@ -80,7 +80,7 @@ fun HookingModeHelpScreen() {
     val radius = WaexTheme.radius
 
     val currentMode = remember(prefs) {
-        prefs.getString(HookingModePolicy.KEY, HookingModePolicy.COMPATIBILITY)
+        prefs.getString(HookingModePolicy.KEY, HookingModePolicy.BALANCED)
     }
     var activeMode by remember { mutableStateOf(HookingModePolicy.normalize(currentMode, isPro)) }
     var customInstallations by remember {

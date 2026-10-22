@@ -294,4 +294,5 @@ class JumpFirstMessageHook(
         val name = activity.javaClass.name
         return name.contains("Conversation") || name.contains("ChatActivity")
     }
+
 }

@@ -1,6 +1,6 @@
 [Added]
 - Send seen via status
-- Added module settings for Hooking method
+- Added module settings for Hooking method (Lightweight, Balanced, Maximum Capability, Customized)
 
 [Improvements]
 - Removed obsolete Facebook Grid and Compact List status layouts

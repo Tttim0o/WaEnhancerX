@@ -89,7 +89,7 @@ fun ModuleSettingsScreen() {
     var showHookingModeSheet by remember { mutableStateOf(false) }
     var hookingMode by remember {
         mutableStateOf(HookingModePolicy.normalize(
-            preferences.getString(HookingModePolicy.KEY, HookingModePolicy.COMPATIBILITY),
+            preferences.getString(HookingModePolicy.KEY, HookingModePolicy.BALANCED),
             isPro
         ))
     }

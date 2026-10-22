@@ -1,12 +1,16 @@
 package com.waenhancer.xposed.utils;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Process;
+import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import de.robv.android.xposed.XposedBridge;
 
-/** Relaunches the current WhatsApp task and immediately terminates its old process. */
+/** Terminates the current WhatsApp process, then relaunches it in a clean process. */
 public final class WhatsAppProcessRestarter {
     private WhatsAppProcessRestarter() {}
 
@@ -14,24 +18,29 @@ public final class WhatsAppProcessRestarter {
         try {
             Intent launchIntent = activity.getPackageManager()
                     .getLaunchIntentForPackage(activity.getPackageName());
-            if (launchIntent != null && launchIntent.getComponent() != null) {
-                Intent restartIntent = Intent.makeRestartActivityTask(launchIntent.getComponent());
-                restartIntent.setPackage(activity.getPackageName());
-                activity.startActivity(restartIntent);
-            } else {
-                Intent fallback = new Intent(activity, activity.getClass());
-                fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                activity.startActivity(fallback);
-            }
+            Intent restartIntent = launchIntent != null && launchIntent.getComponent() != null
+                    ? Intent.makeRestartActivityTask(launchIntent.getComponent())
+                    : new Intent(activity, activity.getClass())
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            restartIntent.setPackage(activity.getPackageName());
+
+            PendingIntent pendingRestart = PendingIntent.getActivity(
+                    activity.getApplicationContext(),
+                    0x57414558,
+                    restartIntent,
+                    PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            AlarmManager alarms = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+            if (alarms == null) throw new IllegalStateException("AlarmManager unavailable");
+            alarms.set(AlarmManager.ELAPSED_REALTIME,
+                    SystemClock.elapsedRealtime() + 500L, pendingRestart);
+            activity.finishAffinity();
         } catch (Throwable throwable) {
-            XposedBridge.log("[WAEX] WhatsApp restart launch failed: " + throwable.getMessage());
+            XposedBridge.log("[WAEX] WhatsApp clean restart scheduling failed: "
+                    + throwable.getMessage());
+            return;
         }
 
-        try {
-            Runtime.getRuntime().exit(0);
-        } catch (Throwable ignored) {
-            Process.killProcess(Process.myPid());
-            System.exit(0);
-        }
+        Process.killProcess(Process.myPid());
+        System.exit(0);
     }
 }
