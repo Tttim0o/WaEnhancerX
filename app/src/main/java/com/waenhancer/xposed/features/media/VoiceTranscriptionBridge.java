@@ -28,10 +28,27 @@ final class VoiceTranscriptionBridge {
     private static final long READY_CACHE_MS = 60_000;
     private static final int REMEMBERED_TRANSCRIPTS = 256;
 
-    private static Handler sWorker;
-    private static Handler sInteractive;
+    /** Guards the readiness cache only; never taken on the UI thread while IPC runs. */
+    private static final Object READY_LOCK = new Object();
     private static long sReadyCheckedAt;
     private static volatile boolean sReady;
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
+
+    /**
+     * Created on first use by the class loader, which needs no lock afterwards. A synchronized
+     * getter shared a monitor with the IPC in ready(), so the UI thread could wait seconds for
+     * WAEX to start and WhatsApp froze ("not responding").
+     */
+    private static final class Threads {
+        static final Handler BACKGROUND = start("WAEX-Transcribe", Process.THREAD_PRIORITY_BACKGROUND);
+        static final Handler INTERACTIVE = start("WAEX-Transcribe-UI", Process.THREAD_PRIORITY_DEFAULT);
+
+        private static Handler start(String name, int priority) {
+            HandlerThread thread = new HandlerThread(name, priority);
+            thread.start();
+            return new Handler(thread.getLooper());
+        }
+    }
 
     /** Path + size -> transcript, so a note is sent to the provider once per process. */
     private static final Map<String, String> TRANSCRIPTS =
@@ -85,31 +102,21 @@ final class VoiceTranscriptionBridge {
         return out.toString();
     }
 
-    /** One background thread for all transcription work in this process. */
-    static synchronized Handler worker() {
-        if (sWorker == null) {
-            HandlerThread thread = new HandlerThread("WAEX-Transcribe", Process.THREAD_PRIORITY_BACKGROUND);
-            thread.start();
-            sWorker = new Handler(thread.getLooper());
-        }
-        return sWorker;
+    /** Background thread for automatic transcription work in this process. */
+    static Handler worker() {
+        return Threads.BACKGROUND;
     }
 
     /**
      * Thread for requests the user is waiting on (dictation, transcript sheet, notification
      * buttons), so they never queue behind automatic background transcriptions.
      */
-    static synchronized Handler interactive() {
-        if (sInteractive == null) {
-            HandlerThread thread = new HandlerThread("WAEX-Transcribe-UI");
-            thread.start();
-            sInteractive = new Handler(thread.getLooper());
-        }
-        return sInteractive;
+    static Handler interactive() {
+        return Threads.INTERACTIVE;
     }
 
     static Handler main() {
-        return new Handler(Looper.getMainLooper());
+        return MAIN;
     }
 
     /**
@@ -117,18 +124,25 @@ final class VoiceTranscriptionBridge {
      * Blocking: call on the worker.
      */
     @Nullable
-    static synchronized Boolean ready(@NonNull Context context) {
+    static Boolean ready(@NonNull Context context) {
         long now = System.currentTimeMillis();
-        if (sReadyCheckedAt != 0 && now - sReadyCheckedAt < READY_CACHE_MS) return sReady;
+        synchronized (READY_LOCK) {
+            if (sReadyCheckedAt != 0 && now - sReadyCheckedAt < READY_CACHE_MS) return sReady;
+        }
+        boolean answer;
         try {
+            // No lock held here: starting the WAEX process can take seconds.
             Bundle result = context.getContentResolver().call(
                     PROVIDER, TranscriptionRequestHandler.METHOD_READY, null, new Bundle());
-            sReady = result != null && result.getBoolean(TranscriptionRequestHandler.RESULT_READY, false);
-            sReadyCheckedAt = now; // Only a real answer is cached; WAEX may still be starting.
-            return sReady;
+            answer = result != null && result.getBoolean(TranscriptionRequestHandler.RESULT_READY, false);
         } catch (Throwable t) {
             return null;
         }
+        synchronized (READY_LOCK) {
+            sReady = answer;
+            sReadyCheckedAt = now; // Only a real answer is cached; WAEX may still be starting.
+        }
+        return answer;
     }
 
     /** Last known readiness without IPC or locking; safe on the UI thread. */

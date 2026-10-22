@@ -58,6 +58,9 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
     /** Message class -> field path to its File; an empty array means "has no file". */
     private static final Map<Class<?>, Field[]> FILE_PATHS = new ConcurrentHashMap<>();
     private static final Field[] NO_PATH = new Field[0];
+    /** Path -> time it was last seen on disk; spares a storage call per row while scrolling. */
+    private static final Map<String, Long> SEEN_ON_DISK = new ConcurrentHashMap<>();
+    private static final long SEEN_ON_DISK_MS = 60_000;
 
     /** getView methods already hooked; hooks stay, so another list cannot detach the chat's. */
     private final java.util.Set<Method> hookedGetViews =
@@ -204,10 +207,25 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
             }
             if (!(value instanceof File)) return null;
             File file = (File) value;
-            return isVoiceNote(file) && file.isFile() ? file : null;
+            return isVoiceNote(file) && existsRecently(file) ? file : null;
         } catch (Throwable t) {
             return null;
         }
+    }
+
+    /** getView runs on the UI thread: check the disk at most once a minute per note. */
+    private static boolean existsRecently(File file) {
+        String path = file.getPath();
+        long now = System.currentTimeMillis();
+        Long seen = SEEN_ON_DISK.get(path);
+        if (seen != null && now - seen < SEEN_ON_DISK_MS) return true;
+        if (!file.isFile()) {
+            SEEN_ON_DISK.remove(path);
+            return false;
+        }
+        if (SEEN_ON_DISK.size() > 512) SEEN_ON_DISK.clear();
+        SEEN_ON_DISK.put(path, now);
+        return true;
     }
 
     static boolean isVoiceNote(File file) {
