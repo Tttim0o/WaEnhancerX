@@ -1182,21 +1182,20 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final int capsuleInset = sideMargin;
+            container.setOutlineProvider(new ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    int right = Math.max(capsuleInset + 1, view.getWidth() - capsuleInset);
+                    outline.setRoundRect(capsuleInset, 0, right, view.getHeight(), radius);
+                }
+            });
             if (pillDesignIos) {
-                final int capsuleInset = sideMargin;
-                container.setOutlineProvider(new ViewOutlineProvider() {
-                    @Override
-                    public void getOutline(View view, Outline outline) {
-                        int right = Math.max(capsuleInset + 1, view.getWidth() - capsuleInset);
-                        outline.setRoundRect(capsuleInset, 0, right, view.getHeight(), radius);
-                    }
-                });
                 // Backdrop effects are composed before the child View's outline clip. Clipping the
                 // outer container masks the rectangular blur surface to the exact pill bounds.
                 container.setClipToOutline(true);
             } else {
                 container.setClipToOutline(false);
-                container.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
             }
         }
 
@@ -1228,14 +1227,11 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         background.setStroke(strokeWidth, strokeColor);
 
         bar.setBackground(background);
-        applyPillShadow(bar, density, shadowEnabled);
-        if (shadowEnabled && pillDesignPro) {
-            bar.setElevation(16f * density);
-            bar.setTranslationZ(10f * density);
-        } else if (shadowEnabled && pillDesignIos) {
-            bar.setElevation(10f * density);
-            bar.setTranslationZ(6f * density);
-        }
+        float shadowElevationDp = pillDesignPro ? 16f : (pillDesignIos ? 10f : PILL_ELEVATION_DP);
+        float shadowTranslationDp = pillDesignPro ? 10f : (pillDesignIos ? 6f : PILL_TRANSLATION_Z_DP);
+        applyPillShadow(container, density, shadowEnabled, shadowElevationDp, shadowTranslationDp);
+        // The wrapper owns the shadow so WhatsApp cannot clip it at the child boundary.
+        applyPillShadow(bar, density, false, 0f, 0f);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             bar.setOutlineProvider(new ViewOutlineProvider() {
@@ -1633,10 +1629,14 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         }
     }
 
-    private static void applyPillShadow(View view, float density, boolean enabled) {
-        view.setElevation(enabled ? PILL_ELEVATION_DP * density : 0f);
+    private static void applyPillShadow(View view, float density, boolean enabled,
+                                        float elevationDp, float translationDp) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.setTranslationZ(enabled ? PILL_TRANSLATION_Z_DP * density : 0f);
+            view.setStateListAnimator(null);
+        }
+        view.setElevation(enabled ? elevationDp * density : 0f);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            view.setTranslationZ(enabled ? translationDp * density : 0f);
         }
     }
 
