@@ -106,6 +106,7 @@
     <string name="waex_ui_available_extras_1d71d8a2" formatted="false">"Available Extras:"</string>
     <string name="waex_ui_awaiting_runtime_report_c20be700" formatted="false">"Awaiting runtime report"</string>
     <string name="waex_ui_backup_failed_1_s_5a9e913e">"Backup failed: %1$s"</string>
+    <string name="waex_ui_balanced_speed_and_accuracy_4bb5501b" formatted="false">"Balanced speed and accuracy"</string>
     <string name="waex_ui_base_translation_dictionary_42_mb_41e8799d" formatted="false">"Base translation dictionary: 42 MB"</string>
     <string name="waex_ui_basic_0e35f6e9" formatted="false">"Basic"</string>
     <string name="waex_ui_basic_integrity_supported_9e9e6a42" formatted="false">"Basic integrity supported"</string>
@@ -158,7 +159,6 @@
     <string name="waex_ui_check_when_module_opens_147ecac4" formatted="false">"Check when module opens"</string>
     <string name="waex_ui_check_when_whatsapp_opens_112f6dcc" formatted="false">"Check when WhatsApp opens"</string>
     <string name="waex_ui_checking_root_access_76c86676" formatted="false">"Checking root access"</string>
-    <string name="waex_ui_choose_a_downloaded_model_to_use_3e3f82a7" formatted="false">"Choose a downloaded model to use."</string>
     <string name="waex_ui_choose_color_f2cd02c5" formatted="false">"Choose Color"</string>
     <string name="waex_ui_choose_where_to_show_the_waex_settings_44afa3ae" formatted="false">"Choose where to show the WAEX settings entry point"</string>
     <string name="waex_ui_classic_regular_2f519419" formatted="false">"Classic (Regular)"</string>
@@ -272,6 +272,7 @@
     <string name="waex_ui_downgrade_d955b7e8" formatted="false">"Downgrade"</string>
     <string name="waex_ui_download_d6eafe82" formatted="false">"Download"</string>
     <string name="waex_ui_download_failed_1_s_1f37f501">"Download failed: %1$s"</string>
+    <string name="waex_ui_download_suggested_model_e50dd5e8" formatted="false">"Download suggested model"</string>
     <string name="waex_ui_downloading_and_validating_the_certifi_d80cdcf2" formatted="false">"Downloading and validating the certificate chain…"</string>
     <string name="waex_ui_downloading_update_01436823" formatted="false">"Downloading update"</string>
     <string name="waex_ui_e_g_007cd8a1" formatted="false">"e.g. 👍"</string>
@@ -289,7 +290,7 @@
     <string name="waex_ui_end_hour_37f91306" formatted="false">"End Hour"</string>
     <string name="waex_ui_enforcing_1ca5672a" formatted="false">"Enforcing"</string>
     <string name="waex_ui_engine_running_11ac7787" formatted="false">"Engine Running"</string>
-    <string name="waex_ui_english_only_eda32f28" formatted="false">"English only"</string>
+    <string name="waex_ui_english_only_more_accurate_for_english_351e57f6" formatted="false">"English only: more accurate for English"</string>
     <string name="waex_ui_enhanced_adaptive_shadows_and_refined_107eefd1" formatted="false">"Enhanced adaptive shadows and refined padding"</string>
     <string name="waex_ui_enter_0_or_a_number_from_120_to_1000_b5a85be0" formatted="false">"Enter 0 or a number from 120 to 1000"</string>
     <string name="waex_ui_enter_0_to_use_the_device_default_or_a_2e3826cd" formatted="false">"Enter 0 to use the device default, or a DPI value from 120 to 1000."</string>
@@ -319,7 +320,9 @@
     <string name="waex_ui_failed_to_fetch_connected_devices_127a4496" formatted="false">"Failed to fetch connected devices."</string>
     <string name="waex_ui_failed_to_load_devices_15cdbbab" formatted="false">"Failed to load devices"</string>
     <string name="waex_ui_failed_to_save_706247c6" formatted="false">"Failed to save: "</string>
+    <string name="waex_ui_fast_fair_accuracy_e10bb756" formatted="false">"Fast, fair accuracy"</string>
     <string name="waex_ui_fast_navigation_and_conversation_produ_83302a70" formatted="false">"Fast navigation and conversation productivity tools"</string>
+    <string name="waex_ui_fastest_lowest_accuracy_531b6dab" formatted="false">"Fastest, lowest accuracy"</string>
     <string name="waex_ui_feature_3d377ae9" formatted="false">"Feature"</string>
     <string name="waex_ui_feature_enabled_8e093ea1" formatted="false">"Feature enabled"</string>
     <string name="waex_ui_features_5697d03d" formatted="false">"Features"</string>
@@ -467,6 +470,7 @@
     <string name="waex_ui_managed_keybox_unavailable_e63767b6" formatted="false">"Managed keybox unavailable"</string>
     <string name="waex_ui_managed_keybox_updated_23fcdd3d" formatted="false">"Managed keybox updated"</string>
     <string name="waex_ui_manager_process_hooked_a78a75a7" formatted="false">"Manager process hooked"</string>
+    <string name="waex_ui_may_be_too_heavy_for_this_phone_3cbbd162" formatted="false">"May be too heavy for this phone"</string>
     <string name="waex_ui_media_not_available_yet_c504582c" formatted="false">"Media not available yet"</string>
     <string name="waex_ui_media_not_cached_or_available_yet_45e16ba0" formatted="false">"Media not cached or available yet"</string>
     <string name="waex_ui_media_preview_2e70b815" formatted="false">"Media Preview"</string>
@@ -489,6 +493,7 @@
     <string name="waex_ui_modules_76c86c4c" formatted="false">"Modules"</string>
     <string name="waex_ui_month_40edde43" formatted="false">"/ Month"</string>
     <string name="waex_ui_more_options_6285ce5d" formatted="false">"More Options"</string>
+    <string name="waex_ui_most_accurate_slow_fb61e038" formatted="false">"Most accurate, slow"</string>
     <string name="waex_ui_my_status_43503c17" formatted="false">"My Status"</string>
     <string name="waex_ui_name_sender_name_number_sender_jid_pho_ee23ebc4" formatted="false">"%name (Sender Name)\n%number (Sender JID / Phone)\n%message (Text Content)"</string>
     <string name="waex_ui_needs_attention_e0004b39" formatted="false">"NEEDS ATTENTION"</string>
@@ -587,7 +592,6 @@
     <string name="waex_ui_rec_a29ea413" formatted="false">"Rec"</string>
     <string name="waex_ui_receive_detailed_notification_with_cal_e55e211d" formatted="false">"Receive detailed notification with caller IP, location, device &amp; version after calls end"</string>
     <string name="waex_ui_recommended_baa505ce" formatted="false">"RECOMMENDED"</string>
-    <string name="waex_ui_recommended_d70604e8" formatted="false">"Recommended"</string>
     <string name="waex_ui_record_whatsapp_calls_edeb6ac1" formatted="false">"Record WhatsApp Calls"</string>
     <string name="waex_ui_recording_configuration_40230390" formatted="false">"RECORDING CONFIGURATION"</string>
     <string name="waex_ui_recording_deleted_ded881bb" formatted="false">"Recording deleted"</string>
@@ -664,6 +668,7 @@
     <string name="waex_ui_select_overall_aesthetic_theme_for_the_16217000" formatted="false">"Select overall aesthetic theme for the floating bar"</string>
     <string name="waex_ui_select_unsupported_app_294b5650" formatted="false">"Select Unsupported App"</string>
     <string name="waex_ui_selected_57fd7a0c" formatted="false">"Selected"</string>
+    <string name="waex_ui_selected_download_it_to_start_using_it_238cfe9b" formatted="false">"Selected: download it to start using it."</string>
     <string name="waex_ui_selected_speech_locale_english_us_90b823a7" formatted="false">"Selected speech locale: English (US)"</string>
     <string name="waex_ui_send_blue_tick_a14924d4" formatted="false">"Send blue tick"</string>
     <string name="waex_ui_send_f6f4688f" formatted="false">"Send"</string>
@@ -707,11 +712,13 @@
     <string name="waex_ui_strong_integrity_supported_5590a4ba" formatted="false">"Strong integrity supported"</string>
     <string name="waex_ui_style_whatsapp_views_using_ids_widget_eedbeb45" formatted="false">"Style WhatsApp views using IDs, widget types, scoped activities, and common CSS properties. Restart WhatsApp after saving."</string>
     <string name="waex_ui_subscription_expired_88f93274" formatted="false">"Subscription Expired"</string>
+    <string name="waex_ui_suggested_93b63bab" formatted="false">"Suggested"</string>
     <string name="waex_ui_summarize_long_audios_107bd840" formatted="false">"Summarize Long Audios"</string>
     <string name="waex_ui_supported_abis_05063fc8" formatted="false">"Supported ABIs"</string>
     <string name="waex_ui_supporting_since_1_s_2957c30c">"Supporting since %1$s"</string>
     <string name="waex_ui_system_6725e7bb" formatted="false">"System"</string>
     <string name="waex_ui_system_diagnostics_005acd73" formatted="false">"System Diagnostics"</string>
+    <string name="waex_ui_tap_a_model_to_choose_it_the_suggested_eb991557" formatted="false">"Tap a model to choose it. The suggested one is used until you pick another."</string>
     <string name="waex_ui_tap_any_feature_to_navigate_directly_t_7307e93d" formatted="false">"Tap any feature to navigate directly to its settings"</string>
     <string name="waex_ui_tap_star_on_github_and_your_profile_wi_89e8efe3" formatted="false">"Tap Star on GitHub and your profile will appear after the list updates."</string>
     <string name="waex_ui_tap_to_add_a_view_id_to_remove_or_cust_55465be9" formatted="false">"Tap + to add a view ID to remove or customize in WhatsApp."</string>
@@ -793,7 +800,6 @@
     <string name="waex_ui_updates_22e2bada" formatted="false">"Updates"</string>
     <string name="waex_ui_updates_every_1_s_hours_afe94996">"Updates every %1$s hours"</string>
     <string name="waex_ui_upgrade_7ec0261b" formatted="false">"Upgrade"</string>
-    <string name="waex_ui_use_c36d819e" formatted="false">"Use"</string>
     <string name="waex_ui_use_custom_keybox_5b599ff8" formatted="false">"Use Custom Keybox"</string>
     <string name="waex_ui_use_gemini_nano_to_write_bulleted_abst_ab74bf14" formatted="false">"Use Gemini nano to write bulleted abstracts for long notes."</string>
     <string name="waex_ui_user_busy_0ee28857" formatted="false">"User Busy"</string>
