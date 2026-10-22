@@ -53,6 +53,12 @@ public final class AppRestartHelper {
      * eligible. The signed WAEX broadcast is used when root is unavailable.
      */
     public static void restartPackage(Context context, String packageName, String appName) {
+        restartPackage(context, packageName, appName, true);
+    }
+
+    /** Restarts a package, optionally omitting the initial progress toast for delegated callers. */
+    public static void restartPackage(Context context, String packageName, String appName,
+                                      boolean showProgressToast) {
         if (context == null) return;
         Set<String> discoveredScope;
         try {
@@ -82,7 +88,10 @@ public final class AppRestartHelper {
         }
         if (!RESTART_PENDING.compareAndSet(false, true)) return;
 
-        toast(context, UiText.get(R.string.waex_ui_restarting, "Restarting ") + (appName == null ? packageName : appName) + "...");
+        if (showProgressToast) {
+            toast(context, UiText.get(R.string.waex_ui_restarting, "Restarting ")
+                    + (appName == null ? packageName : appName) + "...");
+        }
         try {
             EXECUTOR.execute(() -> {
                 try {
