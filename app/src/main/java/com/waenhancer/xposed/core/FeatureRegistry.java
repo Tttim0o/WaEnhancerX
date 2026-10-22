@@ -78,6 +78,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -90,6 +92,7 @@ public final class FeatureRegistry {
     private final Context reportingContext;
     private final String reportingPackage;
     private final String hookingMode;
+    private final Map<String, String> customizedInstallations = new HashMap<>();
     private final SharedPreferences prefs;
 
     @FunctionalInterface
@@ -163,6 +166,17 @@ public final class FeatureRegistry {
         final boolean isProActive = prefs.getBoolean("waex_pro_active", false);
         this.hookingMode = HookingModePolicy.normalize(
                 prefs.getString(HookingModePolicy.KEY, HookingModePolicy.COMPATIBILITY), isProActive);
+        if (HookingModePolicy.CUSTOMIZED.equals(this.hookingMode)) {
+            try {
+                JSONObject custom = new JSONObject(prefs.getString(
+                        HookingModePolicy.CUSTOMIZATIONS_KEY, "{}"));
+                java.util.Iterator<String> keys = custom.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    customizedInstallations.put(key, custom.optString(key, ""));
+                }
+            } catch (Throwable ignored) {}
+        }
         try {
             BootloaderSpooferFeature.install(context, classLoader, prefs);
             features.add(new FeatureEntry("Bootloader Spoofing & Integrity", "BootloaderSpooferFeature", "Licensing", "ACTIVE"));
@@ -469,17 +483,35 @@ public final class FeatureRegistry {
                                  FeatureEnabled enabled,
                                  FeatureFactory factory) {
         FeaturePolicy policy = HookingEngine.policyFor(type.getSimpleName());
-        Installation effectiveInstallation = effectiveInstallation(policy);
+        Installation effectiveInstallation = effectiveInstallation(policy, type.getSimpleName(), category);
         FeatureEntry entry = new FeatureEntry(type.getSimpleName(), category,
                 effectiveInstallation, policy, enabled, factory);
         features.add(entry);
         if (effectiveInstallation != Installation.STARTUP) {
             lazyHooks.register(screenFor(effectiveInstallation), () -> install(entry));
+            lazyHooks.registerDisposer(screenFor(effectiveInstallation),
+                    activity -> uninstallLazy(entry, activity));
         }
     }
 
-    private Installation effectiveInstallation(FeaturePolicy policy) {
-        return HookingEngine.effectiveInstallation(policy, hookingMode);
+    private Installation effectiveInstallation(FeaturePolicy policy, String className, String category) {
+        if (!HookingModePolicy.CUSTOMIZED.equals(hookingMode)) {
+            return HookingEngine.effectiveInstallation(policy, hookingMode);
+        }
+        String override = customizedInstallations.get(className);
+        // An absent value deliberately inherits Balanced, making Customized safe by default.
+        if (!"lazy".equals(override)) {
+            return "startup".equals(override)
+                    ? Installation.STARTUP
+                    : HookingEngine.effectiveInstallation(policy, HookingModePolicy.BALANCED);
+        }
+        Installation balanced = HookingEngine.effectiveInstallation(policy, HookingModePolicy.BALANCED);
+        if (balanced != Installation.STARTUP) return balanced;
+        Installation lightweight = HookingEngine.effectiveInstallation(policy, HookingModePolicy.LIGHTWEIGHT);
+        if (lightweight != Installation.STARTUP) return lightweight;
+        if ("Conversation".equals(category) || "Privacy".equals(category)) return Installation.LAZY_CONVERSATION;
+        if ("Media".equals(category)) return Installation.LAZY_MEDIA;
+        return Installation.LAZY_HOME;
     }
 
     private static LazyHookCoordinator.Screen screenFor(Installation installation) {
@@ -543,11 +575,6 @@ public final class FeatureRegistry {
             entry.name = entry.feature.getName();
             entry.feature.hook();
             entry.status = "ACTIVE";
-            if (entry.installation != Installation.STARTUP
-                    && entry.feature instanceof ScreenScopedFeature) {
-                lazyHooks.registerDisposer(screenFor(entry.installation),
-                        (ScreenScopedFeature) entry.feature);
-            }
         } catch (Throwable t) {
             entry.status = "FAILED";
             entry.error = t.getMessage() != null ? t.getMessage() : t.getClass().getName();
@@ -560,6 +587,29 @@ public final class FeatureRegistry {
             // The manager must see a lazy feature transition without waiting for a process restart.
             reportInjectedHooks(reportingContext, reportingPackage);
         }
+    }
+
+    private void uninstallLazy(FeatureEntry entry, @NonNull Activity activity) {
+        if (entry.installation == Installation.STARTUP) return;
+        synchronized (entry) {
+            BaseFeature feature = entry.feature;
+            if (feature == null) return;
+            try {
+                if (feature instanceof ScreenScopedFeature) {
+                    ((ScreenScopedFeature) feature).onScreenDisposed(activity);
+                }
+            } catch (Throwable error) {
+                XposedBridge.log("[WAEX] Lazy cleanup failed for " + entry.className + ": "
+                        + error.getClass().getSimpleName());
+            }
+            feature.unhookAll();
+            entry.feature = null;
+            entry.installationStarted.set(false);
+            entry.status = isEntryEnabled(entry) ? "WAITING" : "DISABLED";
+            entry.error = null;
+        }
+        DexSearchEngine.getInstance().close();
+        reportInjectedHooks(reportingContext, reportingPackage);
     }
 
     private static boolean isEntryEnabled(FeatureEntry entry) {

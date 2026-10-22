@@ -318,6 +318,9 @@ fun ModuleSettingsScreen() {
                                 hookingMode = option.first
                                 preferences.putString(HookingModePolicy.KEY, option.first)
                                 showHookingModeSheet = false
+                                if (option.first == HookingModePolicy.CUSTOMIZED) {
+                                    navController.navigateTo(Screen.HookingModeHelp)
+                                }
                             }
                         }
                     ) {
@@ -435,12 +438,15 @@ private fun hookingModeOptions(): List<Triple<String, String, String>> = listOf(
     Triple(HookingModePolicy.BALANCED, "Balanced (recommended)",
         "Moderate RAM Usage (~180 MB) · Home UI at startup, other hooks load lazily."),
     Triple(HookingModePolicy.COMPATIBILITY, "Maximum compatibility",
-        "High RAM Usage (~500 MB+) · All hooks pre-loaded at startup.")
+        "High RAM Usage (~500 MB+) · All hooks pre-loaded at startup."),
+    Triple(HookingModePolicy.CUSTOMIZED, "Customized",
+        "Choose Startup or Lazy loading for each feature. Defaults match Balanced.")
 )
 
 private fun hookingModeLabel(mode: String): String = when (mode) {
     HookingModePolicy.COMPATIBILITY -> "Max"
     HookingModePolicy.LIGHTWEIGHT -> "Lightweight"
+    HookingModePolicy.CUSTOMIZED -> "Customized"
     else -> "Balanced"
 }
 

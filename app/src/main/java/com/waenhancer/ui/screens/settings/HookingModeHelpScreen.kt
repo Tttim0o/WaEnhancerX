@@ -56,7 +56,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.waenhancer.config.HookingModePolicy
+import com.waenhancer.hooking.HookingEngine
 import com.waenhancer.ui.components.WaexProChip
+import com.waenhancer.ui.components.StitchSwitch
 import com.waenhancer.ui.components.WaexTopBar
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
@@ -64,6 +66,7 @@ import com.waenhancer.ui.navigation.LocalIsPro
 import com.waenhancer.ui.navigation.LocalOnActivatePro
 import com.waenhancer.ui.navigation.LocalWaexNavController
 import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
+import org.json.JSONObject
 
 @Composable
 fun HookingModeHelpScreen() {
@@ -80,6 +83,9 @@ fun HookingModeHelpScreen() {
         prefs.getString(HookingModePolicy.KEY, HookingModePolicy.COMPATIBILITY)
     }
     var activeMode by remember { mutableStateOf(HookingModePolicy.normalize(currentMode, isPro)) }
+    var customInstallations by remember {
+        mutableStateOf(readCustomInstallations(prefs.getString(HookingModePolicy.CUSTOMIZATIONS_KEY, "{}")))
+    }
 
     Scaffold(
         topBar = {
@@ -284,6 +290,97 @@ fun HookingModeHelpScreen() {
                     prefs.putString(HookingModePolicy.KEY, HookingModePolicy.COMPATIBILITY)
                 }
             )
+
+            HookingProfileCard(
+                modeKey = HookingModePolicy.CUSTOMIZED,
+                title = "Customized",
+                badgeText = "Per-feature control",
+                isRecommended = false,
+                isPro = false,
+                isProUnlocked = true,
+                isSelected = activeMode == HookingModePolicy.CUSTOMIZED,
+                icon = Icons.Rounded.Tune,
+                ramUsage = "Varies",
+                ramFraction = 0.36f,
+                summary = "Choose Startup or Lazy loading independently for every feature.",
+                pros = listOf(
+                    "Starts with the same values as Balanced",
+                    "Fine-grained control over launch time and responsiveness",
+                    "Changes are retained when switching between profiles"
+                ),
+                tradeoff = "Lazy background-sensitive hooks can miss events until their target screen is opened. Restart WhatsApp after changes.",
+                onSelect = {
+                    activeMode = HookingModePolicy.CUSTOMIZED
+                    prefs.putString(HookingModePolicy.KEY, HookingModePolicy.CUSTOMIZED)
+                }
+            )
+
+            if (activeMode == HookingModePolicy.CUSTOMIZED) {
+                Text(
+                    text = "CUSTOMIZE FEATURES",
+                    style = typography.labelSm,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary,
+                    letterSpacing = 1.sp
+                )
+                Text(
+                    text = "Startup installs the hook when WhatsApp launches. Lazy installs it when the relevant screen is first opened.",
+                    style = typography.bodySm,
+                    color = colors.onSurfaceVariant
+                )
+                Surface(
+                    shape = radius.cardShape,
+                    color = colors.surfaceContainerLow,
+                    border = BorderStroke(1.dp, colors.outlineVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        CUSTOMIZABLE_HOOKS.forEachIndexed { index, className ->
+                            val balancedLazy = HookingEngine.effectiveInstallation(
+                                HookingEngine.policyFor(className), HookingModePolicy.BALANCED
+                            ) != HookingEngine.Installation.STARTUP
+                            val lazy = when (customInstallations[className]) {
+                                "lazy" -> true
+                                "startup" -> false
+                                else -> balancedLazy
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = hookDisplayName(className),
+                                        style = typography.bodyMd,
+                                        fontWeight = FontWeight.Medium,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        text = if (lazy) "Lazy (on demand)" else "On startup",
+                                        style = typography.labelSm,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
+                                StitchSwitch(
+                                    checked = !lazy,
+                                    onCheckedChange = { startup ->
+                                        customInstallations = customInstallations.toMutableMap().apply {
+                                            put(className, if (startup) "startup" else "lazy")
+                                        }
+                                        prefs.putString(
+                                            HookingModePolicy.CUSTOMIZATIONS_KEY,
+                                            JSONObject(customInstallations).toString()
+                                        )
+                                    }
+                                )
+                            }
+                            if (index != CUSTOMIZABLE_HOOKS.lastIndex) {
+                                HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.45f))
+                            }
+                        }
+                    }
+                }
+            }
 
             // Quick Comparison Matrix Table
             Surface(
@@ -1012,3 +1109,39 @@ private fun ComparisonTableRow(
     }
 }
 
+private fun readCustomInstallations(raw: String?): Map<String, String> = try {
+    val json = JSONObject(raw ?: "{}")
+    buildMap {
+        val keys = json.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            val value = json.optString(key)
+            if (value == "startup" || value == "lazy") put(key, value)
+        }
+    }
+} catch (_: Throwable) {
+    emptyMap()
+}
+
+private fun hookDisplayName(className: String): String = className
+    .removeSuffix("Hook")
+    .replace(Regex("([a-z0-9])([A-Z])"), "$1 $2")
+
+private val CUSTOMIZABLE_HOOKS = listOf(
+    "AntiViewOnceHook", "TypingPrivacyHook", "FreezeLastSeenHook", "AlwaysOnlineHook",
+    "HideReceiptsHook", "BlueOnReplyHook", "CallPrivacyHook", "AntiRevokeHook",
+    "HideForwardedTagHook", "CustomPrivacyHook", "AutoNextStatusHook",
+    "AntiDisappearingMessagesHook", "LockedChatsEnhancerHook", "HideArchivedChatsHook",
+    "DndModeHook", "HideChatsVaultHook", "AntiEditMessagesHook", "StickerConfirmHook",
+    "JumpFirstMessageHook", "PreserveDeleteForMeHook", "CopyStatusTextHook",
+    "ChatLimitsBypassHook", "DoubleTapReactionHook", "MessageDeviceSourceHook",
+    "MinorFixesHook", "HomeScreenHeaderActionsHook", "ChatListCustomizationsHook",
+    "DownloadViewOnceHook", "StatusDownloadHook", "MediaQualityBypassHook",
+    "MediaPreviewHook", "ProximitySensorHook", "CallRecordingHook",
+    "ProfilePhotoDownloadHook", "PresenceToastsHook", "TaskerIntegrationHook",
+    "ChatBubbleColorsHook", "ChannelRecommendationsFilterHook", "ChatFilterDisplayHook",
+    "CustomDpiHook", "CustomTimeHook", "CssThemeHook", "HideHomeTabsHook",
+    "IGStatusHook", "StatusStyleHook", "PropsOverrideHook", "NewSettingsStyleHook",
+    "OnlinePresenceIndicatorsHook", "SeparateGroupsHook", "FloatingBottomBarHook",
+    "FilterItemsHook"
+)
