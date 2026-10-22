@@ -356,6 +356,8 @@
     <string name="waex_ui_hide_home_tabs_title" formatted="false">"Hide Home Tabs"</string>
     <string name="waex_ui_hide_home_tabs_label" formatted="false">"Hide home tabs"</string>
     <string name="waex_ui_hide_on_scroll" formatted="false">"Hide on Scroll"</string>
+    <string name="waex_ui_bottom_bar_shadow" formatted="false">"Shadow"</string>
+    <string name="waex_ui_bottom_bar_shadow_desc" formatted="false">"Show a shadow beneath the floating bar"</string>
     <string name="waex_ui_hide_online" formatted="false">"Hide Online"</string>
     <string name="waex_ui_hide_read_confirmation" formatted="false">"Hide read confirmation"</string>
     <string name="waex_ui_hide_receipts" formatted="false">"Hide Receipts"</string>

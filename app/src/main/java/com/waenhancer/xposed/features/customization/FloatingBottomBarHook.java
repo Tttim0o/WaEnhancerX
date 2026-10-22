@@ -110,6 +110,7 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
     private static boolean scrollHideEnabled = true;
     private static String scrollHideMode = "downward";
     private static boolean glassEnabled = false;
+    private static boolean shadowEnabled = true;
     private static float glassOpacity = 35f;
     private static int glassFillColor = 0;
     private static boolean pillDesignPro = false;
@@ -145,6 +146,7 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         scrollHideEnabled = prefs.getBoolean("floating_bottom_bar_scroll_hide", true);
         scrollHideMode = prefs.getString("floating_bottom_bar_scroll_hide_mode", "downward");
         glassEnabled = prefs.getBoolean("floating_bottom_bar_glass", false);
+        shadowEnabled = prefs.getBoolean("floating_bottom_bar_shadow", true);
         glassOpacity = getPrefFloat(prefs, "floating_bottom_bar_glass_opacity", 35f);
         glassFillColor = getPrefColor(prefs, "floating_bottom_bar_fill_color", 0);
 
@@ -1226,11 +1228,11 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         background.setStroke(strokeWidth, strokeColor);
 
         bar.setBackground(background);
-        applyPillShadow(bar, density);
-        if (pillDesignPro) {
+        applyPillShadow(bar, density, shadowEnabled);
+        if (shadowEnabled && pillDesignPro) {
             bar.setElevation(16f * density);
             bar.setTranslationZ(10f * density);
-        } else if (pillDesignIos) {
+        } else if (shadowEnabled && pillDesignIos) {
             bar.setElevation(10f * density);
             bar.setTranslationZ(6f * density);
         }
@@ -1631,10 +1633,10 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         }
     }
 
-    private static void applyPillShadow(View view, float density) {
-        view.setElevation(PILL_ELEVATION_DP * density);
+    private static void applyPillShadow(View view, float density, boolean enabled) {
+        view.setElevation(enabled ? PILL_ELEVATION_DP * density : 0f);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.setTranslationZ(PILL_TRANSLATION_Z_DP * density);
+            view.setTranslationZ(enabled ? PILL_TRANSLATION_Z_DP * density : 0f);
         }
     }
 

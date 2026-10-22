@@ -71,6 +71,9 @@ fun FloatingBottomBarCustomizerScreen() {
     var glassOpacity by remember {
         mutableFloatStateOf(preferenceManager.getFloat("floating_bottom_bar_glass_opacity", 35f))
     }
+    var shadowEnabled by remember {
+        mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_shadow", true))
+    }
     var cornerRadius by remember {
         mutableFloatStateOf(preferenceManager.getInt("floating_bottom_bar_radius", 28).toFloat())
     }
@@ -207,7 +210,9 @@ fun FloatingBottomBarCustomizerScreen() {
                         shape = previewPillShape,
                         color = previewBgColor,
                         border = BorderStroke(1.dp, if (previewUsesGlass) Color.White.copy(alpha = 0.32f) else Color(0x18FFFFFF)),
-                        shadowElevation = if (isRefined) 12.dp else 8.dp,
+                        shadowElevation = if (shadowEnabled) {
+                            if (isRefined) 12.dp else 8.dp
+                        } else 0.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter)
@@ -755,6 +760,37 @@ fun FloatingBottomBarCustomizerScreen() {
                                     onValueChange = {
                                         glassOpacity = it
                                         preferenceManager.putFloat("floating_bottom_bar_glass_opacity", it)
+                                    }
+                                )
+                            }
+
+                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_bottom_bar_shadow, "Shadow"),
+                                        style = typography.bodyMd,
+                                        fontWeight = FontWeight.Bold,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_bottom_bar_shadow_desc, "Show a shadow beneath the floating bar"),
+                                        style = typography.labelSm,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
+                                StitchSwitch(
+                                    checked = shadowEnabled,
+                                    onCheckedChange = { isChecked ->
+                                        shadowEnabled = isChecked
+                                        preferenceManager.putBoolean("floating_bottom_bar_shadow", isChecked)
                                     }
                                 )
                             }
