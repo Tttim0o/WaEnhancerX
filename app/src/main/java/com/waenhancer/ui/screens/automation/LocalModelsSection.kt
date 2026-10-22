@@ -4,12 +4,18 @@ import com.waenhancer.app.R
 import com.waenhancer.utils.UiText
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -25,19 +31,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import com.waenhancer.core.transcription.local.LocalModelStore
 import com.waenhancer.core.transcription.local.LocalModels
 import com.waenhancer.core.transcription.local.WhisperNative
 import com.waenhancer.ui.designsystem.WaexTheme
+import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * On-device whisper models: what this phone can run, the recommended model, and download /
- * use / delete for each. Downloads continue in the background if the screen is left.
+ * On-device whisper models. The suggested model for this phone and language is listed first;
+ * tapping any model chooses it (like a radio button), and a chosen model that is not downloaded
+ * yet is used as soon as its download finishes. Downloads continue if the screen is left.
  */
 @Composable
 fun LocalModelsSection(language: String) {
@@ -49,11 +56,22 @@ fun LocalModelsSection(language: String) {
     val scope = rememberCoroutineScope()
 
     var supported by remember { mutableStateOf<Boolean?>(null) }
-    var selected by remember { mutableStateOf(preferenceManager.getString("local_model", "")) }
+    var chosen by remember { mutableStateOf(preferenceManager.getString("local_model", "")) }
     var tick by remember { mutableIntStateOf(0) }
     val totalRam = remember { LocalModelStore.totalRam(context) }
+    val ramGb = remember { Math.ceil(totalRam / (1024.0 * 1024 * 1024)) }
     val cores = remember { Runtime.getRuntime().availableProcessors() }
-    val recommendation = remember(language) { LocalModels.recommend(totalRam, cores, language) }
+    val suggestion = remember(language) { LocalModels.recommend(totalRam, cores, language) }
+    // Nothing chosen yet means the suggested model is the one in use.
+    val effectiveId = LocalModels.byId(chosen)?.id ?: suggestion.model.id
+    val ordered = remember(suggestion) {
+        listOf(suggestion.model) + LocalModels.ALL.filter { it.id != suggestion.model.id }
+    }
+
+    fun choose(model: LocalModels.Model) {
+        chosen = model.id
+        preferenceManager.putString("local_model", model.id)
+    }
 
     // Checking CPU support loads the native library: do it off the UI thread.
     LaunchedEffect(Unit) {
@@ -66,6 +84,7 @@ fun LocalModelsSection(language: String) {
             tick++
         }
     }
+    @Suppress("UNUSED_VARIABLE") val refresh = tick // Re-read download state on every tick.
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
@@ -87,92 +106,143 @@ fun LocalModelsSection(language: String) {
                 style = typography.bodyMd,
                 color = colors.error
             )
-            return@Column
         }
         Text(
             text = UiText.get(R.string.waex_ui_this_phone_154bf57e, "This phone") + ": " +
-                    recommendation.reason.substringBefore(':') + " · " + cores + " cores" +
+                    ramGb.toInt() + " GB RAM · " + cores + " cores" +
                     (WhisperNative.backendName()?.let { " · $it" } ?: ""),
             style = typography.bodyMd,
             color = colors.onSurface
         )
-        Text(
-            text = UiText.get(R.string.waex_ui_recommended_d70604e8, "Recommended") + ": " +
-                    recommendation.model.label + " (" + recommendation.model.sizeLabel() + ") · " +
-                    recommendation.reason.substringAfter(": "),
-            style = typography.bodyMd,
-            fontWeight = FontWeight.SemiBold,
-            color = colors.primary
-        )
-        if (LocalModels.byId(selected)?.let { LocalModelStore.isDownloaded(context, it) } != true) {
-            Text(
-                text = UiText.get(R.string.waex_ui_choose_a_downloaded_model_to_use_3e3f82a7,
-                    "Choose a downloaded model to use."),
-                style = typography.labelSm,
-                color = colors.onSurfaceVariant
-            )
-        }
 
-        LocalModels.ALL.forEach { model ->
-            // Read tick so these re-evaluate as downloads progress.
-            @Suppress("UNUSED_VARIABLE") val refresh = tick
+        // One-tap path for people who do not want to compare models.
+        val suggestedProgress = LocalModelStore.progress(suggestion.model.id)
+        if (!LocalModelStore.isDownloaded(context, suggestion.model) && suggestedProgress?.running != true) {
+            Button(
+                onClick = {
+                    choose(suggestion.model)
+                    LocalModelStore.download(context, suggestion.model)
+                },
+                shape = radius.mdShape,
+                colors = ButtonDefaults.buttonColors(containerColor = colors.primary, contentColor = colors.onPrimary),
+                modifier = Modifier.fillMaxWidth().height(44.dp)
+            ) {
+                Text(
+                    UiText.get(R.string.waex_ui_download_suggested_model_e50dd5e8, "Download suggested model") +
+                            " · " + suggestion.model.label + " (" + suggestion.model.sizeLabel() + ")"
+                )
+            }
+        }
+        Text(
+            text = UiText.get(R.string.waex_ui_tap_a_model_to_choose_it_the_suggested_eb991557,
+                "Tap a model to choose it. The suggested one is used until you pick another."),
+            style = typography.labelSm,
+            color = colors.onSurfaceVariant
+        )
+
+        ordered.forEach { model ->
             val downloaded = LocalModelStore.isDownloaded(context, model)
             val progress = LocalModelStore.progress(model.id)
-            val isSelected = selected == model.id && downloaded
+            val isChosen = model.id == effectiveId
+            val isSuggested = model.id == suggestion.model.id
+            val tooHeavy = ramGb < model.minRamGb
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, if (isSelected) colors.primary else colors.outlineVariant, radius.mdShape)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .border(
+                        if (isChosen) 2.dp else 1.dp,
+                        if (isChosen) colors.primary else colors.outlineVariant,
+                        RoundedCornerShape(12.dp)
+                    )
+                    .clickable { choose(model) }
+                    .padding(start = 4.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = isChosen, onClick = { choose(model) })
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = model.label + " · " + model.sizeLabel(), style = typography.bodyMd,
-                            fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                        Text(
+                            text = (if (isSuggested) "★ " else "") + model.label + " · " + model.sizeLabel(),
+                            style = typography.bodyMd,
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
+                        )
+                        Text(text = hint(model), style = typography.labelSm, color = colors.onSurfaceVariant)
                         val tags = buildList {
-                            if (model.id == recommendation.model.id) {
-                                add(UiText.get(R.string.waex_ui_recommended_d70604e8, "Recommended"))
+                            if (isSuggested) {
+                                add(UiText.get(R.string.waex_ui_suggested_93b63bab, "Suggested") + ": " +
+                                        suggestion.reason.substringAfter(": "))
                             }
-                            if (model.englishOnly) add(UiText.get(R.string.waex_ui_english_only_eda32f28, "English only"))
-                            if (isSelected) add(UiText.get(R.string.waex_ui_in_use_750af77a, "In use"))
+                            if (isChosen && downloaded) add(UiText.get(R.string.waex_ui_in_use_750af77a, "In use"))
                         }
                         if (tags.isNotEmpty()) {
                             Text(text = tags.joinToString(" · "), style = typography.labelSm, color = colors.primary)
                         }
-                        progress?.error?.let {
-                            Text(text = it, style = typography.labelSm, color = colors.error)
+                        if (isChosen && !downloaded && progress?.running != true) {
+                            Text(
+                                text = UiText.get(R.string.waex_ui_selected_download_it_to_start_using_it_238cfe9b,
+                                    "Selected: download it to start using it."),
+                                style = typography.labelSm,
+                                color = colors.primary
+                            )
                         }
+                        if (tooHeavy) {
+                            Text(
+                                text = UiText.get(R.string.waex_ui_may_be_too_heavy_for_this_phone_3cbbd162,
+                                    "May be too heavy for this phone"),
+                                style = typography.labelSm,
+                                color = colors.error
+                            )
+                        }
+                        progress?.error?.let { Text(text = it, style = typography.labelSm, color = colors.error) }
                     }
                     when {
                         progress?.running == true -> TextButton(onClick = { LocalModelStore.cancel(model.id) }) {
                             Text(UiText.get(R.string.waex_ui_cancel_19766ed6, "Cancel"))
                         }
-                        !downloaded -> TextButton(onClick = { LocalModelStore.download(context, model) }) {
+                        !downloaded -> TextButton(onClick = {
+                            choose(model)
+                            LocalModelStore.download(context, model)
+                        }) {
                             Text(UiText.get(R.string.waex_ui_download_d6eafe82, "Download"))
                         }
-                        else -> Row {
-                            if (!isSelected) {
-                                TextButton(onClick = {
-                                    selected = model.id
-                                    preferenceManager.putString("local_model", model.id)
-                                }) { Text(UiText.get(R.string.waex_ui_use_c36d819e, "Use")) }
-                            }
-                            TextButton(onClick = {
-                                // Deleting waits for a running transcription to finish: not on the UI thread.
-                                scope.launch { withContext(Dispatchers.IO) { LocalModelStore.delete(context, model) } }
-                            }) { Text(UiText.get(R.string.waex_ui_delete_e2d0a549, "Delete"), color = colors.error) }
+                        else -> TextButton(onClick = {
+                            // Deleting waits for a running transcription to finish: not on the UI thread.
+                            scope.launch { withContext(Dispatchers.IO) { LocalModelStore.delete(context, model) } }
+                        }) {
+                            Text(UiText.get(R.string.waex_ui_delete_e2d0a549, "Delete"), color = colors.error)
                         }
                     }
                 }
                 if (progress?.running == true) {
                     val fraction = if (progress.totalBytes > 0)
                         progress.downloadedBytes.toFloat() / progress.totalBytes else 0f
-                    LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
-                    Text(text = "${(fraction * 100).toInt()} %", style = typography.labelSm,
-                        color = colors.onSurfaceVariant)
+                    LinearProgressIndicator(
+                        progress = { fraction },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                    )
+                    Text(
+                        text = "${(fraction * 100).toInt()} %",
+                        style = typography.labelSm,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 12.dp)
+                    )
                 }
             }
         }
     }
+}
+
+/** One line about speed and accuracy for each model size. */
+private fun hint(model: LocalModels.Model): String {
+    val tier = when {
+        model.id.startsWith("tiny") -> UiText.get(R.string.waex_ui_fastest_lowest_accuracy_531b6dab, "Fastest, lowest accuracy")
+        model.id.startsWith("base") -> UiText.get(R.string.waex_ui_fast_fair_accuracy_e10bb756, "Fast, fair accuracy")
+        model.id.startsWith("small") -> UiText.get(R.string.waex_ui_balanced_speed_and_accuracy_4bb5501b, "Balanced speed and accuracy")
+        else -> UiText.get(R.string.waex_ui_most_accurate_slow_fb61e038, "Most accurate, slow")
+    }
+    return if (model.englishOnly) {
+        tier + " · " + UiText.get(R.string.waex_ui_english_only_more_accurate_for_english_351e57f6,
+            "English only: more accurate for English")
+    } else tier
 }

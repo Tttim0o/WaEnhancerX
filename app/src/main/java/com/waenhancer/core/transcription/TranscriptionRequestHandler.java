@@ -35,7 +35,7 @@ public final class TranscriptionRequestHandler {
     public static Bundle ready(@NonNull Context context) {
         TranscriptionClient.Config config = configFor(context);
         boolean configured = TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)
-                ? LocalTranscriber.usableModel(context, readString(context, "local_model", "")) != null
+                ? LocalTranscriber.usableModel(context, localModel(context)) != null
                 : !config.apiKey.isEmpty()
                         && (!TranscriptionClient.PROVIDER_CUSTOM.equals(config.provider) || !config.url.isEmpty());
         boolean ready = readBoolean(context, "voice_transcription", true) && configured;
@@ -58,7 +58,7 @@ public final class TranscriptionRequestHandler {
             String text;
             if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
                 // Serialized inside LocalTranscriber; it must not take a slot from network calls.
-                text = LocalTranscriber.transcribe(context, readString(context, "local_model", ""),
+                text = LocalTranscriber.transcribe(context, localModel(context),
                         audio, fileName, config.language);
             } else {
                 SLOTS.acquire();
@@ -88,7 +88,7 @@ public final class TranscriptionRequestHandler {
         TranscriptionClient.Config config = configFor(context);
         try {
             if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
-                LocalTranscriber.transcribe(context, readString(context, "local_model", ""),
+                LocalTranscriber.transcribe(context, localModel(context),
                         TranscriptionClient.silentWav(), "waex-test.wav", config.language);
             } else {
                 new TranscriptionClient().transcribe(config, TranscriptionClient.silentWav(), "waex-test.wav");
@@ -129,7 +129,13 @@ public final class TranscriptionRequestHandler {
         return config;
     }
 
-    private static String firstNonEmpty(Context context, String key, String legacyKey) {
+    /** The chosen on-device model, or the suggested one when none was chosen. */
+    private static String localModel(Context context) {
+        return LocalTranscriber.effectiveModelId(context, readString(context, "local_model", ""),
+                readString(context, "transcription_language", ""));
+    }
+
+        private static String firstNonEmpty(Context context, String key, String legacyKey) {
         String value = readString(context, key, "");
         return value.trim().isEmpty() ? readString(context, legacyKey, "") : value;
     }

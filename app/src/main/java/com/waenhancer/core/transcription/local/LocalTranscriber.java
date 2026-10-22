@@ -34,6 +34,18 @@ public final class LocalTranscriber {
 
     private LocalTranscriber() {}
 
+    /**
+     * The model to use: the user's choice, or the suggestion for this phone and language when
+     * nothing was chosen yet. Never null.
+     */
+    @NonNull
+    public static String effectiveModelId(@NonNull Context context, @Nullable String chosenId,
+                                          @Nullable String language) {
+        if (LocalModels.byId(chosenId) != null) return chosenId;
+        return LocalModels.recommend(LocalModelStore.totalRam(context),
+                Runtime.getRuntime().availableProcessors(), language).model.id;
+    }
+
     /** The selected model when it is downloaded and this phone can run it, otherwise null. */
     @Nullable
     public static LocalModels.Model usableModel(@NonNull Context context, @Nullable String modelId) {
