@@ -64,7 +64,9 @@ private val PRESET_COLORS = listOf(
 fun WaexColorPickerDialog(
     initialColorHex: String,
     onColorSelected: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    enableOpacity: Boolean = false,
+    onUseDefault: (() -> Unit)? = null
 ) {
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
@@ -91,10 +93,23 @@ fun WaexColorPickerDialog(
     var hue by remember(parsedColor) { mutableFloatStateOf(hsv[0]) }
     var saturation by remember(parsedColor) { mutableFloatStateOf(hsv[1]) }
     var value by remember(parsedColor) { mutableFloatStateOf(hsv[2]) }
+    var opacity by remember {
+        mutableFloatStateOf(
+            try { AndroidColor.alpha(AndroidColor.parseColor(initialColorHex)) / 255f }
+            catch (_: Throwable) { 1f }
+        )
+    }
+
+    fun colorHex(argb: Int): String = if (enableOpacity) {
+        String.format("#%08X", argb)
+    } else {
+        String.format("#%06X", 0xFFFFFF and argb)
+    }
 
     fun updateFromHsv(h: Float, s: Float, v: Float) {
-        val argb = AndroidColor.HSVToColor(floatArrayOf(h, s, v))
-        val hex = String.format("#%06X", 0xFFFFFF and argb)
+        val alpha = if (enableOpacity) (opacity * 255f).toInt().coerceIn(0, 255) else 255
+        val argb = AndroidColor.HSVToColor(alpha, floatArrayOf(h, s, v))
+        val hex = colorHex(argb)
         selectedColorHex = hex
         parsedColor = Color(argb)
     }
@@ -143,8 +158,9 @@ fun WaexColorPickerDialog(
                             val cleanInput = if (!input.startsWith("#")) "#$input" else input
                             selectedColorHex = cleanInput
                             try {
-                                if (cleanInput.length == 7) {
+                                if (cleanInput.length == 7 || (enableOpacity && cleanInput.length == 9)) {
                                     parsedColor = Color(AndroidColor.parseColor(cleanInput))
+                                    if (cleanInput.length == 9) opacity = AndroidColor.alpha(parsedColor.toArgb()) / 255f
                                 }
                             } catch (_: Throwable) {}
                         },
@@ -192,8 +208,12 @@ fun WaexColorPickerDialog(
                                     shape = CircleShape
                                 )
                                 .clickable {
-                                    selectedColorHex = hex
-                                    parsedColor = presetColor
+                                    val presetArgb = AndroidColor.parseColor(hex)
+                                    val argb = if (enableOpacity) {
+                                        (presetArgb and 0x00FFFFFF) or ((opacity * 255f).toInt().coerceIn(0, 255) shl 24)
+                                    } else presetArgb
+                                    selectedColorHex = colorHex(argb)
+                                    parsedColor = Color(argb)
                                 }
                         )
                     }
@@ -256,6 +276,26 @@ fun WaexColorPickerDialog(
                     )
                 )
 
+                if (enableOpacity) {
+                    Text(
+                        text = UiText.get(R.string.waex_ui_opacity_value, "Opacity: %1\$d%%", (opacity * 100f).toInt()),
+                        style = typography.labelSm,
+                        color = colors.onSurfaceVariant
+                    )
+                    Slider(
+                        value = opacity,
+                        onValueChange = {
+                            opacity = it
+                            updateFromHsv(hue, saturation, value)
+                        },
+                        valueRange = 0f..1f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = colors.primary,
+                            activeTrackColor = colors.primary
+                        )
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Actions
@@ -271,6 +311,19 @@ fun WaexColorPickerDialog(
                     Text(UiText.get(R.string.action_apply, "Apply"), color = colors.onPrimary, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(10.dp))
+                if (onUseDefault != null) {
+                    OutlinedButton(
+                        onClick = {
+                            onUseDefault()
+                            onDismiss()
+                        },
+                        shape = radius.buttonShape,
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    ) {
+                        Text(UiText.get(R.string.waex_ui_use_app_default_color, "Use App Default Color"), color = colors.onSurface)
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
                 OutlinedButton(
                     onClick = onDismiss,
                     shape = radius.buttonShape,

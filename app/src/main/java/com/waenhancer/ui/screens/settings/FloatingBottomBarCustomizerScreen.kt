@@ -36,6 +36,7 @@ import com.waenhancer.ui.components.WaexCard
 import com.waenhancer.ui.components.WaexProChip
 import com.waenhancer.ui.components.WaexSectionHeader
 import com.waenhancer.ui.components.WaexTopBar
+import com.waenhancer.ui.components.WaexColorPickerDialog
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
 import com.waenhancer.ui.navigation.LocalIsPro
@@ -43,6 +44,7 @@ import com.waenhancer.ui.navigation.LocalOnActivatePro
 import com.waenhancer.ui.navigation.LocalWaexNavController
 import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import androidx.compose.ui.text.style.TextAlign
+import android.graphics.Color as AndroidColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,6 +101,13 @@ fun FloatingBottomBarCustomizerScreen() {
     var selectorType by remember {
         mutableStateOf(preferenceManager.getString("floating_bottom_bar_selector_type", "default") ?: "default")
     }
+    var selectorColor by remember {
+        mutableIntStateOf(preferenceManager.getInt("floating_bottom_bar_selector_color", 0))
+    }
+    var selectorColorEnabled by remember {
+        mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_selector_color_enabled", selectorColor != 0))
+    }
+    var showSelectorColorPicker by remember { mutableStateOf(false) }
     var scrollHideEnabled by remember {
         mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_scroll_hide", true))
     }
@@ -221,11 +230,12 @@ fun FloatingBottomBarCustomizerScreen() {
                                 verticalArrangement = if (!iconsOnly) Arrangement.spacedBy((iconLabelSpacing * 0.6f).dp) else Arrangement.Center
                             ) {
                                 val activeShape = RoundedCornerShape(50)
-                                val activeFill = when {
+                                val defaultActiveFill = when {
                                     isIosGlass -> Color.White.copy(alpha = 0.16f)
                                     isRefined -> Color.White.copy(alpha = 0.12f)
                                     else -> Color(0xFF00A884).copy(alpha = 0.2f)
                                 }
+                                val activeFill = if (selectorColorEnabled) Color(selectorColor) else defaultActiveFill
                                 val activeTint = if (isIosGlass || isRefined) Color.White else Color(0xFF00A884)
                                 Box(
                                     modifier = Modifier
@@ -584,6 +594,56 @@ fun FloatingBottomBarCustomizerScreen() {
 
                             HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
 
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(radius.smShape)
+                                    .clickable { showSelectorColorPicker = true }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = UiText.get(R.string.waex_ui_selector_color, "Selector Color"),
+                                        style = typography.bodyMd,
+                                        fontWeight = FontWeight.Medium,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        text = if (!selectorColorEnabled) {
+                                            UiText.get(R.string.waex_ui_use_default_selector_color, "Using WhatsApp's default selector color")
+                                        } else String.format("#%08X", selectorColor),
+                                        style = typography.labelSm,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
+                                if (!selectorColorEnabled) {
+                                    Surface(
+                                        shape = RoundedCornerShape(50),
+                                        color = colors.surfaceDim,
+                                        border = BorderStroke(1.dp, colors.outlineVariant)
+                                    ) {
+                                        Text(
+                                            text = UiText.get(R.string.waex_ui_default, "Default"),
+                                            style = typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.onSurfaceVariant,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                                        )
+                                    }
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(34.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(selectorColor))
+                                            .border(1.dp, colors.outlineVariant, CircleShape)
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
                             // Icons Only switch
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -769,6 +829,28 @@ fun FloatingBottomBarCustomizerScreen() {
             }
             Spacer(modifier = Modifier.height(30.dp))
         }
+    }
+
+    if (showSelectorColorPicker) {
+        WaexColorPickerDialog(
+            initialColorHex = String.format("#%08X", if (!selectorColorEnabled) 0xFF00A884.toInt() else selectorColor),
+            onColorSelected = { hex ->
+                try {
+                    selectorColor = AndroidColor.parseColor(hex)
+                    preferenceManager.putInt("floating_bottom_bar_selector_color", selectorColor)
+                    selectorColorEnabled = true
+                    preferenceManager.putBoolean("floating_bottom_bar_selector_color_enabled", true)
+                } catch (_: IllegalArgumentException) {}
+                showSelectorColorPicker = false
+            },
+            onDismiss = { showSelectorColorPicker = false },
+            enableOpacity = true,
+            onUseDefault = {
+                selectorColorEnabled = false
+                preferenceManager.remove("floating_bottom_bar_selector_color")
+                preferenceManager.remove("floating_bottom_bar_selector_color_enabled")
+            }
+        )
     }
 }
 

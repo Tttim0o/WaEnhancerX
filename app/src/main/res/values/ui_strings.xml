@@ -384,6 +384,10 @@
     <string name="waex_ui_icons_only" formatted="false">"Hide Tab Labels (Icons Only)"</string>
     <string name="waex_ui_icons_only_desc" formatted="false">"Display only navigation icons and center them vertically"</string>
     <string name="waex_ui_selector_type" formatted="false">"Selector Type"</string>
+    <string name="waex_ui_selector_color" formatted="false">"Selector Color"</string>
+    <string name="waex_ui_use_default_selector_color" formatted="false">"Using WhatsApp's default selector color"</string>
+    <string name="waex_ui_use_app_default_color" formatted="false">"Use App Default Color"</string>
+    <string name="waex_ui_opacity_value">Opacity: %1$d%%</string>
     <string name="waex_ui_default" formatted="false">"Default"</string>
     <string name="waex_ui_oval" formatted="false">"Oval"</string>
     <string name="waex_ui_ignore_battery_optimizations" formatted="false">"Ignore Battery Optimizations"</string>

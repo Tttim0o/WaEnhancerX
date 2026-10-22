@@ -96,6 +96,7 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static final WeakHashMap<Activity, Float> scrollGestureY = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> indicatorGuards = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> ovalGeometryGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> selectorColorGuards = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, Integer> forcedSelectedTabs = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> renderedSelectedTabs = new WeakHashMap<>();
 
@@ -122,6 +123,8 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static int userIconLabelSpacingDp = 2;
     private static boolean userIconsOnly = false;
     private static boolean selectorOval = false;
+    private static int selectorColor = 0;
+    private static boolean selectorColorEnabled = false;
 
     public FloatingBottomBarHook(@NonNull Context context, @NonNull ClassLoader classLoader, @NonNull SharedPreferences prefs) {
         super(context, classLoader, prefs);
@@ -158,6 +161,8 @@ public class FloatingBottomBarHook extends BaseFeature {
         userIconLabelSpacingDp = prefs.getInt("floating_bottom_bar_icon_label_spacing", 2);
         userIconsOnly = prefs.getBoolean("floating_bottom_bar_icons_only", false);
         selectorOval = "oval".equals(prefs.getString("floating_bottom_bar_selector_type", "default"));
+        selectorColor = getPrefColor(prefs, "floating_bottom_bar_selector_color", 0);
+        selectorColorEnabled = prefs.getBoolean("floating_bottom_bar_selector_color_enabled", selectorColor != 0);
 
         // Resolve resource IDs
         bottomNavId = getResourceId("bottom_nav", "id");
@@ -1189,6 +1194,10 @@ public class FloatingBottomBarHook extends BaseFeature {
         applyBackdropBlur(bar, useGlass, density);
 
         makeChildrenTransparent(bar);
+        if (selectorColorEnabled) {
+            applyNativeSelectorColor(bar, selectorColor);
+            installSelectorColorGuard(bar);
+        }
         if (selectorOval) {
             customizeNativeOvalIndicator(bar, density);
             installOvalGeometryGuard(bar, density);
@@ -1235,6 +1244,49 @@ public class FloatingBottomBarHook extends BaseFeature {
                 customizeNativeOvalIndicator(group.getChildAt(i), density);
             }
         }
+    }
+
+    private static void applyNativeSelectorColor(View view, int color) {
+        if (view.getId() != View.NO_ID) {
+            try {
+                String name = view.getResources().getResourceEntryName(view.getId());
+                if (name != null && name.contains("active_indicator")) {
+                    Drawable background = view.getBackground();
+                    if (background != null) background.mutate().setTint(color);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        view.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+                    }
+                    view.invalidate();
+                    return;
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                applyNativeSelectorColor(group.getChildAt(i), color);
+            }
+        }
+    }
+
+    private static void installSelectorColorGuard(ViewGroup bar) {
+        if (selectorColorGuards.containsKey(bar)) return;
+        ViewTreeObserver.OnPreDrawListener guard = () -> {
+            applyNativeSelectorColor(bar, selectorColor);
+            return true;
+        };
+        selectorColorGuards.put(bar, guard);
+        bar.getViewTreeObserver().addOnPreDrawListener(guard);
+        bar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View view) {}
+
+            @Override public void onViewDetachedFromWindow(View view) {
+                ViewTreeObserver observer = view.getViewTreeObserver();
+                if (observer.isAlive()) observer.removeOnPreDrawListener(guard);
+                selectorColorGuards.remove(bar);
+                view.removeOnAttachStateChangeListener(this);
+            }
+        });
     }
 
     private static void installOvalGeometryGuard(ViewGroup bar, float density) {
@@ -1445,9 +1497,11 @@ public class FloatingBottomBarHook extends BaseFeature {
     }
 
     private static Drawable createPresetIndicator(View tab, float density) {
-        return pillDesignIos
+        Drawable indicator = pillDesignIos
                 ? new IosLiquidGlassDrawable(tab.getContext(), density)
                 : new LiquidOvalDrawable(tab.getContext(), density);
+        if (selectorColorEnabled) indicator.setTint(selectorColor);
+        return indicator;
     }
 
     private static void hideNativeActiveIndicator(View view) {
