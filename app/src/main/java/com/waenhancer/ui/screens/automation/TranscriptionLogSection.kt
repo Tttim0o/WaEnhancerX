@@ -40,9 +40,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** Collapsible view of the transcription diagnostic log, newest first, with Copy and Clear. */
+/**
+ * Collapsible view of the diagnostic log, newest first, with Copy and Clear. With [source],
+ * only that side's lines are shown ("calls"); otherwise everything except call lines.
+ */
 @Composable
-fun TranscriptionLogSection() {
+fun TranscriptionLogSection(
+    title: String = UiText.get(R.string.waex_ui_transcription_log_97dc1042, "Transcription log"),
+    note: String = UiText.get(R.string.waex_ui_steps_and_errors_only_transcripts_and_3b357802,
+        "Steps and errors only. Transcripts and message text are never logged."),
+    source: String? = null
+) {
     val context = LocalContext.current
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
@@ -55,13 +63,18 @@ fun TranscriptionLogSection() {
 
     // The log file is read off the UI thread whenever the section opens or is refreshed.
     LaunchedEffect(expanded, reloads) {
-        if (expanded) log = withContext(Dispatchers.IO) { TranscriptionLog.read(context) }
+        if (expanded) log = withContext(Dispatchers.IO) {
+            val tag = " [${source ?: "calls"}] "
+            TranscriptionLog.read(context).lines()
+                .filter { if (source != null) it.contains(tag) else !it.contains(tag) }
+                .joinToString("\n")
+        }
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = UiText.get(R.string.waex_ui_transcription_log_97dc1042, "Transcription log"),
+                text = title,
                 style = typography.bodyMd,
                 fontWeight = FontWeight.SemiBold,
                 color = colors.onSurface,
@@ -74,8 +87,7 @@ fun TranscriptionLogSection() {
         }
         if (!expanded) return@Column
         Text(
-            text = UiText.get(R.string.waex_ui_steps_and_errors_only_transcripts_and_3b357802,
-                "Steps and errors only. Transcripts and message text are never logged."),
+            text = note,
             style = typography.labelSm,
             color = colors.onSurfaceVariant
         )
@@ -100,7 +112,7 @@ fun TranscriptionLogSection() {
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TextButton(onClick = {
                 val clipboard = context.getSystemService(ClipboardManager::class.java)
-                clipboard?.setPrimaryClip(ClipData.newPlainText("WAEX transcription log", log))
+                clipboard?.setPrimaryClip(ClipData.newPlainText("WAEX $title", log))
                 Toast.makeText(context, UiText.get(R.string.waex_ui_log_copied_21706121, "Log copied"),
                     Toast.LENGTH_SHORT).show()
             }, enabled = log.isNotBlank()) {
@@ -111,7 +123,12 @@ fun TranscriptionLogSection() {
             }
             TextButton(onClick = {
                 scope.launch {
-                    withContext(Dispatchers.IO) { TranscriptionLog.clear(context) }
+                    withContext(Dispatchers.IO) {
+                        val tag = " [${source ?: "calls"}] "
+                        TranscriptionLog.clearMatching(context) { line ->
+                            if (source != null) line.contains(tag) else !line.contains(tag)
+                        }
+                    }
                     reloads++
                 }
             }, enabled = log.isNotBlank()) {

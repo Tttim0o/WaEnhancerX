@@ -19,6 +19,8 @@ public final class TranscriptionRequestHandler {
     /** Lets the WhatsApp side add metadata lines to the TranscriptionLog. */
     public static final String METHOD_LOG = "transcription_log";
     public static final String EXTRA_MESSAGE = "message";
+    /** Optional: "calls" for call recording lines; anything else is logged as "whatsapp". */
+    public static final String EXTRA_SOURCE = "source";
     public static final String EXTRA_AUDIO = "audio";
     public static final String EXTRA_FILE_NAME = "file_name";
     public static final String RESULT_TEXT = "text";
@@ -124,7 +126,8 @@ public final class TranscriptionRequestHandler {
     public static Bundle log(@NonNull Context context, @NonNull Bundle extras) {
         String message = extras.getString(EXTRA_MESSAGE);
         if (message != null && !message.isEmpty()) {
-            TranscriptionLog.add(context, "whatsapp", message.length() > 300 ? message.substring(0, 300) : message);
+            String source = "calls".equals(extras.getString(EXTRA_SOURCE)) ? "calls" : "whatsapp";
+            TranscriptionLog.add(context, source, message.length() > 300 ? message.substring(0, 300) : message);
         }
         return new Bundle();
     }

@@ -839,6 +839,14 @@ fun CallsHubScreen() {
                                         }
                                     }
                                 }
+
+                                // Diagnostic log for call recording, shared with the transcription log file.
+                                com.waenhancer.ui.screens.automation.TranscriptionLogSection(
+                                    title = UiText.get(R.string.waex_ui_call_recording_log_6a2d8e23, "Call recording log"),
+                                    note = UiText.get(R.string.waex_ui_steps_and_errors_only_phone_numbers_an_4569c3c3,
+                                        "Steps and errors only. Phone numbers and audio are never logged."),
+                                    source = "calls"
+                                )
                             }
                         }
                     }

@@ -47,6 +47,16 @@ public final class CallRecordingHook extends BaseFeature {
 
     private final AtomicBoolean recording = new AtomicBoolean(false);
     private final ScheduledThreadPoolExecutor worker = createWorker();
+    /** Log lines go through IPC on their own thread so the recorder never waits for it. */
+    private final java.util.concurrent.ExecutorService logger = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "WAEX-CallRecorderLog");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private volatile long recordingSince;
+    /** Loudest sample so far; 0 at the end means the source delivered only silence. */
+    private volatile int peakAmplitude;
+    private volatile ScheduledFuture<?> amplitudeSampler;
     private final Object installationLock = new Object();
     private boolean installed;
     // Host callbacks never wait for MediaRecorder.prepare/start/stop or storage IPC.
@@ -91,13 +101,14 @@ public final class CallRecordingHook extends BaseFeature {
     private void installHooks() {
         Class<?> callbackClass = resolveCallbackClass();
         if (callbackClass == null) {
+            diag("Not available: call events (VoiceServiceEventCallback) not found in this WhatsApp version");
             throw new IllegalStateException("VoiceServiceEventCallback not found");
         }
         final CallRecordingEventContract contract;
         try {
             contract = CallRecordingEventContract.resolve(callbackClass);
         } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {
-            XposedBridge.log(TAG + " Unsupported call recording event contract: " + failure);
+            diag("Not available: unsupported call events in " + callbackClass.getName() + ": " + describe(failure));
             throw new IllegalStateException("Unsupported call recording event contract", failure);
         }
         AtomicBoolean ready = new AtomicBoolean(false);
@@ -151,6 +162,7 @@ public final class CallRecordingHook extends BaseFeature {
             prefs.registerOnSharedPreferenceChangeListener(enabledListener);
             installButtonListener();
             ready.set(true);
+            diag("Ready (" + callbackClass.getName() + ")");
         } catch (RuntimeException | LinkageError failure) {
             // A failed attempt never becomes active, even if removing a callback fails.
             for (int index = registered.size() - 1; index >= 0; index--) {
@@ -165,6 +177,7 @@ public final class CallRecordingHook extends BaseFeature {
             } catch (RuntimeException | LinkageError cleanupFailure) {
                 XposedBridge.log(TAG + " listener cleanup failed: " + cleanupFailure.getClass().getSimpleName());
             }
+            diag("Not available: hooking call events failed: " + describe(failure));
             throw new IllegalStateException("Call recording hook installation failed", failure);
         }
     }
@@ -214,6 +227,7 @@ public final class CallRecordingHook extends BaseFeature {
             boolean newSession = session == null;
             if (newSession) {
                 session = new Session(callback, snapshot.callId);
+                diag("Call active; " + (isEnabled(AUTO_START, true) ? "recording starts in 2 s" : "auto-start off, use the button"));
                 main.post(this::showButtonOnCallScreen);
             }
             if (!isEnabled(AUTO_START, true) || session.stoppedByUser) return;
@@ -237,6 +251,7 @@ public final class CallRecordingHook extends BaseFeature {
 
     /** Caller holds sessionLock; stopping the recorder happens only on the worker. */
     private void finishSession() {
+        if (session != null) diag("Call ended");
         session = null;
         main.post(() -> {
             CallRecordButton.detach(button);
@@ -273,7 +288,7 @@ public final class CallRecordingHook extends BaseFeature {
             request.putString("name", outputName);
             Bundle response = context.getContentResolver().call(
                     BRIDGE_URI, "create_call_recording", null, request);
-            if (response == null) throw new IllegalStateException("WAEX storage bridge unavailable");
+            if (response == null) throw new IllegalStateException("WAEX storage bridge unavailable (is the WAEX app installed and allowed to start?)");
             destination = Build.VERSION.SDK_INT >= 33
                     ? response.getParcelable("descriptor", ParcelFileDescriptor.class)
                     : response.getParcelable("descriptor");
@@ -291,18 +306,29 @@ public final class CallRecordingHook extends BaseFeature {
                 if (!canRecord(expected)) throw new RecordingCancelledException();
                 try {
                     recorder = createRecorder(source, destination.getFileDescriptor(), format, expected);
+                    recordingSince = android.os.SystemClock.elapsedRealtime();
+                    peakAmplitude = 0;
+                    MediaRecorder sampled = recorder;
+                    amplitudeSampler = worker.scheduleWithFixedDelay(() -> {
+                        try {
+                            if (recorder == sampled) peakAmplitude = Math.max(peakAmplitude, sampled.getMaxAmplitude());
+                        } catch (Throwable ignored) {}
+                    }, 1, 1, TimeUnit.SECONDS);
+                    diag("Recording: source " + sourceName(source) + ", " + format.extension.substring(1)
+                            + (preferCallAudio ? ", call audio preferred" : ""));
                     return;
                 } catch (RecordingCancelledException cancelled) {
                     throw cancelled;
                 } catch (Throwable failure) {
                     lastError = failure;
+                    diag("Source " + sourceName(source) + " failed: " + describe(failure));
                     releaseRecorder(false);
                 }
             }
             throw new IllegalStateException("No supported audio source", lastError);
         } catch (Throwable failure) {
             if (!(failure instanceof RecordingCancelledException)) {
-                XposedBridge.log(TAG + " start failed: " + failure.getClass().getSimpleName());
+                diag("Start failed: " + describe(failure));
             }
             recording.set(false);
             closeDestination(true);
@@ -334,6 +360,9 @@ public final class CallRecordingHook extends BaseFeature {
         if (!recording.getAndSet(false)) return;
         MediaRecorder active = recorder;
         recorder = null;
+        if (amplitudeSampler != null) amplitudeSampler.cancel(false);
+        amplitudeSampler = null;
+        try { if (active != null) peakAmplitude = Math.max(peakAmplitude, active.getMaxAmplitude()); } catch (Throwable ignored) {}
         boolean valid = false;
         try {
             if (active != null) {
@@ -341,8 +370,15 @@ public final class CallRecordingHook extends BaseFeature {
                 valid = true;
             }
         } catch (Throwable failure) {
-            XposedBridge.log(TAG + " stop failed: " + failure.getClass().getSimpleName());
+            diag("Stop failed, recording discarded: " + describe(failure));
         } finally {
+            if (valid) {
+                long size = -1;
+                try { if (destination != null) size = destination.getStatSize(); } catch (Throwable ignored) {}
+                diag("Saved (" + reason + "): " + (android.os.SystemClock.elapsedRealtime() - recordingSince) / 1000
+                        + " s, " + (size < 0 ? "?" : size / 1024) + " KB, peak level " + peakAmplitude + "/32767"
+                        + (peakAmplitude == 0 ? " (silent: this source got no audio)" : ""));
+            }
             try {
                 if (active != null) active.release();
             } catch (Throwable failure) {
@@ -427,15 +463,16 @@ public final class CallRecordingHook extends BaseFeature {
             if (activity == null || activity.isFinishing()) return;
             if (!isCallScreen(activity)) {
                 // Shows which screen a call uses on this WhatsApp version if the button is missing.
-                XposedBridge.log(TAG + " in call, not a call screen: " + activity.getClass().getName());
+                diag("No button: in call, but the screen is " + activity.getClass().getName());
                 return;
             }
             CallRecordButton shown = CallRecordButton.attach(activity, this::toggleFromButton);
             if (shown == null) return;
+            if (button == null || button.get() != shown) diag("Button shown on " + activity.getClass().getSimpleName());
             shown.setRecording(recording.get());
             button = new WeakReference<>(shown);
         } catch (Throwable t) {
-            XposedBridge.log(TAG + " record button unavailable: " + t.getClass().getSimpleName());
+            diag("Button unavailable: " + describe(t));
         }
     }
 
@@ -467,7 +504,7 @@ public final class CallRecordingHook extends BaseFeature {
                     startRecorder(current);
                 }
             } catch (Throwable t) {
-                XposedBridge.log(TAG + " record button toggle failed: " + t.getClass().getSimpleName());
+                diag("Button toggle failed: " + describe(t));
             } finally {
                 main.post(() -> {
                     CallRecordButton shown = button == null ? null : button.get();
@@ -475,6 +512,43 @@ public final class CallRecordingHook extends BaseFeature {
                 });
             }
         });
+    }
+
+    /** LSPosed log plus the "Call recording log" in WAEX; never phone numbers or call ids. */
+    private void diag(String message) {
+        XposedBridge.log(TAG + " " + message);
+        try {
+            logger.execute(() -> {
+                try {
+                    Bundle extras = new Bundle();
+                    extras.putString("message", message);
+                    extras.putString("source", "calls");
+                    context.getContentResolver().call(BRIDGE_URI, "transcription_log", null, extras);
+                } catch (Throwable ignored) {
+                    // Logging must never affect the call.
+                }
+            });
+        } catch (Throwable ignored) {}
+    }
+
+    private static String describe(Throwable t) {
+        StringBuilder out = new StringBuilder();
+        for (Throwable cause = t; cause != null && out.length() < 240; cause = cause.getCause()) {
+            if (out.length() > 0) out.append(" <- ");
+            out.append(cause.getClass().getSimpleName());
+            if (cause.getMessage() != null) out.append(": ").append(cause.getMessage());
+            if (cause.getCause() == cause) break;
+        }
+        return out.toString();
+    }
+
+    private static String sourceName(int source) {
+        switch (source) {
+            case MediaRecorder.AudioSource.VOICE_CALL: return "VOICE_CALL";
+            case MediaRecorder.AudioSource.VOICE_COMMUNICATION: return "VOICE_COMMUNICATION";
+            case MediaRecorder.AudioSource.MIC: return "MIC";
+            default: return String.valueOf(source);
+        }
     }
 
     private static final class Session {
