@@ -29,6 +29,7 @@ public class ProximitySensorHook extends BaseFeature {
     @Override
     public void hook() throws Throwable {
         hookProximitySensor();
+        hookProximityWakeLock();
     }
 
     private void hookProximitySensor() {
@@ -64,6 +65,29 @@ public class ProximitySensorHook extends BaseFeature {
             });
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Error hooking Proximity Sensor: " + t.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * The screen turning off near the ear is done by the system through a
+     * PROXIMITY_SCREEN_OFF_WAKE_LOCK, not by WhatsApp reading the sensor, so changing sensor
+     * values alone left the screen going dark (issue #31). While the feature is on, such a lock
+     * is created as a partial wake lock instead. Blocking acquire() would be wrong: WhatsApp
+     * would later release a lock it never held and crash with "WakeLock under-locked".
+     */
+    private void hookProximityWakeLock() {
+        try {
+            XposedHelpers.findAndHookMethod(android.os.PowerManager.class, "newWakeLock",
+                    int.class, String.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) {
+                            if (!isProximitySensorDisabled() || !(param.args[0] instanceof Integer)) return;
+                            int levelAndFlags = (Integer) param.args[0];
+                            param.args[0] = ProximityEventPolicy.withoutProximityScreenOff(levelAndFlags);
+                        }
+                    });
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + " Error hooking proximity wake lock: " + t.getClass().getSimpleName());
         }
     }
 
