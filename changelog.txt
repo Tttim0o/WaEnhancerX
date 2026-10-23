@@ -7,6 +7,7 @@
 - Enhanced Download Profile Picture with optional "Save Duplicates" confirmation
 - Enhanced Download Status with optional "Save Duplicates" confirmation
 - Improved Floating bottom navigation customization
+- Hooks injection Optimized
 
 [Fixed]
 - Send blue ticks
@@ -31,13 +32,14 @@
 [Notes]
 - Floating bar new features are inspired from WhatsApp's soon upcoming update of Floating bottom bar design.
 - You can enjoy the same experience before WhatsApp even launches in beta. 
-- Use these values to get a similar experince :
+- Use these values to get a similar experince:
   - Horizontal Inner Padding: 5dp
   - Vertical Inner Padding: 0dp
   - Selector type: Oval
   - Selector Color: App Default or by your choice
   - Hide Tab Labels (Icons Only): True
   - Icon Size: 26dp
+  - Shadow: Enabled
 
 
 [Community contribution]
