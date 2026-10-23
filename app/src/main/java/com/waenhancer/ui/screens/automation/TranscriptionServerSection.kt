@@ -89,19 +89,19 @@ fun TranscriptionServerSection() {
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = UiText.get(R.string.waex_ui_share_on_device_models_with_other_apps_a9ce83a3, "Share on-device models with other apps (experimental)"),
+            text = UiText.get(R.string.waex_ui_share_on_device_models_with_other_apps, "Share on-device models with other apps (experimental)"),
             style = typography.bodyMd, fontWeight = FontWeight.SemiBold, color = colors.onSurface
         )
         Text(
-            text = UiText.get(R.string.waex_ui_an_openai_compatible_api_v1_audio_tran_e7da51e8,
+            text = UiText.get(R.string.waex_ui_an_openai_compatible_api_v1_audio_tran,
                 "An OpenAI-compatible API (/v1/audio/transcriptions) that other apps can use with your downloaded models."),
             style = typography.labelSm, color = colors.onSurfaceVariant
         )
 
         listOf(
-            LocalApiServer.MODE_OFF to UiText.get(R.string.waex_ui_off_ca7981b4, "Off"),
-            LocalApiServer.MODE_DEVICE to UiText.get(R.string.waex_ui_this_device_only_636615ff, "This device only"),
-            LocalApiServer.MODE_NETWORK to UiText.get(R.string.waex_ui_local_network_4fda695d, "Local network")
+            LocalApiServer.MODE_OFF to UiText.get(R.string.waex_ui_off, "Off"),
+            LocalApiServer.MODE_DEVICE to UiText.get(R.string.waex_ui_this_device_only, "This device only"),
+            LocalApiServer.MODE_NETWORK to UiText.get(R.string.waex_ui_local_network, "Local network")
         ).forEach { (value, label) ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -122,7 +122,7 @@ fun TranscriptionServerSection() {
         if (mode == LocalApiServer.MODE_OFF) return@Column
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = UiText.get(R.string.waex_ui_port_72e9a59f, "Port"), style = typography.bodyMd, color = colors.onSurface)
+            Text(text = UiText.get(R.string.waex_ui_port, "Port"), style = typography.bodyMd, color = colors.onSurface)
             Box(
                 modifier = Modifier
                     .padding(start = 12.dp)
@@ -154,7 +154,7 @@ fun TranscriptionServerSection() {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = UiText.get(R.string.waex_ui_keep_running_when_waex_doesn_t_use_on_d63280ba, "Keep running when WAEX doesn't use on-device models"),
+                text = UiText.get(R.string.waex_ui_keep_running_when_waex_doesn_t_use_on, "Keep running when WAEX doesn't use on-device models"),
                 style = typography.bodyMd, color = colors.onSurface, modifier = Modifier.weight(1f)
             )
             Switch(checked = always, onCheckedChange = {
@@ -169,10 +169,10 @@ fun TranscriptionServerSection() {
         val urls = TranscriptionServerService.baseUrls(LocalApiServer.runningMode(), LocalApiServer.runningPort())
         Text(
             text = when {
-                running -> UiText.get(R.string.waex_ui_running_f4ccae29, "Running") + ":\n" + urls.joinToString("\n")
+                running -> UiText.get(R.string.waex_ui_running, "Running") + ":\n" + urls.joinToString("\n")
                 !TranscriptionServerService.shouldRun(appContext) ->
-                    UiText.get(R.string.waex_ui_not_running_waex_isn_t_using_on_device_3cb964cd, "Not running: WAEX isn't using on-device models.")
-                else -> UiText.get(R.string.waex_ui_stopped_1a4f630a, "Stopped") +
+                    UiText.get(R.string.waex_ui_not_running_waex_isn_t_using_on_device, "Not running: WAEX isn't using on-device models.")
+                else -> UiText.get(R.string.waex_ui_stopped, "Stopped") +
                         (LocalApiServer.lastError()?.let { ": $it" } ?: "")
             },
             style = typography.labelSm,
@@ -180,28 +180,28 @@ fun TranscriptionServerSection() {
         )
         if (mode == LocalApiServer.MODE_NETWORK) {
             Text(
-                text = UiText.get(R.string.waex_ui_anyone_on_your_network_with_the_key_ca_0c2be7d8, "Anyone on your network with the key can use it."),
+                text = UiText.get(R.string.waex_ui_anyone_on_your_network_with_the_key_ca, "Anyone on your network with the key can use it."),
                 style = typography.labelSm, color = colors.error
             )
         }
 
-        Text(text = UiText.get(R.string.waex_ui_api_key_16f0ee47, "API key"), style = typography.labelSm, color = colors.onSurfaceVariant)
+        Text(text = UiText.get(R.string.waex_ui_api_key, "API key"), style = typography.labelSm, color = colors.onSurfaceVariant)
         Text(text = key, fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = colors.onSurface)
         Row {
             TextButton(onClick = { copy("API key", key) }, enabled = key.isNotEmpty()) {
-                Text(UiText.get(R.string.waex_ui_copy_e21f935f, "Copy"))
+                Text(UiText.get(R.string.waex_ui_copy, "Copy"))
             }
             TextButton(onClick = {
                 scope.launch {
                     key = withContext(Dispatchers.IO) { TranscriptionServerService.newKey(appContext) }
                     apply() // Restart so the old key stops working.
                 }
-            }) { Text(UiText.get(R.string.waex_ui_new_key_eda5496b, "New key")) }
+            }) { Text(UiText.get(R.string.waex_ui_new_key, "New key")) }
         }
 
         val example = "curl " + (urls.lastOrNull() ?: "http://127.0.0.1:${portText}/v1") +
                 "/audio/transcriptions -H \"Authorization: Bearer $key\" -F file=@note.ogg"
-        Text(text = UiText.get(R.string.waex_ui_example_d029f87e, "Example"), style = typography.labelSm, color = colors.onSurfaceVariant)
+        Text(text = UiText.get(R.string.waex_ui_example, "Example"), style = typography.labelSm, color = colors.onSurfaceVariant)
         Text(
             text = example, fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = colors.onSurface,
             modifier = Modifier.clickable { copy("Example", example) }
@@ -211,10 +211,10 @@ fun TranscriptionServerSection() {
             scope.launch {
                 rootResult = withContext(Dispatchers.IO) { TranscriptionServerService.exemptFromBatteryOptimization(appContext) }
             }
-        }) { Text(UiText.get(R.string.waex_ui_keep_alive_with_root_99ecef34, "Keep alive with root")) }
+        }) { Text(UiText.get(R.string.waex_ui_keep_alive_with_root, "Keep alive with root")) }
         Text(
             text = if (rootResult.isNotEmpty()) rootResult
-            else UiText.get(R.string.waex_ui_exempts_waex_from_battery_optimization_b08b6c27, "Exempts WAEX from battery optimization so Android doesn't stop the server."),
+            else UiText.get(R.string.waex_ui_exempts_waex_from_battery_optimization, "Exempts WAEX from battery optimization so Android doesn't stop the server."),
             style = typography.labelSm, color = colors.onSurfaceVariant
         )
     }

@@ -284,7 +284,7 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         Activity activity = ActivityTracker.getCurrentActivity();
         if (activity == null || activity.isFinishing()) return;
         File note = new File(path);
-        String title = UiText.get(R.string.waex_ui_voice_note_transcript_804d9ee8, "Voice note transcript");
+        String title = UiText.get(R.string.waex_ui_voice_note_transcript, "Voice note transcript");
         String cached = VoiceTranscriptionBridge.cached(note);
         VoiceTranscriptionBridge.log("📝 tapped (" + Math.max(1, note.length() / 1024) + " KB"
                 + (cached != null ? ", cached)" : ")"));
@@ -294,22 +294,22 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         body.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         body.setTextColor(themeTextColor(activity));
         body.setText(cached != null ? displayText(cached, note)
-                : UiText.get(R.string.waex_ui_transcribing_voice_note_9735f158, "Transcribing voice note…"));
+                : UiText.get(R.string.waex_ui_transcribing_voice_note, "Transcribing voice note…"));
 
         new WaexBottomSheet(activity)
                 .asBottomSheet()
                 .setTitle(title)
                 .setView(body)
-                .setPositiveButton(UiText.get(R.string.waex_ui_copy_e21f935f, "Copy"), (dialog, which) -> {
+                .setPositiveButton(UiText.get(R.string.waex_ui_copy, "Copy"), (dialog, which) -> {
                     String text = VoiceTranscriptionBridge.cached(note);
                     if (text == null || text.isEmpty()) return;
                     ClipboardManager clipboard = activity.getSystemService(ClipboardManager.class);
                     if (clipboard == null) return;
                     clipboard.setPrimaryClip(ClipData.newPlainText(title, text));
-                    Toast.makeText(activity, UiText.get(R.string.waex_ui_transcript_copied_758ba0c0,
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_transcript_copied,
                             "Transcript copied"), Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton(UiText.get(R.string.waex_ui_close_7d9eb7ac, "Close"),
+                .setNegativeButton(UiText.get(R.string.waex_ui_close, "Close"),
                         (dialog, which) -> dialog.dismiss())
                 .show();
 
@@ -319,7 +319,7 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
             String shown = result.text != null ? displayText(result.text, note) : null;
             VoiceTranscriptionBridge.main().post(safe(() -> body.setText(shown != null
                     ? shown
-                    : UiText.get(R.string.waex_ui_transcription_failed_ccb68494, "Transcription failed")
+                    : UiText.get(R.string.waex_ui_transcription_failed, "Transcription failed")
                             + "\n" + result.error)));
         }));
     }
@@ -331,7 +331,7 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
 
     private static String displayText(String text, File note) {
         return text.isEmpty()
-                ? UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.")
+                ? UiText.get(R.string.waex_ui_no_speech_detected, "No speech detected.")
                         + " " + VoiceTranscriptionBridge.describeAudio(note)
                 : text;
     }

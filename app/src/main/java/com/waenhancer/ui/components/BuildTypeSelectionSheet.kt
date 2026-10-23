@@ -63,14 +63,14 @@ fun BuildTypeSelectionSheet(
         ) {
             Column {
                 Text(
-                    text = UiText.get(R.string.waex_ui_select_build_type_7aca4b93, "Select Build Type"),
+                    text = UiText.get(R.string.waex_ui_select_build_type, "Select Build Type"),
                     style = typography.headlineMd,
                     fontWeight = FontWeight.Bold,
                     color = colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = UiText.get(R.string.waex_ui_available_apk_assets_for_1_s_8419f6c4, "Available APK assets for %1\$s", release.tagName),
+                    text = UiText.get(R.string.waex_ui_available_apk_assets_for_1_s, "Available APK assets for %1\$s", release.tagName),
                     style = typography.bodyMd,
                     color = colors.onSurfaceVariant
                 )

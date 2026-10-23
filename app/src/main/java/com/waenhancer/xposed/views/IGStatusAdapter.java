@@ -48,6 +48,11 @@ import java.util.List;
 
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.BitmapShader;
+import android.graphics.Shader;
 
 public class IGStatusAdapter extends ArrayAdapter<Object> {
 
@@ -154,7 +159,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
                         return;
                     }
                 } catch (Throwable t) {
-                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error_8eecdde0, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             } else {
                 // Otherwise directly open write text status composer screen
@@ -171,7 +176,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
                         activity.startActivity(intent);
                     }
                 } catch (Throwable t) {
-                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error_8eecdde0, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_error, "Error: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
             return;
@@ -187,9 +192,9 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
             try {
                 File statusDb = context.getDatabasePath("status.db");
                 if (statusDb != null && statusDb.exists()) {
-                    android.database.sqlite.SQLiteDatabase db = android.database.sqlite.SQLiteDatabase.openDatabase(
-                            statusDb.getAbsolutePath(), null, android.database.sqlite.SQLiteDatabase.OPEN_READONLY);
-                    try (android.database.Cursor cursor = db.rawQuery(
+                    SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                            statusDb.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
+                    try (Cursor cursor = db.rawQuery(
                             "SELECT total_count, last_status_timestamp FROM status_info WHERE chat_jid = 'status_me' LIMIT 1", null)) {
                         if (cursor.moveToFirst()) {
                             int totalCount = cursor.getInt(0);
@@ -235,7 +240,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
                 activity.startActivity(intent);
             }
         } catch (Throwable t) {
-            Toast.makeText(activity, UiText.get(R.string.waex_ui_error_opening_status_768e80f2, "Error opening status: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, UiText.get(R.string.waex_ui_error_opening_status, "Error opening status: ") + t.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -359,7 +364,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
             if (addBadge != null) {
                 addBadge.setVisibility(hasActive ? View.GONE : View.VISIBLE);
             }
-            if (nameView != null) nameView.setText(UiText.get(R.string.waex_ui_my_status_43503c17, "My Status"));
+            if (nameView != null) nameView.setText(UiText.get(R.string.waex_ui_my_status, "My Status"));
 
             Drawable preview = hasActive ? loadMyLatestStatusPreview() : null;
             if (preview != null && photoView != null) {
@@ -412,14 +417,14 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
             File statusDb = getContext().getDatabasePath("status.db");
             if (statusDb == null || !statusDb.exists()) return null;
 
-            android.database.sqlite.SQLiteDatabase db = android.database.sqlite.SQLiteDatabase.openDatabase(
-                    statusDb.getAbsolutePath(), null, android.database.sqlite.SQLiteDatabase.OPEN_READONLY);
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(
+                    statusDb.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY);
             try {
                 // Query latest status row for status_me
                 long statusRowId = -1;
                 int type = -1;
                 String textData = null;
-                try (android.database.Cursor cursor = db.rawQuery(
+                try (Cursor cursor = db.rawQuery(
                         "SELECT row_id, type, text_data FROM status WHERE sender_user_jid = 'status_me' ORDER BY timestamp DESC LIMIT 1", null)) {
                     if (cursor.moveToFirst()) {
                         statusRowId = cursor.getLong(0);
@@ -431,7 +436,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
                 if (statusRowId <= 0) return null;
 
                 // Check if image/video thumbnail exists in status_thumbnail
-                try (android.database.Cursor thumbCursor = db.rawQuery(
+                try (Cursor thumbCursor = db.rawQuery(
                         "SELECT thumbnail, thumbnail_path FROM status_thumbnail WHERE status_row_id = ? LIMIT 1",
                         new String[]{String.valueOf(statusRowId)})) {
                     if (thumbCursor.moveToFirst()) {
@@ -453,7 +458,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
 
                 // If text status, check status_text for background color and render text preview
                 int bgColor = 0xFF00A884;
-                try (android.database.Cursor textCursor = db.rawQuery(
+                try (Cursor textCursor = db.rawQuery(
                         "SELECT background_color, thumbnail FROM status_text WHERE status_row_id = ? LIMIT 1",
                         new String[]{String.valueOf(statusRowId)})) {
                     if (textCursor.moveToFirst()) {
@@ -575,7 +580,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
             Bitmap output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(output);
             Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setShader(new android.graphics.BitmapShader(src, android.graphics.Shader.TileMode.CLAMP, android.graphics.Shader.TileMode.CLAMP));
+            paint.setShader(new BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
             float r = size / 2f;
             canvas.drawCircle(r, r, r, paint);
             return new BitmapDrawable(getContext().getResources(), output);
@@ -621,7 +626,7 @@ public class IGStatusAdapter extends ArrayAdapter<Object> {
     }
 
     private boolean isDarkTheme() {
-        int nightMode = getContext().getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-        return nightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        int nightMode = getContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightMode == Configuration.UI_MODE_NIGHT_YES;
     }
 }

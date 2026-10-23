@@ -36,8 +36,8 @@ public final class PropsOverrideHook extends BaseFeature {
 
     @Override
     public void hook() {
-        Method booleanGetter = findFallbackGetter("wpp_props_boolean_method", "Unknown BooleanField");
-        Method integerGetter = findFallbackGetter("wpp_props_integer_method", "Unknown IntField");
+        Method booleanGetter = findFallbackGetter("waex_props_boolean_method", "Unknown BooleanField");
+        Method integerGetter = findFallbackGetter("waex_props_integer_method", "Unknown IntField");
         Method resolver = findCentralResolver(booleanGetter);
         if (resolver != null) {
             hookPropertyMethod(resolver);
@@ -46,6 +46,24 @@ public final class PropsOverrideHook extends BaseFeature {
         XposedBridge.log(TAG + " Central resolver unavailable; installing fallback getters");
         hookPropertyMethod(booleanGetter);
         hookPropertyMethod(integerGetter);
+    }
+
+    /** Applies a declarative early MobileConfig boolean override from the feature registry. */
+    public static void setBooleanOverride(int id, boolean enabled, boolean value) {
+        if (enabled) {
+            BOOLEANS.put(id, value);
+        } else {
+            BOOLEANS.remove(id);
+        }
+    }
+
+    /** Applies a declarative early MobileConfig integer override from the feature registry. */
+    public static void setIntegerOverride(int id, boolean enabled, int value) {
+        if (enabled) {
+            INTEGERS.put(id, value);
+        } else {
+            INTEGERS.remove(id);
+        }
     }
 
     private Method findFallbackGetter(String cacheKey, String anchor) {
@@ -89,6 +107,7 @@ public final class PropsOverrideHook extends BaseFeature {
         if (idIndex < 0) return;
         XposedBridge.hookMethod(method, new XC_MethodHook(XCallback.PRIORITY_HIGHEST) {
             @Override protected void afterHookedMethod(MethodHookParam param) {
+                if (param.hasThrowable()) return;
                 if (param.args == null || idIndex >= param.args.length
                         || !(param.args[idIndex] instanceof Integer)) return;
                 Object override = resolveOverride((Integer) param.args[idIndex], param.getResult());

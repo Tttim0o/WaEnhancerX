@@ -38,7 +38,7 @@ public class MediaQualityBypassHook extends BaseFeature {
             Method imageQualityMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_image_compress_quality",
+                    "waex_image_compress_quality",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -72,7 +72,7 @@ public class MediaQualityBypassHook extends BaseFeature {
             Method videoFpsMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_video_fps_encoder",
+                    "waex_video_fps_encoder",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()

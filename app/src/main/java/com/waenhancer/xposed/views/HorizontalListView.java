@@ -11,6 +11,7 @@ import android.view.ViewParent;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import android.view.Gravity;
 
 /**
  * Adapter-backed horizontal row implemented on top of Android's native scroller.
@@ -69,7 +70,7 @@ public class HorizontalListView extends HorizontalScrollView {
 
         content = new LinearLayout(context);
         content.setOrientation(LinearLayout.HORIZONTAL);
-        content.setGravity(android.view.Gravity.TOP);
+        content.setGravity(Gravity.TOP);
         int topPadding = Math.round(6f * context.getResources().getDisplayMetrics().density);
         content.setPadding(0, topPadding, 0, 0);
         content.setClipToPadding(false);

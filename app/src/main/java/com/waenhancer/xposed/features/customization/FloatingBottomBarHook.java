@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Canvas;
@@ -49,7 +50,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.waenhancer.xposed.core.BaseFeature;
+import com.waenhancer.hooking.ScreenScopedFeature;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
+import com.waenhancer.xposed.utils.ActivityTracker;
 
 import org.luckypray.dexkit.query.FindClass;
 import org.luckypray.dexkit.query.enums.StringMatchType;
@@ -74,7 +77,7 @@ import java.util.WeakHashMap;
  * Supports configurable corner radius, margins, vertical padding, icon & text sizes,
  * scroll-based hide/show animations, custom fill color, and FAB positioning.
  */
-public class FloatingBottomBarHook extends BaseFeature {
+public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFeature {
 
     private static final String TAG = "[WAEX][FloatingBottomBar]";
 
@@ -93,8 +96,13 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static final WeakHashMap<View, Float> targetTranslations = new WeakHashMap<>();
     private static final WeakHashMap<View, View> scrollableBottomBarCache = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> mainScrollableCache = new WeakHashMap<>();
+    private static final WeakHashMap<View, ContentPadding> contentPaddingCache = new WeakHashMap<>();
     private static final WeakHashMap<Activity, Float> scrollGestureY = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> indicatorGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> ovalGeometryGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> selectorColorGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> iconColorGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ImageView, ColorStateList> originalIconTints = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, Integer> forcedSelectedTabs = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> renderedSelectedTabs = new WeakHashMap<>();
 
@@ -106,6 +114,7 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static boolean scrollHideEnabled = true;
     private static String scrollHideMode = "downward";
     private static boolean glassEnabled = false;
+    private static boolean shadowEnabled = true;
     private static float glassOpacity = 35f;
     private static int glassFillColor = 0;
     private static boolean pillDesignPro = false;
@@ -115,9 +124,18 @@ public class FloatingBottomBarHook extends BaseFeature {
     private static int userSideMarginDp = 16;
     private static int userRadiusDp = 28;
     private static int userVerticalPaddingDp = 6;
+    private static int userHorizontalPaddingDp = 0;
     private static int userIconSizeDp = 24;
     private static int userTextSizeSp = 12;
     private static int userIconLabelSpacingDp = 2;
+    private static boolean userIconsOnly = false;
+    private static boolean selectorOval = false;
+    private static int selectorColor = 0;
+    private static boolean selectorColorEnabled = false;
+    private static int selectedIconColor = 0;
+    private static boolean selectedIconColorEnabled = false;
+    private static int unselectedIconColor = 0;
+    private static boolean unselectedIconColorEnabled = false;
 
     public FloatingBottomBarHook(@NonNull Context context, @NonNull ClassLoader classLoader, @NonNull SharedPreferences prefs) {
         super(context, classLoader, prefs);
@@ -136,6 +154,7 @@ public class FloatingBottomBarHook extends BaseFeature {
         scrollHideEnabled = prefs.getBoolean("floating_bottom_bar_scroll_hide", true);
         scrollHideMode = prefs.getString("floating_bottom_bar_scroll_hide_mode", "downward");
         glassEnabled = prefs.getBoolean("floating_bottom_bar_glass", false);
+        shadowEnabled = prefs.getBoolean("floating_bottom_bar_shadow", true);
         glassOpacity = getPrefFloat(prefs, "floating_bottom_bar_glass_opacity", 35f);
         glassFillColor = getPrefColor(prefs, "floating_bottom_bar_fill_color", 0);
 
@@ -148,9 +167,20 @@ public class FloatingBottomBarHook extends BaseFeature {
         userSideMarginDp = prefs.getInt("floating_bottom_bar_margin_horizontal", (int) SIDE_MARGIN_DP);
         userRadiusDp = prefs.getInt("floating_bottom_bar_radius", (int) CORNER_RADIUS_DP);
         userVerticalPaddingDp = prefs.getInt("floating_bottom_bar_padding_vertical", 6);
+        userHorizontalPaddingDp = prefs.getInt("floating_bottom_bar_padding_horizontal", 0);
         userIconSizeDp = prefs.getInt("floating_bottom_bar_icon_size", 24);
         userTextSizeSp = prefs.getInt("floating_bottom_bar_text_size", 12);
         userIconLabelSpacingDp = prefs.getInt("floating_bottom_bar_icon_label_spacing", 2);
+        userIconsOnly = prefs.getBoolean("floating_bottom_bar_icons_only", false);
+        selectorOval = "oval".equals(prefs.getString("floating_bottom_bar_selector_type", "default"));
+        selectorColor = getPrefColor(prefs, "floating_bottom_bar_selector_color", 0);
+        selectorColorEnabled = prefs.getBoolean("floating_bottom_bar_selector_color_enabled", selectorColor != 0);
+        selectedIconColor = getPrefColor(prefs, "floating_bottom_bar_selected_icon_color", 0);
+        selectedIconColorEnabled = prefs.getBoolean(
+                "floating_bottom_bar_selected_icon_color_enabled", selectedIconColor != 0);
+        unselectedIconColor = getPrefColor(prefs, "floating_bottom_bar_unselected_icon_color", 0);
+        unselectedIconColorEnabled = prefs.getBoolean(
+                "floating_bottom_bar_unselected_icon_color_enabled", unselectedIconColor != 0);
 
         // Resolve resource IDs
         bottomNavId = getResourceId("bottom_nav", "id");
@@ -175,10 +205,19 @@ public class FloatingBottomBarHook extends BaseFeature {
                         int id = view.getId();
                         boolean isBottomBar = id > 0 && (id == bottomNavId || id == navigationBarId || id == tabLayoutId);
                         boolean isFab = id > 0 && fabIds.contains(id);
-                        if (!isBottomBar && !isFab) return;
+                        boolean isScrollable = isScrollableClass(view.getClass());
+                        if (!isBottomBar && !isFab && !isScrollable) return;
 
                         Activity activity = getActivityFromView(view);
                         if (homeClass == null || activity == null || !homeClass.isInstance(activity)) return;
+
+                        if (isScrollable) {
+                            // At attach time the pager/list may not have its final dimensions yet.
+                            // Run once after layout and once after the tab transition settles.
+                            view.post(() -> applyContentBottomSpacing(view));
+                            view.postDelayed(() -> applyContentBottomSpacing(view), 250L);
+                            return;
+                        }
 
                         if (isBottomBar) {
                             if (view instanceof ViewGroup && isEnabled("floating_bottom_bar", false)) {
@@ -231,6 +270,61 @@ public class FloatingBottomBarHook extends BaseFeature {
 
         if (scrollHideEnabled) {
             hookTouchScrollGestures(homeClass);
+        }
+        installIntoCurrentHome(homeClass, 0);
+    }
+
+    /** A lazy hook can be registered after Home's views already attached. Apply it immediately. */
+    private void installIntoCurrentHome(Class<?> homeClass, int attempt) {
+        if (!isEnabled("floating_bottom_bar", false)) return;
+        Activity activity = ActivityTracker.getCurrentActivity();
+        if (activity == null || homeClass == null || !homeClass.isInstance(activity)) return;
+        activity.runOnUiThread(() -> {
+            if (!isEnabled("floating_bottom_bar", false)) return;
+            if (activity.isFinishing() || activity.isDestroyed()) return;
+            View decor = activity.getWindow().getDecorView();
+            if (!(decor instanceof ViewGroup)) return;
+            View bottomBar = findBottomNavInRoot((ViewGroup) decor);
+            if (bottomBar instanceof ViewGroup) {
+                scheduleSetup((ViewGroup) bottomBar);
+            } else if (attempt < 8) {
+                // A lazy feature may finish resolving while Home is still inflating its nav tree.
+                decor.postDelayed(() -> installIntoCurrentHome(homeClass, attempt + 1), 100L);
+            }
+            for (int fabId : fabIds) {
+                View fab = decor.findViewById(fabId);
+                if (fab != null) positionFabAboveCurrentBar(fab);
+            }
+        });
+    }
+
+    @Override
+    public void onScreenDisposed(@NonNull Activity activity) {
+        scrollGestureY.remove(activity);
+        View decor = activity.getWindow().getDecorView();
+        if (!(decor instanceof ViewGroup)) return;
+        clearViewState((ViewGroup) decor);
+    }
+
+    private static void clearViewState(ViewGroup root) {
+        processedBars.remove(root);
+        setupAttempts.remove(root);
+        styledBottomBars.remove(root);
+        targetHideStates.remove(root);
+        targetTranslations.remove(root);
+        scrollableBottomBarCache.remove(root);
+        mainScrollableCache.remove(root);
+        restoreContentPadding(root);
+        forcedSelectedTabs.remove(root);
+        for (int index = 0; index < root.getChildCount(); index++) {
+            View child = root.getChildAt(index);
+            styledBottomBars.remove(child);
+            targetHideStates.remove(child);
+            targetTranslations.remove(child);
+            scrollableBottomBarCache.remove(child);
+            mainScrollableCache.remove(child);
+            renderedSelectedTabs.remove(child);
+            if (child instanceof ViewGroup) clearViewState((ViewGroup) child);
         }
     }
 
@@ -288,7 +382,7 @@ public class FloatingBottomBarHook extends BaseFeature {
     private Class<?> resolveHomeActivityClass() {
         try {
             Class<?> cls = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_home_activity_class",
+                    context, classLoader, "waex_home_activity_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()
@@ -314,7 +408,7 @@ public class FloatingBottomBarHook extends BaseFeature {
     private Class<?> resolveTabFrameClass() {
         try {
             Class<?> cls = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_tab_frame_class",
+                    context, classLoader, "waex_tab_frame_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()
@@ -573,6 +667,7 @@ public class FloatingBottomBarHook extends BaseFeature {
                 updateOverlayLayout(rootView, container, bar);
                 applyPillStyle(container, bar);
                 positionFabsAboveBar(rootView, container);
+                applyContentBottomSpacingInTree(rootView);
                 return true;
             }
 
@@ -591,6 +686,7 @@ public class FloatingBottomBarHook extends BaseFeature {
             float density = bar.getContext().getResources().getDisplayMetrics().density;
             int effectivePaddingDp = userVerticalPaddingDp + (pillDesignPro ? 2 : 0);
             int padV = (int) (effectivePaddingDp * density);
+            int padH = (int) (userHorizontalPaddingDp * density);
             int pillHeight = (int) ((56 + (effectivePaddingDp * 2)) * density);
             if (pillHeight < (int) (48 * density)) {
                 pillHeight = (int) (48 * density);
@@ -633,8 +729,11 @@ public class FloatingBottomBarHook extends BaseFeature {
             }
 
             applyVerticalPaddingToTabItems(bar, padV);
+            applyHorizontalPaddingToTabItems(bar, padH);
+            bar.post(() -> applyHorizontalPaddingToTabItems(bar, padH));
             applyPillStyle(container, bar);
             positionFabsAboveBar(rootView, container);
+            applyContentBottomSpacingInTree(rootView);
             return true;
         } catch (Throwable e) {
             XposedBridge.log(TAG + " Error setting up floating bar: " + e);
@@ -646,6 +745,7 @@ public class FloatingBottomBarHook extends BaseFeature {
         float density = bar.getContext().getResources().getDisplayMetrics().density;
         int effectivePaddingDp = userVerticalPaddingDp + (pillDesignPro ? 2 : 0);
         int padV = (int) (effectivePaddingDp * density);
+        int padH = (int) (userHorizontalPaddingDp * density);
         int pillHeight = (int) ((56 + (effectivePaddingDp * 2)) * density);
         if (pillHeight < (int) (48 * density)) {
             pillHeight = (int) (48 * density);
@@ -683,6 +783,68 @@ public class FloatingBottomBarHook extends BaseFeature {
         }
 
         applyVerticalPaddingToTabItems(bar, padV);
+        applyHorizontalPaddingToTabItems(bar, padH);
+        bar.post(() -> applyHorizontalPaddingToTabItems(bar, padH));
+    }
+
+    /**
+     * WhatsApp centers every tab in an equal-width cell, so View padding=0 still leaves half a
+     * cell of apparent space at each edge. Position the tab contents against the requested visual
+     * inset instead: zero aligns the outer icon edges with the pill's inner bounds.
+     */
+    private static void applyHorizontalPaddingToTabItems(ViewGroup bar, int paddingPx) {
+        if (bar == null) return;
+        float density = bar.getResources().getDisplayMetrics().density;
+        bar.setClipChildren(false);
+        bar.setClipToPadding(false);
+
+        for (int i = 0; i < bar.getChildCount(); i++) {
+            View child = bar.getChildAt(i);
+            if (!(child instanceof ViewGroup)) continue;
+            ViewGroup menu = (ViewGroup) child;
+            int count = menu.getChildCount();
+            int barWidth = bar.getWidth();
+            if (count < 2 || barWidth <= 0) continue;
+
+            menu.setClipChildren(false);
+            menu.setClipToPadding(false);
+            float menuOffsetInBar = menu.getLeft() + menu.getTranslationX();
+            View firstItem = menu.getChildAt(0);
+            View lastItem = menu.getChildAt(count - 1);
+            float firstHalf = visualContentHalfWidth(firstItem, density);
+            float lastHalf = visualContentHalfWidth(lastItem, density);
+            float startCenter = paddingPx + firstHalf - menuOffsetInBar;
+            float endCenter = barWidth - paddingPx - lastHalf - menuOffsetInBar;
+            float interval = (endCenter - startCenter) / (count - 1f);
+            for (int j = 0; j < count; j++) {
+                View item = menu.getChildAt(j);
+                float currentCenter = item.getLeft() + item.getWidth() / 2f;
+                float targetCenter = startCenter + interval * j;
+                item.setTranslationX(0f);
+                float contentOffset = targetCenter - currentCenter;
+                if (item instanceof ViewGroup) {
+                    ViewGroup itemGroup = (ViewGroup) item;
+                    for (int k = 0; k < itemGroup.getChildCount(); k++) {
+                        itemGroup.getChildAt(k).setTranslationX(contentOffset);
+                    }
+                }
+            }
+        }
+    }
+
+    private static float visualContentHalfWidth(View item, float density) {
+        float width = userIconSizeDp * density;
+        if (selectorOval) width = Math.max(width, 60f * density);
+        if (item instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) item;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View child = group.getChildAt(i);
+                if (child.getVisibility() == View.VISIBLE && child.getWidth() > 0) {
+                    width = Math.max(width, child.getWidth());
+                }
+            }
+        }
+        return width / 2f;
     }
 
     private static void applyVerticalPaddingToTabItems(ViewGroup bar, final int padV) {
@@ -740,6 +902,12 @@ public class FloatingBottomBarHook extends BaseFeature {
             labelsGroup = tabItem.getChildAt(1);
         }
 
+        if (userIconsOnly) {
+            if (labelsGroup != null) {
+                labelsGroup.setVisibility(View.GONE);
+            }
+        }
+
         applyCustomSizesToTabItem(tabItem, userIconSizeDp, userTextSizeSp, density);
 
         int itemHeight = tabItem.getHeight();
@@ -752,7 +920,7 @@ public class FloatingBottomBarHook extends BaseFeature {
                 : (int) (32 * density);
 
         int labelHeight = 0;
-        if (labelsGroup != null && labelsGroup.getVisibility() != View.GONE) {
+        if (!userIconsOnly && labelsGroup != null && labelsGroup.getVisibility() != View.GONE) {
             labelHeight = labelsGroup.getHeight();
             if (labelHeight <= 0) {
                 labelHeight = (int) (16 * density);
@@ -770,7 +938,7 @@ public class FloatingBottomBarHook extends BaseFeature {
             iconContainer.setTranslationY(iconOffsetY);
         }
 
-        if (labelsGroup != null && labelHeight > 0) {
+        if (!userIconsOnly && labelsGroup != null && labelHeight > 0) {
             int targetLabelTop = targetIconTop + iconHeight + spacing;
             int currentLabelTop = labelsGroup.getTop();
             int labelOffsetY = targetLabelTop - currentLabelTop;
@@ -955,10 +1123,14 @@ public class FloatingBottomBarHook extends BaseFeature {
                     }
                 }
             } else if (child instanceof TextView) {
-                TextView tv = (TextView) child;
-                float targetPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSizeSp, tv.getResources().getDisplayMetrics());
-                if (Math.abs(tv.getTextSize() - targetPx) > 0.5f) {
-                    tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp);
+                // The labels container is hidden by styleAndLayoutTabItem. Do not hide every
+                // TextView here because WhatsApp's unread-count badges are TextViews as well.
+                if (!userIconsOnly) {
+                    TextView tv = (TextView) child;
+                    float targetPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, textSizeSp, tv.getResources().getDisplayMetrics());
+                    if (Math.abs(tv.getTextSize() - targetPx) > 0.5f) {
+                        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp);
+                    }
                 }
             } else if (child instanceof ViewGroup) {
                 applyCustomSizesToTabItem((ViewGroup) child, iconSizeDp, textSizeSp, density);
@@ -974,6 +1146,86 @@ public class FloatingBottomBarHook extends BaseFeature {
             }
         } catch (Throwable ignored) {}
         return 0;
+    }
+
+    /**
+     * The floating navigation is an overlay, so WhatsApp no longer reserves layout space for it.
+     * Give each home-tab scroller enough trailing padding to move its last item above the pill.
+     * The original padding is retained so WhatsApp's own list insets are not lost.
+     */
+    private static void applyContentBottomSpacing(View scrollable) {
+        if (!(scrollable instanceof ViewGroup) || !scrollable.isAttachedToWindow()
+                || !isMainTabScrollable(scrollable)) return;
+        ViewGroup scrollGroup = (ViewGroup) scrollable;
+
+        View bottomNav = findBottomNavForScrollable(scrollable);
+        if (bottomNav == null) return;
+
+        View barTarget = getBarAnimationTarget(bottomNav);
+        int barHeight = barTarget.getHeight();
+        if (barHeight <= 0) barHeight = bottomNav.getHeight();
+        if (barHeight <= 0) return;
+
+        int bottomMargin = 0;
+        ViewGroup.LayoutParams params = barTarget.getLayoutParams();
+        if (params instanceof ViewGroup.MarginLayoutParams) {
+            bottomMargin = ((ViewGroup.MarginLayoutParams) params).bottomMargin;
+        }
+
+        ContentPadding original = contentPaddingCache.get(scrollable);
+        if (original == null) {
+            original = new ContentPadding(scrollable.getPaddingLeft(), scrollable.getPaddingTop(),
+                    scrollable.getPaddingRight(), scrollable.getPaddingBottom(),
+                    scrollGroup.getClipToPadding());
+            contentPaddingCache.put(scrollable, original);
+        }
+
+        float density = scrollable.getResources().getDisplayMetrics().density;
+        int breathingRoom = Math.round(8f * density);
+        int requiredBottom = original.bottom + barHeight + bottomMargin + breathingRoom;
+        if (scrollable.getPaddingLeft() != original.left
+                || scrollable.getPaddingTop() != original.top
+                || scrollable.getPaddingRight() != original.right
+                || scrollable.getPaddingBottom() != requiredBottom) {
+            scrollable.setPadding(original.left, original.top, original.right, requiredBottom);
+        }
+        // Padding becomes scrollable content instead of permanently shrinking/clipping the list.
+        scrollGroup.setClipToPadding(false);
+    }
+
+    private static void applyContentBottomSpacingInTree(View view) {
+        if (view == null) return;
+        if (isScrollableClass(view.getClass())) applyContentBottomSpacing(view);
+        if (!(view instanceof ViewGroup)) return;
+        ViewGroup group = (ViewGroup) view;
+        for (int i = 0; i < group.getChildCount(); i++) {
+            applyContentBottomSpacingInTree(group.getChildAt(i));
+        }
+    }
+
+    private static void restoreContentPadding(View view) {
+        ContentPadding original = contentPaddingCache.remove(view);
+        if (original == null) return;
+        view.setPadding(original.left, original.top, original.right, original.bottom);
+        if (view instanceof ViewGroup) {
+            ((ViewGroup) view).setClipToPadding(original.clipToPadding);
+        }
+    }
+
+    private static final class ContentPadding {
+        final int left;
+        final int top;
+        final int right;
+        final int bottom;
+        final boolean clipToPadding;
+
+        ContentPadding(int left, int top, int right, int bottom, boolean clipToPadding) {
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+            this.clipToPadding = clipToPadding;
+        }
     }
 
     private FrameLayout findRootView(View startView) {
@@ -1036,21 +1288,20 @@ public class FloatingBottomBarHook extends BaseFeature {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final int capsuleInset = sideMargin;
+            container.setOutlineProvider(new ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    int right = Math.max(capsuleInset + 1, view.getWidth() - capsuleInset);
+                    outline.setRoundRect(capsuleInset, 0, right, view.getHeight(), radius);
+                }
+            });
             if (pillDesignIos) {
-                final int capsuleInset = sideMargin;
-                container.setOutlineProvider(new ViewOutlineProvider() {
-                    @Override
-                    public void getOutline(View view, Outline outline) {
-                        int right = Math.max(capsuleInset + 1, view.getWidth() - capsuleInset);
-                        outline.setRoundRect(capsuleInset, 0, right, view.getHeight(), radius);
-                    }
-                });
                 // Backdrop effects are composed before the child View's outline clip. Clipping the
                 // outer container masks the rectangular blur surface to the exact pill bounds.
                 container.setClipToOutline(true);
             } else {
                 container.setClipToOutline(false);
-                container.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
             }
         }
 
@@ -1082,14 +1333,11 @@ public class FloatingBottomBarHook extends BaseFeature {
         background.setStroke(strokeWidth, strokeColor);
 
         bar.setBackground(background);
-        applyPillShadow(bar, density);
-        if (pillDesignPro) {
-            bar.setElevation(16f * density);
-            bar.setTranslationZ(10f * density);
-        } else if (pillDesignIos) {
-            bar.setElevation(10f * density);
-            bar.setTranslationZ(6f * density);
-        }
+        float shadowElevationDp = pillDesignPro ? 16f : (pillDesignIos ? 10f : PILL_ELEVATION_DP);
+        float shadowTranslationDp = pillDesignPro ? 10f : (pillDesignIos ? 6f : PILL_TRANSLATION_Z_DP);
+        applyPillShadow(container, density, shadowEnabled, shadowElevationDp, shadowTranslationDp);
+        // The wrapper owns the shadow so WhatsApp cannot clip it at the child boundary.
+        applyPillShadow(bar, density, false, 0f, 0f);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             bar.setOutlineProvider(new ViewOutlineProvider() {
@@ -1106,7 +1354,174 @@ public class FloatingBottomBarHook extends BaseFeature {
         applyBackdropBlur(bar, useGlass, density);
 
         makeChildrenTransparent(bar);
+        if (selectorColorEnabled) {
+            applyNativeSelectorColor(bar, selectorColor);
+            installSelectorColorGuard(bar);
+        }
+        if (selectorOval) {
+            customizeNativeOvalIndicator(bar, density);
+            installOvalGeometryGuard(bar, density);
+        }
+        if (selectedIconColorEnabled || unselectedIconColorEnabled) {
+            applyCustomIconColors(bar);
+            installIconColorGuard(bar);
+        }
         applyPresetTabIndicators(bar, density);
+    }
+
+    private static void applyCustomIconColors(ViewGroup bar) {
+        for (int i = 0; i < bar.getChildCount(); i++) {
+            View child = bar.getChildAt(i);
+            if (!(child instanceof ViewGroup)) continue;
+            ViewGroup menu = (ViewGroup) child;
+            for (int j = 0; j < menu.getChildCount(); j++) {
+                View tab = menu.getChildAt(j);
+                boolean selected = (tab instanceof Checkable && ((Checkable) tab).isChecked())
+                        || tab.isSelected() || tab.isActivated();
+                View icon = findIconView(tab);
+                if (icon instanceof ImageView) {
+                    ImageView image = (ImageView) icon;
+                    if (!originalIconTints.containsKey(image)) {
+                        originalIconTints.put(image, image.getImageTintList());
+                    }
+
+                    boolean customColorEnabled = selected
+                            ? selectedIconColorEnabled : unselectedIconColorEnabled;
+                    if (customColorEnabled) {
+                        int color = selected ? selectedIconColor : unselectedIconColor;
+                        image.setImageTintList(ColorStateList.valueOf(color));
+                    } else {
+                        // This state uses WhatsApp's default. Restore its original stateful tint
+                        // after the icon leaves a state that had a custom solid color.
+                        image.setImageTintList(originalIconTints.get(image));
+                    }
+                }
+            }
+        }
+    }
+
+    private static void installIconColorGuard(ViewGroup bar) {
+        if (iconColorGuards.containsKey(bar)) return;
+        ViewTreeObserver.OnPreDrawListener guard = () -> {
+            applyCustomIconColors(bar);
+            return true;
+        };
+        iconColorGuards.put(bar, guard);
+        bar.getViewTreeObserver().addOnPreDrawListener(guard);
+        bar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View view) {}
+
+            @Override public void onViewDetachedFromWindow(View view) {
+                ViewTreeObserver observer = view.getViewTreeObserver();
+                if (observer.isAlive()) observer.removeOnPreDrawListener(guard);
+                iconColorGuards.remove(bar);
+                view.removeOnAttachStateChangeListener(this);
+            }
+        });
+    }
+
+    private static void customizeNativeOvalIndicator(View view, float density) {
+        if (view.getId() != View.NO_ID) {
+            try {
+                String name = view.getResources().getResourceEntryName(view.getId());
+                if (name != null && name.contains("active_indicator")) {
+                    ViewGroup.LayoutParams lp = view.getLayoutParams();
+                    if (lp != null) {
+                        int targetWidth = (int) (60f * density);
+                        int targetHeight = (int) (42f * density);
+                        if (lp.width != targetWidth || lp.height != targetHeight) {
+                            lp.width = targetWidth;
+                            lp.height = targetHeight;
+                            if (lp instanceof FrameLayout.LayoutParams) {
+                                ((FrameLayout.LayoutParams) lp).gravity = Gravity.CENTER;
+                            }
+                            view.setLayoutParams(lp);
+                        }
+                    }
+                    // The stock indicator lives inside a smaller icon container. Some menu items
+                    // clip that container while the first item does not, which cuts off the top of
+                    // an enlarged oval. Keep the native drawable but allow its full bounds to draw.
+                    ViewParent ancestor = view.getParent();
+                    int levels = 0;
+                    while (ancestor instanceof ViewGroup && levels++ < 5) {
+                        ViewGroup group = (ViewGroup) ancestor;
+                        group.setClipChildren(false);
+                        group.setClipToPadding(false);
+                        ancestor = group.getParent();
+                    }
+                    return;
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                customizeNativeOvalIndicator(group.getChildAt(i), density);
+            }
+        }
+    }
+
+    private static void applyNativeSelectorColor(View view, int color) {
+        if (view.getId() != View.NO_ID) {
+            try {
+                String name = view.getResources().getResourceEntryName(view.getId());
+                if (name != null && name.contains("active_indicator")) {
+                    Drawable background = view.getBackground();
+                    if (background != null) background.mutate().setTint(color);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        view.setBackgroundTintList(ColorStateList.valueOf(color));
+                    }
+                    view.invalidate();
+                    return;
+                }
+            } catch (Throwable ignored) {}
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                applyNativeSelectorColor(group.getChildAt(i), color);
+            }
+        }
+    }
+
+    private static void installSelectorColorGuard(ViewGroup bar) {
+        if (selectorColorGuards.containsKey(bar)) return;
+        ViewTreeObserver.OnPreDrawListener guard = () -> {
+            applyNativeSelectorColor(bar, selectorColor);
+            return true;
+        };
+        selectorColorGuards.put(bar, guard);
+        bar.getViewTreeObserver().addOnPreDrawListener(guard);
+        bar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View view) {}
+
+            @Override public void onViewDetachedFromWindow(View view) {
+                ViewTreeObserver observer = view.getViewTreeObserver();
+                if (observer.isAlive()) observer.removeOnPreDrawListener(guard);
+                selectorColorGuards.remove(bar);
+                view.removeOnAttachStateChangeListener(this);
+            }
+        });
+    }
+
+    private static void installOvalGeometryGuard(ViewGroup bar, float density) {
+        if (ovalGeometryGuards.containsKey(bar)) return;
+        ViewTreeObserver.OnPreDrawListener guard = () -> {
+            customizeNativeOvalIndicator(bar, density);
+            return true;
+        };
+        ovalGeometryGuards.put(bar, guard);
+        bar.getViewTreeObserver().addOnPreDrawListener(guard);
+        bar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View view) {}
+
+            @Override public void onViewDetachedFromWindow(View view) {
+                ViewTreeObserver observer = view.getViewTreeObserver();
+                if (observer.isAlive()) observer.removeOnPreDrawListener(guard);
+                ovalGeometryGuards.remove(bar);
+                view.removeOnAttachStateChangeListener(this);
+            }
+        });
     }
 
     /**
@@ -1115,6 +1530,8 @@ public class FloatingBottomBarHook extends BaseFeature {
      * effect synchronized across both clicks and WhatsApp's pager swipes.
      */
     private static void applyPresetTabIndicators(ViewGroup bar, float density) {
+        // Oval is geometry-only and deliberately retains WhatsApp's native selector drawable/tint.
+        if (selectorOval) return;
         if (!pillDesignPro && !pillDesignIos) return;
         for (int i = 0; i < bar.getChildCount(); i++) {
             View child = bar.getChildAt(i);
@@ -1206,7 +1623,7 @@ public class FloatingBottomBarHook extends BaseFeature {
             View child = bar.getChildAt(i);
             if (!(child instanceof ViewGroup)) continue;
             ViewGroup menu = (ViewGroup) child;
-            if (menu.getChildCount() < 2 || !(containsText(menu.getChildAt(1), "Groups") || containsText(menu.getChildAt(1), UiText.get(R.string.waex_ui_groups_39bbb719, "Groups")))) continue;
+            if (menu.getChildCount() < 2 || !(containsText(menu.getChildAt(1), "Groups") || containsText(menu.getChildAt(1), UiText.get(R.string.waex_ui_groups, "Groups")))) continue;
 
             boolean firstReconciliation = !forcedSelectedTabs.containsKey(menu);
             int selectedIndex;
@@ -1295,9 +1712,11 @@ public class FloatingBottomBarHook extends BaseFeature {
     }
 
     private static Drawable createPresetIndicator(View tab, float density) {
-        return pillDesignIos
+        Drawable indicator = pillDesignIos
                 ? new IosLiquidGlassDrawable(tab.getContext(), density)
                 : new LiquidOvalDrawable(tab.getContext(), density);
+        if (selectorColorEnabled) indicator.setTint(selectorColor);
+        return indicator;
     }
 
     private static void hideNativeActiveIndicator(View view) {
@@ -1371,10 +1790,14 @@ public class FloatingBottomBarHook extends BaseFeature {
         }
     }
 
-    private static void applyPillShadow(View view, float density) {
-        view.setElevation(PILL_ELEVATION_DP * density);
+    private static void applyPillShadow(View view, float density, boolean enabled,
+                                        float elevationDp, float translationDp) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.setTranslationZ(PILL_TRANSLATION_Z_DP * density);
+            view.setStateListAnimator(null);
+        }
+        view.setElevation(enabled ? elevationDp * density : 0f);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            view.setTranslationZ(enabled ? translationDp * density : 0f);
         }
     }
 
@@ -1583,7 +2006,9 @@ public class FloatingBottomBarHook extends BaseFeature {
         if (root == null) return null;
         for (int i = 0; i < root.getChildCount(); i++) {
             View child = root.getChildAt(i);
-            if (styledBottomBars.containsKey(child)) {
+            int id = child.getId();
+            if (styledBottomBars.containsKey(child)
+                    || (id > 0 && (id == bottomNavId || id == navigationBarId || id == tabLayoutId))) {
                 return child;
             }
             if (child instanceof ViewGroup) {

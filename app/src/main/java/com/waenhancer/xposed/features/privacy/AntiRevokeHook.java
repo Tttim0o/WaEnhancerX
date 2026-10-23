@@ -61,6 +61,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.waenhancer.xposed.features.automation.PresenceToastsHook;
+import java.lang.reflect.Constructor;
+import java.util.IdentityHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Anti-Revoke & Deleted Indicator Engine for Messages and Statuses.
@@ -167,7 +172,7 @@ public class AntiRevokeHook extends BaseFeature {
         try {
             // ── Resolve FMessage class ──
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_fmessage_class",
+                    context, classLoader, "waex_fmessage_class",
                     (bridge, loader) -> {
                         MethodData data = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -185,7 +190,7 @@ public class AntiRevokeHook extends BaseFeature {
 
             // ── Resolve Key class ──
             messageKeyClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_message_key_class",
+                    context, classLoader, "waex_message_key_class",
                     (bridge, loader) -> {
                         ClassDataList list = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create().fieldCount(3)
@@ -202,7 +207,7 @@ public class AntiRevokeHook extends BaseFeature {
             }
 
             statusToMessageMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_status_to_message_mapper_v2",
+                    context, classLoader, "waex_status_to_message_mapper_v2",
                     (bridge, loader) -> {
                         Set<Method> candidates = new LinkedHashSet<>();
                         for (MethodData data : bridge.findMethod(FindMethod.create()
@@ -235,7 +240,7 @@ public class AntiRevokeHook extends BaseFeature {
     private void hookBytecodeRevocation() {
         try {
             Method revokeMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_core_msgstore_revoke",
+                    context, classLoader, "waex_core_msgstore_revoke",
                     (bridge, loader) -> {
                         String[] anchors = {
                                 "msgstore/edit/revoke",
@@ -311,7 +316,7 @@ public class AntiRevokeHook extends BaseFeature {
     private void hookStatusBytecodeRevocation() {
         try {
             statusKeyClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_status_key_class_v3",
+                    context, classLoader, "waex_status_key_class_v3",
                     (bridge, loader) -> {
                         Class<?> selected = null;
                         for (ClassData data : bridge.findClass(FindClass.create()
@@ -327,7 +332,7 @@ public class AntiRevokeHook extends BaseFeature {
                     });
 
             Method revokeStatusMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_revoke_status_manager_v3",
+                    context, classLoader, "waex_revoke_status_manager_v3",
                     (bridge, loader) -> {
                         if (statusKeyClass == null) return null;
 
@@ -625,12 +630,12 @@ public class AntiRevokeHook extends BaseFeature {
     }
 
     private void showDeletedMessageToast(@Nullable String senderJid) {
-        com.waenhancer.xposed.features.automation.PresenceToastsHook.showDeletedMessageToast(
+        PresenceToastsHook.showDeletedMessageToast(
                 context, prefs, senderJid, uiHandler);
     }
 
     private void showDeletedStatusToast(@Nullable String senderJid) {
-        com.waenhancer.xposed.features.automation.PresenceToastsHook.showDeletedStatusToast(
+        PresenceToastsHook.showDeletedStatusToast(
                 context, prefs, senderJid, uiHandler);
     }
 
@@ -688,9 +693,9 @@ public class AntiRevokeHook extends BaseFeature {
     /** Finds the sender/remote JID carried by an FMessage or status key. */
     @Nullable
     private String extractSenderJid(@Nullable Object value) {
-        java.util.LinkedHashSet<String> candidates = new java.util.LinkedHashSet<>();
+        LinkedHashSet<String> candidates = new LinkedHashSet<>();
         collectJids(value, 4,
-                java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>()),
+                Collections.newSetFromMap(new IdentityHashMap<>()),
                 candidates);
         for (String jid : candidates) {
             if (jid.contains("@s.whatsapp.net") || jid.endsWith("@lid")) return jid;
@@ -705,7 +710,7 @@ public class AntiRevokeHook extends BaseFeature {
                              @NonNull Set<String> output) {
         if (value == null || depth < 0 || !seen.add(value)) return;
         try {
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(
+            Matcher matcher = Pattern.compile(
                     "[+0-9A-Za-z._:-]+@(?:s\\.whatsapp\\.net|lid|g\\.us|broadcast)")
                     .matcher(value.toString());
             while (matcher.find()) output.add(matcher.group());
@@ -843,13 +848,7 @@ public class AntiRevokeHook extends BaseFeature {
                             });
 
                     try {
-                        Method getViewMethod = XposedHelpers.findMethodBestMatch(
-                                boundAdapter.getClass(),
-                                "getView",
-                                int.class,
-                                View.class,
-                                ViewGroup.class
-                        );
+                        Method getViewMethod = findConcreteAdapterGetView(boundAdapter.getClass());
 
                         if (getViewMethod == null) {
                             XposedBridge.log(TAG + " getView method not found on " + boundAdapter.getClass().getName());
@@ -922,6 +921,31 @@ public class AntiRevokeHook extends BaseFeature {
         }
     }
 
+    /**
+     * WhatsApp frequently inherits ListAdapter#getView from an obfuscated base class.
+     * XposedHelpers.findMethodBestMatch can miss that implementation and report the
+     * Class arguments themselves as the requested signature. Walk the hierarchy and
+     * hook the concrete declaration that the adapter actually dispatches to.
+     */
+    @Nullable
+    private static Method findConcreteAdapterGetView(@NonNull Class<?> adapterClass) {
+        Class<?> current = adapterClass;
+        while (current != null && current != Object.class) {
+            try {
+                Method method = current.getDeclaredMethod(
+                        "getView", int.class, View.class, ViewGroup.class);
+                if (!Modifier.isAbstract(method.getModifiers())) {
+                    method.setAccessible(true);
+                    return method;
+                }
+            } catch (NoSuchMethodException ignored) {
+                // The concrete implementation may live on an obfuscated superclass.
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
     // ─── Status Playback UI Hook ─────────────────────────────────────────
 
     // Status-key DB fallback is consumed exactly once through StatusKeyHandoff.
@@ -940,7 +964,7 @@ public class AntiRevokeHook extends BaseFeature {
                         "com.whatsapp.status.playback.fragment.StatusPlaybackContactFragment");
             } catch (Throwable directLoadFailure) {
                 playbackFragmentClass = engine.findClassWithCache(
-                    context, classLoader, "wpp_status_playback_fragment_class_v3",
+                    context, classLoader, "waex_status_playback_fragment_class_v3",
                     (bridge, loader) -> {
                         String[] patterns = {
                                 "com.whatsapp.status.playback.fragment.StatusPlaybackContactFragment",
@@ -968,7 +992,7 @@ public class AntiRevokeHook extends BaseFeature {
             final Class<?> targetFragmentClass = playbackFragmentClass;
             Method refreshSubtitleMethod = engine.findMethodWithCache(
                     // v2 is tied to the corrected fragment resolver above.
-                    context, classLoader, "wpp_status_playback_refresh_subtitle_v2",
+                    context, classLoader, "waex_status_playback_refresh_subtitle_v2",
                     (bridge, loader) -> {
                         try {
                             MethodData refreshCurrentPage = bridge.findMethod(FindMethod.create()
@@ -1019,7 +1043,7 @@ public class AntiRevokeHook extends BaseFeature {
 
             // ── 3. Find StatusPlaybackViewClass (the view container holding date & menu) ──
             Class<?> statusPlaybackViewClass = engine.findClassWithCache(
-                    context, classLoader, "wpp_status_playback_view_class",
+                    context, classLoader, "waex_status_playback_view_class",
                     (bridge, loader) -> {
                         try {
                             int statusHeaderId = context.getResources().getIdentifier("status_header", "id", context.getPackageName());
@@ -1143,7 +1167,7 @@ public class AntiRevokeHook extends BaseFeature {
                         String sqlLower = sql.toLowerCase();
                         if (!sqlLower.contains("status")) return;
 
-                        android.database.Cursor cursor = (android.database.Cursor) param.getResult();
+                        Cursor cursor = (Cursor) param.getResult();
                         if (cursor == null || cursor.getCount() == 0) return;
 
                         // Try to find a key_id column without moving the cursor
@@ -1270,7 +1294,7 @@ public class AntiRevokeHook extends BaseFeature {
                                 receiver = statusToMessageMapper;
                                 if (receiver == null) {
                                     try {
-                                        java.lang.reflect.Constructor<?> constructor =
+                                        Constructor<?> constructor =
                                                 statusToMessageMethod.getDeclaringClass().getDeclaredConstructor();
                                         constructor.setAccessible(true);
                                         receiver = constructor.newInstance();
@@ -1650,7 +1674,7 @@ public class AntiRevokeHook extends BaseFeature {
     @Nullable
     private String extractKeyIdFromBundle(Object bundle) {
         try {
-            java.util.Set<?> keys = (java.util.Set<?>) bundle.getClass().getMethod("keySet").invoke(bundle);
+            Set<?> keys = (Set<?>) bundle.getClass().getMethod("keySet").invoke(bundle);
             if (keys == null) return null;
             Method getString = bundle.getClass().getMethod("getString", String.class);
             for (Object key : keys) {
@@ -1838,7 +1862,7 @@ public class AntiRevokeHook extends BaseFeature {
 
             if (indicatorType == 1) { // Show "Deleted" text
                 dateTextView.setCompoundDrawables(null, null, null, null);
-                String newText = UiText.get(R.string.waex_ui_deleted_576d3831, "Deleted • ") + originalDate;
+                String newText = UiText.get(R.string.waex_ui_deleted, "Deleted • ") + originalDate;
                 dateTextView.setText(newText);
             } else { // indicatorType == 2 (Default: Show deleted icon)
                 Drawable deleteDrawable = getDeletedIconDrawable(rowContext);
@@ -1862,7 +1886,7 @@ public class AntiRevokeHook extends BaseFeature {
                 String formattedTime = TIME_FORMAT.get().format(new Date(deletedTimestamp));
                 dateTextView.getPaint().setUnderlineText(true);
                 dateTextView.setOnClickListener(v ->
-                        Toast.makeText(rowContext, UiText.get(R.string.waex_ui_deleted_at_36fa22d4, "Deleted at: ") + formattedTime, Toast.LENGTH_LONG).show()
+                        Toast.makeText(rowContext, UiText.get(R.string.waex_ui_deleted_at, "Deleted at: ") + formattedTime, Toast.LENGTH_LONG).show()
                 );
             }
         } catch (Throwable t) {
@@ -1882,7 +1906,7 @@ public class AntiRevokeHook extends BaseFeature {
             }
             dateTextView.setCompoundDrawables(null, null, null, null);
             dateTextView.setCompoundDrawablePadding(0);
-            dateTextView.setText(UiText.get(R.string.waex_ui_deleted_504973e7, "🚫 Deleted • ") + originalDate);
+            dateTextView.setText(UiText.get(R.string.waex_ui_deleted_message_prefix, "🚫 Deleted • ") + originalDate);
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Status emoji decoration failed: " + t.getClass().getSimpleName());
         }

@@ -67,6 +67,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.waenhancer.ui.components.LicenseActivationModal
@@ -89,6 +91,7 @@ import com.waenhancer.ui.screens.settings.ReleaseDetailsScreen
 import com.waenhancer.ui.screens.settings.AboutScreen
 import com.waenhancer.ui.screens.settings.StargazersScreen
 import com.waenhancer.ui.screens.settings.ModuleSettingsScreen
+import com.waenhancer.ui.screens.settings.HookingModeHelpScreen
 import com.waenhancer.ui.screens.settings.UpdateSettingsScreen
 import com.waenhancer.ui.screens.settings.SupportedVersionsScreen
 import com.waenhancer.ui.screens.settings.BootloaderSpooferScreen
@@ -116,6 +119,7 @@ import com.waenhancer.ui.screens.settings.FloatingBottomBarCustomizerScreen
 import com.waenhancer.ui.screens.settings.StylesSettingsScreen
 import com.waenhancer.update.UpdateCheckCoordinator
 import com.waenhancer.utils.ContactNameResolver
+import org.json.JSONObject
 
 class WaexNavController(initialScreen: Screen = Screen.MainDashboard) {
 
@@ -136,6 +140,10 @@ class WaexNavController(initialScreen: Screen = Screen.MainDashboard) {
     var highlightTargetKey by mutableStateOf<String?>(null)
 
     fun navigateToPreference(tabIndex: Int, subTabId: String?, preferenceKey: String) {
+        if (preferenceKey == "app_interface_size") {
+            navigateTo(Screen.ModuleSettings)
+            return
+        }
         if (preferenceKey == "show_hook_toast" || preferenceKey == "show_restart_sheet") {
             navigateTo(Screen.SystemHealth)
             return
@@ -298,7 +306,7 @@ fun MainContainerScreen() {
                 (context as? Activity)?.finish()
             } else {
                 lastBackPressTime = currentTime
-                Toast.makeText(context, UiText.get(R.string.waex_ui_press_back_again_to_exit_c151b888, "Press back again to exit"), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, UiText.get(R.string.waex_ui_press_back_again_to_exit, "Press back again to exit"), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -424,8 +432,8 @@ fun MainContainerScreen() {
                                 }
                                 val chipLabel = when (licenseState) {
                                     "pro" -> UiText.get(R.string.pro_feature_tag, "Pro")
-                                    "trial" -> UiText.get(R.string.waex_ui_trial_98a66e97, "Trial")
-                                    else -> UiText.get(R.string.waex_ui_free_f411a1fb, "Free")
+                                    "trial" -> UiText.get(R.string.waex_ui_trial, "Trial")
+                                    else -> UiText.get(R.string.waex_ui_free, "Free")
                                 }
 
                                 Box(
@@ -474,7 +482,7 @@ fun MainContainerScreen() {
                                 ) {
                                     Icon(
                                         imageVector = WaexIcons.MoreVert,
-                                        contentDescription = UiText.get(R.string.waex_ui_more_options_6285ce5d, "More Options"),
+                                        contentDescription = UiText.get(R.string.waex_ui_more_options, "More Options"),
                                         tint = colors.onBackground,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -606,7 +614,7 @@ fun MainContainerScreen() {
                         shadowElevation = 6.dp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(54.dp)
+                            .height(66.dp)
                     ) {
                         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                             val totalWidth = maxWidth
@@ -700,7 +708,14 @@ fun MainContainerScreen() {
                                             style = typography.labelSm,
                                             fontWeight = FontWeight.Medium,
                                             color = contentColor,
-                                            fontSize = 10.sp
+                                            fontSize = 10.sp,
+                                            lineHeight = 10.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 2.dp)
                                         )
                                     }
                                 }
@@ -796,7 +811,7 @@ fun MainContainerScreen() {
                                         val idx = contactPrivacyList.indexOfFirst { it.id == updated.id }
                                         if (idx >= 0) contactPrivacyList[idx] = updated
                                         try {
-                                            val json = org.json.JSONObject().apply {
+                                            val json = JSONObject().apply {
                                                 put("name", updated.name)
                                                 put("HideSeen", updated.hideSeen)
                                                 put("HideTyping", updated.hideTyping)
@@ -842,7 +857,7 @@ fun MainContainerScreen() {
                                 val idx = contactPrivacyList.indexOfFirst { it.id == updated.id }
                                 if (idx >= 0) contactPrivacyList[idx] = updated
                                 try {
-                                    val json = org.json.JSONObject().apply {
+                                    val json = JSONObject().apply {
                                         put("name", updated.name)
                                         put("HideSeen", updated.hideSeen)
                                         put("HideTyping", updated.hideTyping)
@@ -1026,6 +1041,7 @@ fun WaexAppNavigation(
         Screen.About -> AboutScreen()
         Screen.Stargazers -> StargazersScreen()
         Screen.ModuleSettings -> ModuleSettingsScreen()
+        Screen.HookingModeHelp -> HookingModeHelpScreen()
         Screen.UpdateSettings -> UpdateSettingsScreen()
         Screen.SupportedVersions -> SupportedVersionsScreen()
         Screen.DeletedMessages -> DeletedMessagesVaultScreen()
@@ -1067,7 +1083,7 @@ fun loadContactPrivacyList(context: Context, preferenceManager: WaexPreferenceMa
             if (number.isEmpty() || number == "custom" || number == "call" || number == "global" || !seen.add(number)) continue
 
             try {
-                val json = org.json.JSONObject(value)
+                val json = JSONObject(value)
                 val isGroup = raw.contains("@g.us") || number.contains("-")
                 val isLid = number.length >= 14 && !isGroup
                 val jid = if (raw.contains("@")) raw else if (isGroup) "$number@g.us" else if (isLid) "$number@lid" else "$number@s.whatsapp.net"

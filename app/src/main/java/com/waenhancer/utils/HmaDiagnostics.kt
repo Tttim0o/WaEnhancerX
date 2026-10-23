@@ -9,6 +9,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.atomic.AtomicReference
+import android.util.Base64
 
 /**
  * Diagnostics utility for detecting Hide My Applist (HMA) activity and checking
@@ -402,9 +403,9 @@ object HmaDiagnostics {
                 if (backupResult?.contains("WAEX_HMA_BACKUP_OK") != true) continue
 
                 // Write modified JSON using a temporary file, preserving owner and SELinux context.
-                val b64 = android.util.Base64.encodeToString(
+                val b64 = Base64.encodeToString(
                     root.toString().toByteArray(Charsets.UTF_8),
-                    android.util.Base64.NO_WRAP
+                    Base64.NO_WRAP
                 )
                 val tmpConfig = "$configPath.tmp"
                 val quotedTmp = shellQuote(tmpConfig)

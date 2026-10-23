@@ -135,7 +135,7 @@ fun WaexProChip(
         ) {
             Icon(
                 imageVector = WaexIcons.Lock,
-                contentDescription = UiText.get(R.string.waex_ui_locked_pro_feature_8239ac16, "Locked Pro feature"),
+                contentDescription = UiText.get(R.string.waex_ui_locked_pro_feature, "Locked Pro feature"),
                 tint = lockedContentColor,
                 modifier = Modifier.size(9.dp)
             )

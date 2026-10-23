@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -46,6 +47,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.waenhancer.app.R
 import com.waenhancer.ui.components.WaexTopBar
 import com.waenhancer.ui.designsystem.LocalThemeMode
@@ -56,17 +58,24 @@ import com.waenhancer.ui.designsystem.LocalInterfaceSizeUpdater
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
 import com.waenhancer.ui.navigation.LocalWaexNavController
+import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import com.waenhancer.ui.navigation.Screen
 import com.waenhancer.utils.LocaleHelper
+import com.waenhancer.config.HookingModePolicy
 import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
+import com.waenhancer.ui.navigation.LocalIsPro
+import com.waenhancer.ui.navigation.LocalOnActivatePro
+import com.waenhancer.ui.components.WaexProChip
 import kotlin.math.roundToInt
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModuleSettingsScreen() {
     val navController = LocalWaexNavController.current
+    val preferences = LocalWaexPreferenceManager.current
     val context = LocalContext.current
     val themeMode = LocalThemeMode.current
     val updateThemeMode = LocalThemeModeUpdater.current
@@ -74,8 +83,17 @@ fun ModuleSettingsScreen() {
     val updateInterfaceSize = LocalInterfaceSizeUpdater.current
     val colors = WaexTheme.colors
     val spacing = WaexTheme.spacing
+    val isPro = LocalIsPro.current
+    val onActivatePro = LocalOnActivatePro.current
     var showThemeSheet by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
+    var showHookingModeSheet by remember { mutableStateOf(false) }
+    var hookingMode by remember {
+        mutableStateOf(HookingModePolicy.normalize(
+            preferences.getString(HookingModePolicy.KEY, HookingModePolicy.BALANCED),
+            isPro
+        ))
+    }
 
     var currentLangCode by remember {
         mutableStateOf(LocaleHelper.getSelectedLanguageCode(context))
@@ -96,32 +114,88 @@ fun ModuleSettingsScreen() {
                 .padding(insets)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = spacing.pageMargin, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            ModuleSettingsTile(
-                title = stringResource(R.string.app_theme_title),
-                description = stringResource(R.string.app_theme_desc),
-                value = themeMode,
-                icon = themeIcon(themeMode),
-                onClick = { showThemeSheet = true }
-            )
-            InterfaceSizePreference(
-                selectedSize = interfaceSize,
-                onSizeSelected = updateInterfaceSize
-            )
-            ModuleSettingsTile(
-                title = stringResource(R.string.app_language_title),
-                description = stringResource(R.string.app_language_desc),
-                value = LocaleHelper.getLanguageDisplayName(currentLangCode),
-                icon = Icons.Rounded.Language,
-                onClick = { showLanguageSheet = true }
-            )
-            ModuleSettingsTile(
-                title = stringResource(R.string.update_settings_title),
-                description = stringResource(R.string.update_settings_desc),
-                icon = WaexIcons.SystemUpdate,
-                onClick = { navController.navigateTo(Screen.UpdateSettings) }
-            )
+            // 1. Hooking & Core Engine (Top priority)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "HOOKING & ENGINE",
+                    style = WaexTheme.typography.labelSm,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary,
+                    letterSpacing = 0.5.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                ModuleSettingsTile(
+                    title = "Hooking mode",
+                    description = "Controls when safe visual hooks are loaded. Restart WhatsApp after changing it.",
+                    value = hookingModeLabel(hookingMode),
+                    valueAsBadge = true,
+                    onHelpClick = { navController.navigateTo(Screen.HookingModeHelp) },
+                    icon = WaexIcons.AutoMode,
+                    onClick = { showHookingModeSheet = true }
+                )
+            }
+
+            // 2. Appearance & Display
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "APPEARANCE & DISPLAY",
+                    style = WaexTheme.typography.labelSm,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary,
+                    letterSpacing = 0.5.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                ModuleSettingsTile(
+                    title = stringResource(R.string.app_theme_title),
+                    description = stringResource(R.string.app_theme_desc),
+                    value = themeMode,
+                    icon = themeIcon(themeMode),
+                    onClick = { showThemeSheet = true }
+                )
+                InterfaceSizePreference(
+                    selectedSize = interfaceSize,
+                    onSizeSelected = updateInterfaceSize
+                )
+            }
+
+            // 3. Updates & Maintenance
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "UPDATES & MAINTENANCE",
+                    style = WaexTheme.typography.labelSm,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary,
+                    letterSpacing = 0.5.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                ModuleSettingsTile(
+                    title = stringResource(R.string.update_settings_title),
+                    description = stringResource(R.string.update_settings_desc),
+                    icon = WaexIcons.SystemUpdate,
+                    onClick = { navController.navigateTo(Screen.UpdateSettings) }
+                )
+            }
+
+            // 4. Language & Regional
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "LANGUAGE & LOCALIZATION",
+                    style = WaexTheme.typography.labelSm,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary,
+                    letterSpacing = 0.5.sp,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+                ModuleSettingsTile(
+                    title = stringResource(R.string.app_language_title),
+                    description = stringResource(R.string.app_language_desc),
+                    value = LocaleHelper.getLanguageDisplayName(currentLangCode),
+                    icon = Icons.Rounded.Language,
+                    onClick = { showLanguageSheet = true }
+                )
+            }
         }
     }
 
@@ -197,7 +271,7 @@ fun ModuleSettingsScreen() {
                             if (selected) {
                                 Icon(
                                     imageVector = WaexIcons.Check,
-                                    contentDescription = UiText.get(R.string.waex_ui_selected_57fd7a0c, "Selected"),
+                                    contentDescription = UiText.get(R.string.waex_ui_selected, "Selected"),
                                     tint = colors.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -208,7 +282,68 @@ fun ModuleSettingsScreen() {
             }
         }
     }
-}
+    }
+
+    if (showHookingModeSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showHookingModeSheet = false },
+            sheetState = sheetState,
+            containerColor = colors.surface,
+            shape = WaexTheme.radius.bottomSheetShape
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text("Hooking mode", style = WaexTheme.typography.titleLg,
+                    fontWeight = FontWeight.Bold, color = colors.onSurface)
+                Text(
+                    "Privacy, revoke, message, and call hooks always load at startup so they cannot miss background events.",
+                    style = WaexTheme.typography.bodySm, color = colors.onSurfaceVariant
+                )
+                hookingModeOptions().forEach { option ->
+                    val isProMode = option.first == HookingModePolicy.LIGHTWEIGHT ||
+                        option.first == HookingModePolicy.CUSTOMIZED
+                    val locked = isProMode && !isPro
+                    val selected = option.first == hookingMode
+                    Surface(
+                        shape = WaexTheme.radius.cardShape,
+                        color = if (selected) colors.primary.copy(alpha = 0.12f) else colors.surfaceContainerLow,
+                        border = BorderStroke(1.dp, if (selected) colors.primary else colors.outlineVariant),
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            if (locked) {
+                                showHookingModeSheet = false
+                                onActivatePro()
+                            } else {
+                                hookingMode = option.first
+                                preferences.putString(HookingModePolicy.KEY, option.first)
+                                showHookingModeSheet = false
+                                if (option.first == HookingModePolicy.CUSTOMIZED) {
+                                    navController.navigateTo(Screen.HookingModeHelp)
+                                }
+                            }
+                        }
+                    ) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(option.second, style = WaexTheme.typography.bodyLg,
+                                    fontWeight = FontWeight.SemiBold, color = colors.onSurface,
+                                    modifier = Modifier.weight(1f))
+                                if (isProMode) WaexProChip(isUnlocked = isPro)
+                            }
+                            Text(option.third, style = WaexTheme.typography.bodySm,
+                                color = colors.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if (showLanguageSheet) {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -245,7 +380,7 @@ fun ModuleSettingsScreen() {
                         color = colors.onSurface,
                         modifier = Modifier.padding(top = 8.dp, bottom = 10.dp)
                     )
-                }
+                    }
 
                 items(LocaleHelper.SUPPORTED_LANGUAGES, key = { it.code }) { lang ->
                     val selected = lang.code == currentLangCode
@@ -297,6 +432,24 @@ fun ModuleSettingsScreen() {
         }
     }
 }
+}
+
+private fun hookingModeOptions(): List<Triple<String, String, String>> = listOf(
+    Triple(HookingModePolicy.LIGHTWEIGHT, "Lightweight",
+        "Ultra-Low RAM Usage (<80 MB) · Pro only · Hooks load lazily per screen."),
+    Triple(HookingModePolicy.BALANCED, "Balanced (recommended)",
+        "Moderate RAM Usage (~180 MB) · Home UI at startup, other hooks load lazily."),
+    Triple(HookingModePolicy.COMPATIBILITY, "Maximum compatibility",
+        "High RAM Usage (~500 MB+) · All hooks pre-loaded at startup."),
+    Triple(HookingModePolicy.CUSTOMIZED, "Customized",
+        "Pro only · Choose Startup or Lazy loading for each feature. Defaults match Balanced.")
+)
+
+private fun hookingModeLabel(mode: String): String = when (mode) {
+    HookingModePolicy.COMPATIBILITY -> "Max"
+    HookingModePolicy.LIGHTWEIGHT -> "Lightweight"
+    HookingModePolicy.CUSTOMIZED -> "Customized"
+    else -> "Balanced"
 }
 
 @Composable
@@ -377,9 +530,9 @@ private fun InterfaceSizePreference(
                         fontWeight = if (size == selectedSize) FontWeight.SemiBold else FontWeight.Normal,
                         modifier = Modifier.weight(1f),
                         textAlign = when (size) {
-                            InterfaceSize.COMPACT -> androidx.compose.ui.text.style.TextAlign.Start
-                            InterfaceSize.LARGE -> androidx.compose.ui.text.style.TextAlign.End
-                            else -> androidx.compose.ui.text.style.TextAlign.Center
+                            InterfaceSize.COMPACT -> TextAlign.Start
+                            InterfaceSize.LARGE -> TextAlign.End
+                            else -> TextAlign.Center
                         },
                         maxLines = 1
                     )
@@ -395,11 +548,14 @@ private fun ModuleSettingsTile(
     description: String,
     icon: ImageVector,
     value: String? = null,
+    valueAsBadge: Boolean = false,
+    onHelpClick: (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
 
+    Box {
     Surface(
         shape = WaexTheme.radius.cardShape,
         color = colors.surfaceContainerLow,
@@ -425,19 +581,37 @@ private fun ModuleSettingsTile(
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = typography.bodyMd,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.onSurface
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = title,
+                        style = typography.bodyMd,
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.onSurface,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (valueAsBadge && value != null) {
+                        Surface(
+                            shape = WaexTheme.radius.smShape,
+                            color = colors.primary.copy(alpha = 0.12f),
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Text(
+                                text = value,
+                                style = typography.labelSm,
+                                fontWeight = FontWeight.SemiBold,
+                                color = colors.primary,
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+                }
                 Text(
                     text = description,
                     style = typography.bodySm,
                     color = colors.onSurfaceVariant
                 )
             }
-            if (value != null) {
+            if (value != null && !valueAsBadge) {
                 Text(
                     text = value,
                     style = typography.labelSm,
@@ -453,6 +627,20 @@ private fun ModuleSettingsTile(
                 modifier = Modifier.padding(start = 6.dp).size(16.dp)
             )
         }
+    }
+    if (onHelpClick != null) {
+        IconButton(
+            onClick = onHelpClick,
+            modifier = Modifier.align(Alignment.TopEnd).size(34.dp)
+        ) {
+            Icon(
+                imageVector = WaexIcons.Help,
+                contentDescription = "How Hooking Mode works",
+                tint = colors.primary,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
     }
 }
 

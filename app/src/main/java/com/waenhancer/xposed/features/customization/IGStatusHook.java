@@ -12,6 +12,7 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 
 import com.waenhancer.xposed.core.BaseFeature;
+import com.waenhancer.hooking.ScreenScopedFeature;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
 import com.waenhancer.xposed.views.IGStatusAdapter;
 import com.waenhancer.xposed.views.IGStatusView;
@@ -28,19 +29,24 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import androidx.fragment.app.Fragment;
 
-public class IGStatusHook extends BaseFeature {
+public class IGStatusHook extends BaseFeature implements ScreenScopedFeature {
 
     private static final String TAG = "[WAEX][IGStatus]";
 
     public static final CopyOnWriteArrayList<Object> items = new CopyOnWriteArrayList<>();
-    private static final List<IGStatusView> statusContainers = new ArrayList<>();
+    /** UI instances must never keep an Activity alive after its fragment is destroyed. */
+    private static final Set<IGStatusView> statusContainers = Collections.newSetFromMap(new WeakHashMap<>());
 
     public IGStatusHook(@NonNull Context context,
                         @NonNull ClassLoader classLoader,
@@ -105,8 +111,8 @@ public class IGStatusHook extends BaseFeature {
                         }
                         if (listChild == null) return;
 
-                        Activity activity = fragment instanceof androidx.fragment.app.Fragment
-                                ? ((androidx.fragment.app.Fragment) fragment).getActivity()
+                        Activity activity = fragment instanceof Fragment
+                                ? ((Fragment) fragment).getActivity()
                                 : null;
                         if (activity == null && listChild.getContext() instanceof Activity) {
                             activity = (Activity) listChild.getContext();
@@ -154,6 +160,18 @@ public class IGStatusHook extends BaseFeature {
                             statusContainer.fragmentId = id;
                             statusContainers.add(statusContainer);
                         }
+                        statusContainer.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                            @Override
+                            public void onViewAttachedToWindow(View view) {}
+
+                            @Override
+                            public void onViewDetachedFromWindow(View view) {
+                                synchronized (statusContainers) {
+                                    statusContainers.remove(statusContainer);
+                                }
+                                statusContainer.removeOnAttachStateChangeListener(this);
+                            }
+                        });
 
                         // Attach initial adapter
                         Class<?> targetStatusInfo = statusInfoClass != null ? statusInfoClass : Object.class;
@@ -275,6 +293,14 @@ public class IGStatusHook extends BaseFeature {
                 }
             }
         }
+    }
+
+    @Override
+    public void onScreenDisposed(@NonNull Activity activity) {
+        synchronized (statusContainers) {
+            statusContainers.removeIf(view -> view == null || view.getContext() == activity);
+        }
+        items.clear();
     }
 
     private static void attachRecyclerHeaderWhenReady(

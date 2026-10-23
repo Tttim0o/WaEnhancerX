@@ -3,6 +3,8 @@ import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.MessageDigest
 
+import com.android.build.gradle.api.ApkVariantOutput
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -102,6 +104,13 @@ android {
 
     buildTypes {
         debug {
+            // Debug APKs are distributed to testers, so run the same whole-program
+            // shrinking/obfuscation pass as release. The mapping file remains under
+            // app/build/outputs/mapping/debug for local crash retracing.
+            // AGP deliberately disables R8 obfuscation for debuggable variants.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("releaseConfig")
         }
         release {
@@ -135,7 +144,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
         jniLibs {
-            useLegacyPackaging = false
+            // Xposed injects WAEX code into WhatsApp's process. DexSearchEngine loads
+            // libdexkit.so through WAEX's absolute nativeLibraryDir path, so the .so
+            // must be extracted instead of being mmap'd directly from the APK.
+            useLegacyPackaging = true
         }
     }
 
@@ -146,7 +158,7 @@ android {
     applicationVariants.all {
         val variant = this
         variant.outputs.forEach {
-            val output = it as? com.android.build.gradle.api.ApkVariantOutput
+            val output = it as? ApkVariantOutput
             if (output != null) {
                 val suffix = if (variant.buildType.name == "debug") "_debug" else "_release"
                 output.outputFileName = "WaEnhancerX-v${variant.versionName}${suffix}.apk"

@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.waenhancer.xposed.core.BaseFeature;
+import com.waenhancer.utils.EmojiInputPolicy;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
 import com.waenhancer.xposed.utils.ActivityTracker;
 import de.robv.android.xposed.XC_MethodHook;
@@ -26,7 +27,9 @@ import org.luckypray.dexkit.query.matchers.MethodMatcher;
 import org.luckypray.dexkit.result.MethodData;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Double Tap to React Feature:
@@ -44,6 +47,7 @@ public class DoubleTapReactionHook extends BaseFeature {
     private Class<?> actionUserClass;
     private Method reactionSenderMethod;
     private volatile Object cachedActionUserInstance;
+    private final Set<Method> hookedAdapterMethods = ConcurrentHashMap.newKeySet();
 
     private static final WeakHashMap<View, TouchTracker> touchTrackerMap = new WeakHashMap<>();
 
@@ -79,7 +83,7 @@ public class DoubleTapReactionHook extends BaseFeature {
         try {
             // 1. Resolve FMessage Class
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_fmessage_core",
+                    context, classLoader, "waex_fmessage_core",
                     (bridge, loader) -> {
                         MethodData data = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -92,7 +96,7 @@ public class DoubleTapReactionHook extends BaseFeature {
             // 2. Resolve ActionUser Class & Sender Method
             if (fMessageClass != null) {
                 actionUserClass = DexSearchEngine.getInstance().findClassWithCache(
-                        context, classLoader, "wpp_action_user_class",
+                        context, classLoader, "waex_action_user_class",
                         (bridge, loader) -> {
                             MethodData data = bridge.findMethod(FindMethod.create()
                                     .matcher(MethodMatcher.create()
@@ -171,31 +175,42 @@ public class DoubleTapReactionHook extends BaseFeature {
                                 }
                                 if (getViewMethod == null) return;
 
-                                final ListAdapter activeAdapter = adapter;
-                                XposedBridge.hookMethod(getViewMethod, new XC_MethodHook() {
-                                    @Override
-                                    protected void afterHookedMethod(MethodHookParam p) {
-                                        if (!isEnabled(PREF_KEY, false)) return;
+                                if (!hookedAdapterMethods.add(getViewMethod)) return;
+                                try {
+                                    XposedBridge.hookMethod(getViewMethod, new XC_MethodHook() {
+                                        @Override
+                                        protected void afterHookedMethod(MethodHookParam p) {
+                                            if (!(p.getResult() instanceof ViewGroup)) return;
+                                            ViewGroup row = (ViewGroup) p.getResult();
 
-                                        int pos = (int) p.args[0];
-                                        ViewGroup row = (ViewGroup) p.getResult();
-                                        if (row == null) return;
+                                            // A recycled row must never keep a previous reaction target,
+                                            // even if the new item is unavailable or the feature is off.
+                                            XposedHelpers.removeAdditionalInstanceField(row, FIELD_BOUND_MSG);
+                                            TouchTracker tracker = touchTrackerMap.get(row);
+                                            if (tracker != null) tracker.resetAll();
+                                            if (!isEnabled(PREF_KEY, false)) return;
+                                            if (!(p.thisObject instanceof ListAdapter) || p.args == null
+                                                    || p.args.length == 0 || !(p.args[0] instanceof Integer)) return;
 
-                                        Object item = null;
-                                        try {
-                                            item = activeAdapter.getItem(pos);
-                                        } catch (Throwable ignored) {}
+                                            Object item = null;
+                                            try {
+                                                // The Method hook is shared by every adapter instance.
+                                                // Read the instance rendering this row, not its installer.
+                                                item = ((ListAdapter) p.thisObject).getItem((Integer) p.args[0]);
+                                            } catch (Throwable ignored) {}
 
-                                        if (item == null || (fMessageClass != null && !fMessageClass.isInstance(item))) {
-                                            return;
+                                            if (item == null || fMessageClass == null || !fMessageClass.isInstance(item)) {
+                                                return;
+                                            }
+
+                                            XposedHelpers.setAdditionalInstanceField(row, FIELD_BOUND_MSG, item);
+                                            bindDoubleTapListener(row);
                                         }
-
-                                        final Object fMessage = item;
-                                        XposedHelpers.setAdditionalInstanceField(row, FIELD_BOUND_MSG, fMessage);
-
-                                        bindDoubleTapListener(row);
-                                    }
-                                });
+                                    });
+                                } catch (Throwable failure) {
+                                    hookedAdapterMethods.remove(getViewMethod);
+                                    throw failure;
+                                }
                             } catch (Throwable t) {
                                 XposedBridge.log(TAG + " Error hooking getView: " + t.getMessage());
                             }
@@ -288,10 +303,8 @@ public class DoubleTapReactionHook extends BaseFeature {
 
     private void handleDoubleTapReaction(View rowView, Object fMessage) {
         try {
-            String selectedEmoji = prefs.getString(PREF_EMOJI_KEY, "👍");
-            if (selectedEmoji == null || selectedEmoji.trim().isEmpty()) {
-                selectedEmoji = "👍";
-            }
+            String selectedEmoji = EmojiInputPolicy.singleEmojiOrDefault(
+                    prefs.getString(PREF_EMOJI_KEY, EmojiInputPolicy.DEFAULT_EMOJI));
 
             // Check if user already reacted with this emoji to toggle it off
             int bubbleResId = context.getResources().getIdentifier("reactions_bubble_layout", "id", context.getPackageName());

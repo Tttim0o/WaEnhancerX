@@ -111,6 +111,7 @@ public final class PreferenceSchema {
         add(entries, "bootloader_spoofer_last_updated", Type.STRING, Sensitivity.CACHE, Store.PRIVATE);
         add(entries, "bootloader_spoofer_last_error", Type.STRING, Sensitivity.CACHE, Store.PRIVATE);
         add(entries, "broadcast_tag", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "bypass_screenshot_restriction", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "bubble_color", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "bubble_color_mode", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "bubble_left", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -131,6 +132,10 @@ public final class PreferenceSchema {
         add(entries, "call_recording_auto_start", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "call_recording_button", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "download_profile", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        // Preserve the existing save-every-time behaviour by default. The saved identity
+        // set is a local, non-exported cache read by the injected WhatsApp process.
+        add(entries, "download_profile_save_duplicates", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "download_profile_saved_identities", Type.STRING_SET, Sensitivity.CACHE, Store.PUBLIC);
         add(entries, "call_type", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "call_type_controller", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "call_white_contacts", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -185,6 +190,8 @@ public final class PreferenceSchema {
         add(entries, "download_status", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "downloadstatus", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "status_downloader", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "status_download_save_duplicates", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "status_download_saved_identities", Type.STRING_SET, Sensitivity.CACHE, Store.PUBLIC);
         add(entries, "downloadviewonce", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "filter_group_members_messages", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "filter_items", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -202,6 +209,7 @@ public final class PreferenceSchema {
         add(entries, "floating_bottom_bar_horizontal_margin", Type.FLOAT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_icon_label_spacing", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_icon_size", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_icons_only", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_indicator_color", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_indicator_height", Type.FLOAT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_indicator_offset", Type.FLOAT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -221,10 +229,15 @@ public final class PreferenceSchema {
         add(entries, "floating_bottom_bar_margin_bottom", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_margin_horizontal", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_padding_vertical", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_padding_horizontal", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_pill_design", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_radius", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_scroll_hide", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_scroll_hide_mode", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_shadow", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_selector_type", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_selector_color", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "floating_bottom_bar_selector_color_enabled", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_bottom_bar_text_size", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floating_nav_bar", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "floatingmenu", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -284,6 +297,9 @@ public final class PreferenceSchema {
         add(entries, "message_bomber", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "message_device_source", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "metaai", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "metaai_remove_home_fab", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "metaai_remove_entry_points", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "metaai_block_chat", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "module_heartbeat", Type.LONG, Sensitivity.RUNTIME, Store.PRIVATE);
         add(entries, "need_restart", Type.BOOLEAN, Sensitivity.RUNTIME, Store.PUBLIC);
         add(entries, "newchat", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -340,6 +356,8 @@ public final class PreferenceSchema {
         add(entries, "status_text_composer", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "status_video_splitter", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "stealth_status_view", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "manual_status_seen", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "manual_status_seen_placement", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "stealth_view_status", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "sticker_confirm_alert", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "tasker", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -415,6 +433,7 @@ public final class PreferenceSchema {
         // Declaring their true types makes them eligible for settings backups and
         // preserves the same public-store routing as older installations.
         add(entries, "anti_revoke_color_enabled", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "app_interface_size", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "bubble_colors", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "bubble_incoming_color", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "bubble_outgoing_color", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -425,6 +444,8 @@ public final class PreferenceSchema {
         add(entries, "download_view_once", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "enable_media_preview", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_recording", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "hooking_mode", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "hooking_mode_customizations", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_typing", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "media_upload_quality", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "open_wae", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

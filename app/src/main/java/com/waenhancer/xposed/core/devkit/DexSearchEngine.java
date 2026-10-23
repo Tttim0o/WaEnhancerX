@@ -155,6 +155,38 @@ public final class DexSearchEngine {
         });
     }
 
+    /** Resolves and persists multiple methods produced by one DexKit query. */
+    @Nullable
+    public Method[] findMethodsWithCache(
+            @NonNull Context context,
+            @NonNull ClassLoader loader,
+            @NonNull String cacheKey,
+            @NonNull DexKitMethodsQuery query
+    ) {
+        DexCacheManager cache = DexCacheManager.getInstance(context);
+        return cache.getMethods(loader, cacheKey, () -> {
+            if (mBridge == null) initialize(context);
+            if (mBridge == null) return null;
+            return query.execute(mBridge, loader);
+        });
+    }
+
+    /** Resolves and persists multiple classes produced by one DexKit query. */
+    @Nullable
+    public Class<?>[] findClassesWithCache(
+            @NonNull Context context,
+            @NonNull ClassLoader loader,
+            @NonNull String cacheKey,
+            @NonNull DexKitClassesQuery query
+    ) {
+        DexCacheManager cache = DexCacheManager.getInstance(context);
+        return cache.getClasses(loader, cacheKey, () -> {
+            if (mBridge == null) initialize(context);
+            if (mBridge == null) return null;
+            return query.execute(mBridge, loader);
+        });
+    }
+
     public synchronized void close() {
         if (mBridge != null) {
             try {
@@ -172,5 +204,15 @@ public final class DexSearchEngine {
     @FunctionalInterface
     public interface DexKitClassQuery {
         Class<?> execute(@NonNull DexKitBridge bridge, @NonNull ClassLoader loader) throws Throwable;
+    }
+
+    @FunctionalInterface
+    public interface DexKitMethodsQuery {
+        Method[] execute(@NonNull DexKitBridge bridge, @NonNull ClassLoader loader) throws Throwable;
+    }
+
+    @FunctionalInterface
+    public interface DexKitClassesQuery {
+        Class<?>[] execute(@NonNull DexKitBridge bridge, @NonNull ClassLoader loader) throws Throwable;
     }
 }

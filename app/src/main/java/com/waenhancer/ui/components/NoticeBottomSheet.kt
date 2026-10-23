@@ -83,9 +83,9 @@ fun NoticeBottomSheet(
     }
 
     val severityLabel = when (notice.severityRank) {
-        3 -> UiText.get(R.string.waex_ui_urgent_ee603f0d, "URGENT")
-        2 -> UiText.get(R.string.waex_ui_important_ed99f4e1, "IMPORTANT")
-        else -> UiText.get(R.string.waex_ui_announcement_35236c01, "ANNOUNCEMENT")
+        3 -> UiText.get(R.string.waex_ui_urgent, "URGENT")
+        2 -> UiText.get(R.string.waex_ui_important, "IMPORTANT")
+        else -> UiText.get(R.string.waex_ui_announcement, "ANNOUNCEMENT")
     }
 
     ModalBottomSheet(
@@ -168,7 +168,7 @@ fun NoticeBottomSheet(
                     ) {
                         Icon(
                             imageVector = WaexIcons.Clear,
-                            contentDescription = UiText.get(R.string.waex_ui_dismiss_48845bff, "Dismiss"),
+                            contentDescription = UiText.get(R.string.waex_ui_dismiss, "Dismiss"),
                             tint = colors.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
@@ -265,7 +265,7 @@ fun NoticeBottomSheet(
                 }
 
                 if (!hasPrimary && !hasSecondary && notice.dismissible) {
-                    val dismissLabel = dismissAction?.label?.takeIf { it.isNotBlank() } ?: UiText.get(R.string.waex_ui_dismiss_48845bff, "Dismiss")
+                    val dismissLabel = dismissAction?.label?.takeIf { it.isNotBlank() } ?: UiText.get(R.string.waex_ui_dismiss, "Dismiss")
                     OutlinedButton(
                         onClick = onDismiss,
                         modifier = Modifier

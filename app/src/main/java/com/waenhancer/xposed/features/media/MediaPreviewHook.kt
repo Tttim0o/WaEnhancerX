@@ -99,7 +99,7 @@ class MediaPreviewHook(
 
         try {
             val videoViewContainerClass = DexSearchEngine.getInstance().findClassWithCache(
-                context, classLoader, "wpp_video_view_container"
+                context, classLoader, "waex_video_view_container"
             ) { bridge, loader ->
                 bridge.findClass(FindClass.create().matcher(ClassMatcher.create().addUsingString(
                     "frame_visibility_serial_worker", StringMatchType.Contains
@@ -112,8 +112,8 @@ class MediaPreviewHook(
                         if (param.args.size < 2) return
                         val view = param.thisObject as? View ?: return
 
-                        val invisiblePressSurfaceId = getWppId(view.context, "invisible_press_surface")
-                        val videoControlFrameViewId = getWppId(view.context, "video_control_frame_view")
+                        val invisiblePressSurfaceId = getWaexId(view.context, "invisible_press_surface")
+                        val videoControlFrameViewId = getWaexId(view.context, "video_control_frame_view")
                         var surface: ViewGroup? = if (invisiblePressSurfaceId > 0) view.findViewById(invisiblePressSurfaceId) else null
                         if (surface == null && videoControlFrameViewId > 0) {
                             surface = view.findViewById(videoControlFrameViewId)
@@ -122,13 +122,13 @@ class MediaPreviewHook(
                         if (surface != null && surface.childCount > 0) {
                             handlePressSurface(view, surface)
                         } else {
-                            val legacyStubId = getWppId(view.context, "video_control_frame_legacy_stub")
+                            val legacyStubId = getWaexId(view.context, "video_control_frame_legacy_stub")
                             if (legacyStubId > 0) {
                                 view.findViewById<ViewStub>(legacyStubId)?.setOnInflateListener { _, inflated ->
                                     handlePressSurface(view, inflated)
                                 }
                             }
-                            val viewStubId = getWppId(view.context, "video_control_frame_view_stub")
+                            val viewStubId = getWaexId(view.context, "video_control_frame_view_stub")
                             if (viewStubId > 0) {
                                 view.findViewById<ViewStub>(viewStubId)?.setOnInflateListener { _, inflated ->
                                     handlePressSurface(view, inflated)
@@ -144,10 +144,10 @@ class MediaPreviewHook(
 
         try {
             val imageViewContainerClass = DexSearchEngine.getInstance().findClassWithCache(
-                context, classLoader, "wpp_image_view_container"
+                context, classLoader, "waex_image_view_container"
             ) { bridge, loader ->
-                val hdTouchId = getWppId(context, "hd_invisible_touch")
-                val controlBtnId = getWppId(context, "control_btn")
+                val hdTouchId = getWaexId(context, "hd_invisible_touch")
+                val controlBtnId = getWaexId(context, "control_btn")
                 val classes = bridge.findClass(FindClass.create().matcher(
                     ClassMatcher.create().addMethod(
                         MethodMatcher.create()
@@ -168,8 +168,8 @@ class MediaPreviewHook(
                         if (param.args.size < 2) return
                         val view = param.thisObject as? View ?: return
 
-                        val controlFrameId = getWppId(view.context, "control_frame")
-                        val controlFrameNewId = getWppId(view.context, "control_frame_new")
+                        val controlFrameId = getWaexId(view.context, "control_frame")
+                        val controlFrameNewId = getWaexId(view.context, "control_frame_new")
                         var controlFrame: View? = if (controlFrameId > 0) view.findViewById(controlFrameId) else null
                         if (controlFrame == null && controlFrameNewId > 0) {
                             controlFrame = view.findViewById(controlFrameNewId)
@@ -178,13 +178,13 @@ class MediaPreviewHook(
                         if (controlFrame != null) {
                             handleMediaControlFrame(view, controlFrame)
                         } else {
-                            val legacyStubId = getWppId(view.context, "control_frame_legacy_stub")
+                            val legacyStubId = getWaexId(view.context, "control_frame_legacy_stub")
                             if (legacyStubId > 0) {
                                 view.findViewById<ViewStub>(legacyStubId)?.setOnInflateListener { _, inflated ->
                                     handleMediaControlFrame(view, inflated)
                                 }
                             }
-                            val viewStubId = getWppId(view.context, "control_frame_view_stub")
+                            val viewStubId = getWaexId(view.context, "control_frame_view_stub")
                             if (viewStubId > 0) {
                                 view.findViewById<ViewStub>(viewStubId)?.setOnInflateListener { _, inflated ->
                                     handleMediaControlFrame(view, inflated)
@@ -201,7 +201,7 @@ class MediaPreviewHook(
         // Secondary fallback: bubble row attachment hook
         try {
             val mediaRowClass = DexSearchEngine.getInstance().findClassWithCache(
-                context, classLoader, "wpp_media_bubble_layout_v1"
+                context, classLoader, "waex_media_bubble_layout_v1"
             ) { bridge, loader ->
                 bridge.findClass(FindClass.create().matcher(ClassMatcher.create().addUsingString(
                     "BubbleRelativeLayout/ConversationRowText", StringMatchType.Contains
@@ -244,7 +244,7 @@ class MediaPreviewHook(
 
     private fun handleMediaControlFrame(mainContainer: View, controlFrame: View) {
         val context = mainContainer.context
-        val mediaContainerId = getWppId(context, "media_container")
+        val mediaContainerId = getWaexId(context, "media_container")
         val mediaContainer = if (mediaContainerId > 0) mainContainer.findViewById<ViewGroup>(mediaContainerId) else null
         if (mediaContainer == null) return
 
@@ -280,7 +280,7 @@ class MediaPreviewHook(
     private fun installAffordanceFallback(root: ViewGroup) {
         if (root.getTag(TAG_INSTALLED) == true) return
         val control = CONTROL_IDS.asSequence().mapNotNull { name ->
-            val id = getWppId(root.context, name)
+            val id = getWaexId(root.context, name)
             if (id > 0) root.findViewById<View>(id) else null
         }.firstOrNull { it.visibility == View.VISIBLE } ?: return
 
@@ -377,7 +377,7 @@ class MediaPreviewHook(
 
             if (rowId <= 0L && !inMemoryMedia.isUsable()) {
                 XposedBridge.log("[WAEX][MediaPreview] Unable to resolve message row/key or in-memory media")
-                Toast.makeText(context, UiText.get(R.string.waex_ui_error_finding_message_info_d5e24fb5, "Error finding message info"), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, UiText.get(R.string.waex_ui_error_finding_message_info, "Error finding message info"), Toast.LENGTH_SHORT).show()
                 return
             }
 
@@ -385,7 +385,7 @@ class MediaPreviewHook(
             startPlayer(rowId.takeIf { it > 0L }, context, isNewsletter, messageSource, inMemoryMedia)
         } catch (t: Throwable) {
             XposedBridge.log("[WAEX][MediaPreview] startPreview error: ${t.javaClass.simpleName}")
-            Toast.makeText(context, UiText.get(R.string.waex_ui_error_launching_preview_1_s_e1200bff, "Error launching preview: %1\$s", t.message), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, UiText.get(R.string.waex_ui_error_launching_preview_1_s, "Error launching preview: %1\$s", t.message), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -523,7 +523,7 @@ class MediaPreviewHook(
                     }
                 } else {
                     mainHandler.post {
-                        Toast.makeText(context, UiText.get(R.string.waex_ui_full_quality_media_info_is_unavailable_a93af643, "Full-quality media info is unavailable"), Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, UiText.get(R.string.waex_ui_full_quality_media_info_is_unavailable, "Full-quality media info is unavailable"), Toast.LENGTH_LONG).show()
                     }
                     cleanupDialog(executor)
                 }
@@ -574,7 +574,7 @@ class MediaPreviewHook(
             }
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-            text = if (mimeType != null && mimeType.startsWith("image")) UiText.get(R.string.waex_ui_image_preview_eec6294a, "Image Preview") else UiText.get(R.string.waex_ui_video_preview_95068058, "Video Preview")
+            text = if (mimeType != null && mimeType.startsWith("image")) UiText.get(R.string.waex_ui_image_preview, "Image Preview") else UiText.get(R.string.waex_ui_video_preview, "Video Preview")
         }
         header.addView(title)
 
@@ -623,7 +623,7 @@ class MediaPreviewHook(
         val title = TextView(context).apply {
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-            text = UiText.get(R.string.waex_ui_preparing_preview_21580387, "Preparing preview")
+            text = UiText.get(R.string.waex_ui_preparing_preview, "Preparing preview")
         }
         card.addView(title)
 
@@ -655,7 +655,7 @@ class MediaPreviewHook(
             gravity = Gravity.CENTER
             setTextColor(Color.parseColor("#D9E1E3"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            text = UiText.get(R.string.waex_ui_connecting_0_bf886e36, "Connecting… 0%")
+            text = UiText.get(R.string.waex_ui_connecting_0, "Connecting… 0%")
         }
         card.addView(progressText)
 
@@ -744,7 +744,7 @@ class MediaPreviewHook(
                         if (bitmap != null) {
                             displayImage(context, contentContainer, bitmap)
                         } else {
-                            Toast.makeText(context, UiText.get(R.string.waex_ui_the_full_quality_image_could_not_be_de_355cd5b2, "The full-quality image could not be decoded"), Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, UiText.get(R.string.waex_ui_the_full_quality_image_could_not_be_de, "The full-quality image could not be decoded"), Toast.LENGTH_LONG).show()
                         }
                     } else {
                         displayVideo(context, contentContainer, file)
@@ -818,7 +818,7 @@ class MediaPreviewHook(
         lastProgressPostAt = now
         mainHandler.post {
             progressBar.progress = progress
-            progressText.text = UiText.get(R.string.waex_ui_downloading_1_s_2_s_3186d141, "Downloading… %1\$s%%\n%2\$s", progress, sizeInfo)
+            progressText.text = UiText.get(R.string.waex_ui_downloading_1_s_2_s, "Downloading… %1\$s%%\n%2\$s", progress, sizeInfo)
         }
     }
 
@@ -833,7 +833,7 @@ class MediaPreviewHook(
             }
             container.addView(imageView)
         } catch (e: Exception) {
-            Toast.makeText(context, UiText.get(R.string.waex_ui_error_displaying_image_1_s_9844d874, "Error displaying image: %1\$s", e.message), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, UiText.get(R.string.waex_ui_error_displaying_image_1_s, "Error displaying image: %1\$s", e.message), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -848,7 +848,7 @@ class MediaPreviewHook(
                 loadingContainer.visibility = View.GONE
                 if (mimeType.startsWith("image")) {
                     if (bitmap != null) displayImage(context, contentContainer, bitmap)
-                    else Toast.makeText(context, UiText.get(R.string.waex_ui_the_full_quality_image_could_not_be_de_355cd5b2, "The full-quality image could not be decoded"), Toast.LENGTH_LONG).show()
+                    else Toast.makeText(context, UiText.get(R.string.waex_ui_the_full_quality_image_could_not_be_de, "The full-quality image could not be decoded"), Toast.LENGTH_LONG).show()
                 } else {
                     displayVideo(context, contentContainer, file)
                 }
@@ -899,11 +899,11 @@ class MediaPreviewHook(
             }
 
             videoView.setOnErrorListener { _, _, _ ->
-                Toast.makeText(context, UiText.get(R.string.waex_ui_error_playing_video_14f39a6f, "Error playing video"), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, UiText.get(R.string.waex_ui_error_playing_video, "Error playing video"), Toast.LENGTH_SHORT).show()
                 true
             }
         } catch (e: Exception) {
-            Toast.makeText(context, UiText.get(R.string.waex_ui_error_displaying_video_1_s_6a5f9a50, "Error displaying video: %1\$s", e.message), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, UiText.get(R.string.waex_ui_error_displaying_video_1_s, "Error displaying video: %1\$s", e.message), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1128,7 +1128,7 @@ class MediaPreviewHook(
         val message = if (e is InvocationTargetException) e.cause?.message else e.message
         XposedBridge.log("[WAEX][MediaPreview] Error: ${e.javaClass.simpleName}")
         mainHandler.post {
-            Toast.makeText(context, message ?: UiText.get(R.string.waex_ui_unknown_preview_error_8c54371c, "Unknown preview error"), Toast.LENGTH_LONG).show()
+            Toast.makeText(context, message ?: UiText.get(R.string.waex_ui_unknown_preview_error, "Unknown preview error"), Toast.LENGTH_LONG).show()
         }
         cleanupDialog(executor)
     }
@@ -1463,7 +1463,7 @@ class MediaPreviewHook(
             textSize = 24f
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
-            contentDescription = UiText.get(R.string.waex_ui_close_preview_7d8ab368, "Close preview")
+            contentDescription = UiText.get(R.string.waex_ui_close_preview, "Close preview")
             background = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
                 setColor(0x99000000.toInt())
@@ -1490,7 +1490,7 @@ class MediaPreviewHook(
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 
-    private fun getWppId(context: Context, name: String): Int {
+    private fun getWaexId(context: Context, name: String): Int {
         return context.resources.getIdentifier(name, "id", context.packageName)
     }
 
@@ -1503,7 +1503,7 @@ class MediaPreviewHook(
     companion object {
         private const val TAG_INSTALLED = 0x7f0f7b20
         private const val BUTTON_TAG = "waex_media_preview"
-        private const val MEDIA_PREVIEW_WRAPPER_TAG = "wpp_media_preview_wrapper"
+        private const val MEDIA_PREVIEW_WRAPPER_TAG = "waex_media_preview_wrapper"
         private val KEY_ID_REGEX = Regex("(?:messageId|messageID|keyId|id)=([A-Za-z0-9_-]{6,})")
 
         private val CONTROL_IDS = listOf(

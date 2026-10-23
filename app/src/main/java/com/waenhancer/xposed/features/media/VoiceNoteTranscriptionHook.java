@@ -252,7 +252,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     private void transcribe(File note) {
         int id = notificationId(note);
         if (note.length() > TranscriptionClient.MAX_AUDIO_BYTES) {
-            notifyFailure(note, UiText.get(R.string.waex_ui_voice_note_is_too_long_to_transcribe_366b8fb2,
+            notifyFailure(note, UiText.get(R.string.waex_ui_voice_note_is_too_long_to_transcribe,
                     "Voice note is too long to transcribe."), false);
             return;
         }
@@ -264,7 +264,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
             return;
         }
         if (text.isEmpty()) {
-            text = UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.")
+            text = UiText.get(R.string.waex_ui_no_speech_detected, "No speech detected.")
                     + " " + VoiceTranscriptionBridge.describeAudio(note);
         }
         synchronized (transcripts) {
@@ -277,18 +277,18 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
 
     private void notifyNewNote(File note) {
         Notification.Builder builder = baseBuilder(note)
-                .setContentTitle(UiText.get(R.string.waex_ui_new_voice_note_833475b4, "New voice note")
+                .setContentTitle(UiText.get(R.string.waex_ui_new_voice_note, "New voice note")
                         + " · " + timeOf(note))
-                .setContentText(UiText.get(R.string.waex_ui_tap_transcribe_to_turn_it_into_text_235b0d24,
+                .setContentText(UiText.get(R.string.waex_ui_tap_transcribe_to_turn_it_into_text,
                         "Tap Transcribe to turn it into text."))
-                .addAction(action(UiText.get(R.string.waex_ui_transcribe_638d0530, "Transcribe"),
+                .addAction(action(UiText.get(R.string.waex_ui_transcribe, "Transcribe"),
                         ACTION_TRANSCRIBE, note));
         post(note, builder);
     }
 
     private void notifyProgress(File note) {
         Notification.Builder builder = baseBuilder(note)
-                .setContentTitle(UiText.get(R.string.waex_ui_transcribing_voice_note_9735f158,
+                .setContentTitle(UiText.get(R.string.waex_ui_transcribing_voice_note,
                         "Transcribing voice note…"))
                 .setContentText(timeOf(note))
                 .setProgress(0, 0, true)
@@ -298,22 +298,22 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
 
     private void notifyTranscript(File note, String text) {
         Notification.Builder builder = baseBuilder(note)
-                .setContentTitle(UiText.get(R.string.waex_ui_voice_note_transcript_804d9ee8,
+                .setContentTitle(UiText.get(R.string.waex_ui_voice_note_transcript,
                         "Voice note transcript") + " · " + timeOf(note))
                 .setContentText(text)
                 .setStyle(new Notification.BigTextStyle().bigText(text))
-                .addAction(action(UiText.get(R.string.waex_ui_copy_e21f935f, "Copy"), ACTION_COPY, note));
+                .addAction(action(UiText.get(R.string.waex_ui_copy, "Copy"), ACTION_COPY, note));
         post(note, builder);
     }
 
     private void notifyFailure(File note, String message, boolean retry) {
         Notification.Builder builder = baseBuilder(note)
-                .setContentTitle(UiText.get(R.string.waex_ui_transcription_failed_ccb68494,
+                .setContentTitle(UiText.get(R.string.waex_ui_transcription_failed,
                         "Transcription failed") + " · " + timeOf(note))
                 .setContentText(message)
                 .setStyle(new Notification.BigTextStyle().bigText(message));
         if (retry) {
-            builder.addAction(action(UiText.get(R.string.waex_ui_retry_942087cc, "Retry"),
+            builder.addAction(action(UiText.get(R.string.waex_ui_retry, "Retry"),
                     ACTION_TRANSCRIBE, note));
         }
         post(note, builder);
@@ -336,7 +336,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         NotificationManager manager = context.getSystemService(NotificationManager.class);
         if (manager != null && manager.getNotificationChannel(CHANNEL_ID) == null) {
             manager.createNotificationChannel(new NotificationChannel(CHANNEL_ID,
-                    UiText.get(R.string.waex_ui_waex_voice_transcripts_e7bdf120, "WAEX voice transcripts"),
+                    UiText.get(R.string.waex_ui_waex_voice_transcripts, "WAEX voice transcripts"),
                     NotificationManager.IMPORTANCE_LOW));
         }
         return CHANNEL_ID;
@@ -423,7 +423,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
         if (clipboard == null) return;
         clipboard.setPrimaryClip(ClipData.newPlainText("Voice note transcript", text));
         new Handler(Looper.getMainLooper()).post(safe(() -> Toast.makeText(context,
-                UiText.get(R.string.waex_ui_transcript_copied_758ba0c0, "Transcript copied"),
+                UiText.get(R.string.waex_ui_transcript_copied, "Transcript copied"),
                 Toast.LENGTH_SHORT).show()));
     }
 

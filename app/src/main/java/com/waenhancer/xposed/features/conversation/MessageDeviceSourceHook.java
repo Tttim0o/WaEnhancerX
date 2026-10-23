@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.waenhancer.app.R;
 import com.waenhancer.xposed.core.BaseFeature;
@@ -44,6 +45,8 @@ import java.util.regex.Pattern;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import org.luckypray.dexkit.query.FindClass;
+import org.luckypray.dexkit.query.matchers.ClassMatcher;
 
 /**
  * Message Device Source Feature for WhatsApp.
@@ -116,7 +119,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
             Method targetMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_shared_msg_proc_plaintext",
+                    "waex_shared_msg_proc_plaintext",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create().matcher(
                                 MethodMatcher.create().addUsingString("SharedMessageProcessor/handlePlaintext", StringMatchType.Contains)
@@ -174,13 +177,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
 
                             if (!hookedAdapterClasses.add(adapter.getClass())) return;
 
-                            Method getViewMethod = XposedHelpers.findMethodBestMatch(
-                                    adapter.getClass(),
-                                    "getView",
-                                    int.class,
-                                    View.class,
-                                    ViewGroup.class
-                            );
+                            Method getViewMethod = findConcreteAdapterGetView(adapter.getClass());
                             if (getViewMethod == null) return;
 
                             XposedBridge.hookMethod(getViewMethod, new XC_MethodHook() {
@@ -221,7 +218,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_fmessage_class",
+                    "waex_fmessage_class",
                     (bridge, loader) -> {
                         MethodData data = bridge.findMethod(FindMethod.create().matcher(
                                 MethodMatcher.create().addUsingString(
@@ -244,10 +241,10 @@ public class MessageDeviceSourceHook extends BaseFeature {
                 deviceJidClass = DexSearchEngine.getInstance().findClassWithCache(
                         context,
                         classLoader,
-                        "wpp_device_jid_class",
+                        "waex_device_jid_class",
                         (bridge, loader) -> {
-                            var data = bridge.findClass(org.luckypray.dexkit.query.FindClass.create()
-                                    .matcher(org.luckypray.dexkit.query.matchers.ClassMatcher.create()
+                            var data = bridge.findClass(FindClass.create()
+                                    .matcher(ClassMatcher.create()
                                             .className("jid.DeviceJid", StringMatchType.EndsWith)))
                                     .firstOrNull();
                             return data != null ? data.getInstance(loader) : null;
@@ -286,6 +283,25 @@ public class MessageDeviceSourceHook extends BaseFeature {
                     if (nested != null) return nested;
                 } catch (Throwable ignored) {
                 }
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Method findConcreteAdapterGetView(@NonNull Class<?> adapterClass) {
+        Class<?> current = adapterClass;
+        while (current != null && current != Object.class) {
+            try {
+                Method method = current.getDeclaredMethod(
+                        "getView", int.class, View.class, ViewGroup.class);
+                if (!Modifier.isAbstract(method.getModifiers())) {
+                    method.setAccessible(true);
+                    return method;
+                }
+            } catch (NoSuchMethodException ignored) {
+                // WhatsApp adapters commonly inherit this method from an obfuscated base.
             }
             current = current.getSuperclass();
         }
@@ -410,7 +426,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
             if (deviceId == 0) {
                 Toast.makeText(ctx, UiText.get(R.string.message_sent_via_phone, "This message was sent via Phone"), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(ctx, UiText.get(R.string.waex_ui_this_message_was_sent_via_a_linked_dev_7be749b8, "This message was sent via a Linked Device (Desktop/Phone)"), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ctx, UiText.get(R.string.waex_ui_this_message_was_sent_via_a_linked_dev, "This message was sent via a Linked Device (Desktop/Phone)"), Toast.LENGTH_SHORT).show();
             }
         });
     }
