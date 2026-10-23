@@ -80,6 +80,7 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
 
     @Override
     public void hook() {
+        VoiceTranscriptionBridge.attach(context);
         XposedHelpers.findAndHookMethod(ListView.class, "setAdapter", ListAdapter.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
@@ -285,6 +286,8 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
         File note = new File(path);
         String title = UiText.get(R.string.waex_ui_voice_note_transcript_804d9ee8, "Voice note transcript");
         String cached = VoiceTranscriptionBridge.cached(note);
+        VoiceTranscriptionBridge.log("📝 tapped (" + Math.max(1, note.length() / 1024) + " KB"
+                + (cached != null ? ", cached)" : ")"));
 
         TextView body = new TextView(activity);
         body.setTextIsSelectable(true);

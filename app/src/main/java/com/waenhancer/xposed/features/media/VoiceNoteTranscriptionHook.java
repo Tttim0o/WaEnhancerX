@@ -97,6 +97,7 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
     @Override
     public void hook() {
         // Nothing here touches the disk or IPC: startup must stay fast.
+        VoiceTranscriptionBridge.attach(context);
         worker = VoiceTranscriptionBridge.worker();
         worker.post(safe(this::start));
     }
@@ -108,9 +109,11 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
                 worker.postDelayed(safe(this::start), DISCOVERY_RETRY_MS);
             } else {
                 XposedBridge.log(TAG + " Voice notes folder not found; transcription inactive");
+                VoiceTranscriptionBridge.log("Voice notes folder not found; automatic detection inactive");
             }
             return;
         }
+        VoiceTranscriptionBridge.log("Watching voice notes in " + voiceRoot.getPath());
         registerActionReceiver();
         watchRoot(voiceRoot);
         // Catches notes WhatsApp downloaded while this process was starting.
@@ -232,6 +235,8 @@ public final class VoiceNoteTranscriptionHook extends BaseFeature {
             if (handledSize != null && handledSize == size) return;
         }
         Boolean configured = VoiceTranscriptionBridge.ready(context);
+        VoiceTranscriptionBridge.log("New voice note (" + Math.max(1, size / 1024) + " KB), transcription "
+                + (configured == null ? "unreachable, retrying later" : configured ? "ready" : "not set up"));
         if (configured == null) return; // WAEX not reachable yet: leave it for the next scan.
         synchronized (seenNotes) {
             seenNotes.put(key, size);

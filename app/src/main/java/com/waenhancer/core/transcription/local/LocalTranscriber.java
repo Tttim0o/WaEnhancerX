@@ -4,6 +4,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.waenhancer.core.transcription.TranscriptionClient;
+import com.waenhancer.core.transcription.TranscriptionLog;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -69,14 +70,31 @@ public final class LocalTranscriber {
             throw new TranscriptionClient.TranscriptionException("No on-device model downloaded");
         }
 
+        long decodeStart = System.currentTimeMillis();
         float[] samples = decode(context, audio, fileName);
+        TranscriptionLog.add(context, "app", String.format(java.util.Locale.ROOT,
+                "Decoded %.1f s of audio in %d ms", samples.length / (float) AudioDecoder.TARGET_RATE,
+                System.currentTimeMillis() - decodeStart));
         if (samples.length < AudioDecoder.TARGET_RATE / 10) return ""; // Under 0.1 s: nothing to hear.
 
         synchronized (LOCK) {
             cancelPendingRelease();
             try {
+                long loadStart = System.currentTimeMillis();
+                boolean wasLoaded = sHandle != 0;
                 long handle = load(LocalModelStore.fileOf(context, model).getAbsolutePath());
+                if (!wasLoaded || System.currentTimeMillis() - loadStart > 50) {
+                    TranscriptionLog.add(context, "app", "Loaded model " + model.id + " in "
+                            + (System.currentTimeMillis() - loadStart) + " ms (CPU backend "
+                            + WhisperNative.backendName() + ", " + threads() + " threads)");
+                }
+                long runStart = System.currentTimeMillis();
                 byte[] text = WhisperNative.transcribe(handle, samples, language, threads());
+                long runMs = System.currentTimeMillis() - runStart;
+                TranscriptionLog.add(context, "app", String.format(java.util.Locale.ROOT,
+                        "Inference %d ms (%.2fx real time)%s", runMs,
+                        runMs / 1000f / Math.max(0.1f, samples.length / (float) AudioDecoder.TARGET_RATE),
+                        text == null ? ", failed" : ""));
                 if (text == null) throw new TranscriptionClient.TranscriptionException("On-device transcription failed");
                 return new String(text, StandardCharsets.UTF_8).trim();
             } finally {
@@ -114,6 +132,9 @@ public final class LocalTranscriber {
             }
             return AudioDecoder.decode(temp);
         } catch (IOException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            TranscriptionLog.add(context, "app", "Audio decode failed: " + cause.getClass().getSimpleName()
+                    + (cause.getMessage() != null ? " (" + cause.getMessage() + ")" : ""));
             throw new TranscriptionClient.TranscriptionException("Could not decode the audio");
         } finally {
             if (!temp.delete()) temp.deleteOnExit();

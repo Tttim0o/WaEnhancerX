@@ -263,6 +263,10 @@ public class HookProvider extends ContentProvider {
                 return TranscriptionRequestHandler.ready(context);
             }
 
+            if (TranscriptionRequestHandler.METHOD_LOG.equals(method) && extras != null) {
+                return TranscriptionRequestHandler.log(context, extras);
+            }
+
             if ("record_preserved_message".equals(method) && extras != null) {
                 String jid = extras.getString("jid", "");
                 String contactName = extras.getString("name", "");

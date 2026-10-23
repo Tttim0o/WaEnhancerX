@@ -70,7 +70,32 @@ final class VoiceTranscriptionBridge {
         }
     }
 
+    /** Set by the first transcription feature; lets guard() report into the WAEX log. */
+    private static volatile Context sContext;
+
     private VoiceTranscriptionBridge() {}
+
+    static void attach(@NonNull Context context) {
+        if (sContext == null) sContext = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+    }
+
+    /**
+     * Adds a metadata line to the transcription log shown in the WAEX app. Fire-and-forget on
+     * the background thread; never include transcript text or message content.
+     */
+    static void log(@NonNull String message) {
+        Context context = sContext;
+        if (context == null) return;
+        worker().post(() -> {
+            try {
+                Bundle extras = new Bundle();
+                extras.putString(TranscriptionRequestHandler.EXTRA_MESSAGE, message);
+                context.getContentResolver().call(PROVIDER, TranscriptionRequestHandler.METHOD_LOG, null, extras);
+            } catch (Throwable ignored) {
+                // Logging must never affect WhatsApp.
+            }
+        });
+    }
 
     /**
      * Wraps work that runs on a Handler thread or in a host callback. An exception escaping
@@ -85,6 +110,7 @@ final class VoiceTranscriptionBridge {
             } catch (Throwable t) {
                 disabled.set(true);
                 de.robv.android.xposed.XposedBridge.log(tag + " disabled until restart: " + describe(t));
+                log(tag + " turned itself off until WhatsApp restarts: " + describe(t));
             }
         };
     }

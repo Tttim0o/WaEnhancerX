@@ -59,11 +59,14 @@ public final class WhisperNative {
         try {
             System.loadLibrary("waexwhisper");
         } catch (Throwable t) {
-            return unsupported("native library missing");
+            return unsupported("native library failed to load: " + t.getClass().getSimpleName()
+                    + (t.getMessage() != null ? " " + t.getMessage() : ""));
         }
         String features = cpuFeatures();
+        StringBuilder tried = new StringBuilder();
         for (String[] backend : CPU_BACKENDS) {
             if (!hasAll(features, backend[1])) continue;
+            tried.append(tried.length() == 0 ? "" : ", ").append(backend[0].replace("android_", ""));
             try {
                 if (loadCpuBackend("libggml-cpu-" + backend[0] + ".so")) {
                     sBackend = backend[0].replace("android_", "");
@@ -74,13 +77,24 @@ public final class WhisperNative {
                 // Try the next, more basic variant.
             }
         }
-        return unsupported("no CPU backend could be loaded");
+        return unsupported("no CPU backend could be loaded (tried " + tried + "; CPU features:"
+                + relevantFeatures(features) + ")");
     }
 
     /** The CPU backend in use, e.g. "armv8.2_2"; null before or without support. */
     @Nullable
     public static String backendName() {
         return sBackend;
+    }
+
+    /** Only the instruction-set flags that decide the backend, for logs. */
+    private static String relevantFeatures(@Nullable String features) {
+        if (features == null) return " unknown";
+        StringBuilder out = new StringBuilder();
+        for (String flag : new String[]{"asimd", "asimddp", "asimdhp", "fphp", "i8mm", "sve", "sve2", "sme"}) {
+            if (features.contains(" " + flag + " ")) out.append(' ').append(flag);
+        }
+        return out.length() == 0 ? " none" : out.toString();
     }
 
     static boolean hasAll(@Nullable String features, String required) {
