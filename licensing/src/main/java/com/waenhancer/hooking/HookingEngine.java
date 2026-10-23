@@ -7,8 +7,14 @@ package com.waenhancer.hooking;
 public final class HookingEngine {
     public enum Installation { STARTUP, LAZY_HOME, LAZY_CONVERSATION, LAZY_MEDIA }
 
+    /** Work a feature needs before WhatsApp's UI starts; none in the stand-in. */
+    public interface PreHook {
+        void apply(android.content.SharedPreferences prefs);
+    }
+
     public static final class FeaturePolicy {
         public final String className;
+        public final PreHook preHook = null;
 
         FeaturePolicy(String className) {
             this.className = className;
