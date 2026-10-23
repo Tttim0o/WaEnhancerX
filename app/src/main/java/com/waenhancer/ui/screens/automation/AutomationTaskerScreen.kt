@@ -623,6 +623,7 @@ fun AutomationTaskerScreen() {
                                                 onClick = {
                                                     transcriptionProvider = provider
                                                     preferenceManager.putString("transcription_provider", provider)
+                                                    com.waenhancer.core.transcription.server.TranscriptionServerService.apply(context.applicationContext)
                                                 connectionStatus = "idle"
                                                     showProviderDropdown = false
                                                 }
@@ -886,6 +887,8 @@ fun AutomationTaskerScreen() {
                             }
 
                             TranscriptionLogSection()
+
+                            TranscriptionServerSection()
                         }
                     }
                 }

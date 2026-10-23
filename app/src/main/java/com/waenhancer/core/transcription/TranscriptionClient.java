@@ -369,7 +369,7 @@ public final class TranscriptionClient {
         return value instanceof String ? (String) value : null;
     }
 
-    static String jsonQuote(String value) {
+    public static String jsonQuote(String value) {
         StringBuilder out = new StringBuilder(value.length() + 2).append('"');
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
