@@ -16,6 +16,9 @@ public final class TranscriptionRequestHandler {
 
     public static final String METHOD = "transcribe_audio";
     public static final String METHOD_READY = "transcription_ready";
+    /** Lets the WhatsApp side add metadata lines to the TranscriptionLog. */
+    public static final String METHOD_LOG = "transcription_log";
+    public static final String EXTRA_MESSAGE = "message";
     public static final String EXTRA_AUDIO = "audio";
     public static final String EXTRA_FILE_NAME = "file_name";
     public static final String RESULT_TEXT = "text";
@@ -38,7 +41,12 @@ public final class TranscriptionRequestHandler {
                 ? LocalTranscriber.usableModel(context, localModel(context)) != null
                 : !config.apiKey.isEmpty()
                         && (!TranscriptionClient.PROVIDER_CUSTOM.equals(config.provider) || !config.url.isEmpty());
-        boolean ready = readBoolean(context, "voice_transcription", true) && configured;
+        boolean enabled = readBoolean(context, "voice_transcription", true);
+        boolean ready = enabled && configured;
+        if (!ready) {
+            TranscriptionLog.add(context, "app", "Not ready: " + (!enabled ? "transcription is off"
+                    : "provider " + config.provider + " is not set up" + localStatus(context, config)));
+        }
         Bundle result = new Bundle();
         result.putBoolean(RESULT_READY, ready);
         return result;
@@ -54,6 +62,11 @@ public final class TranscriptionRequestHandler {
         byte[] audio = extras.getByteArray(EXTRA_AUDIO);
         String fileName = extras.getString(EXTRA_FILE_NAME, "voice-note.opus");
         TranscriptionClient.Config config = configFor(context);
+        long started = System.currentTimeMillis();
+        TranscriptionLog.add(context, "app", "Request: provider=" + config.provider
+                + (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider) ? " model=" + localModel(context) : "")
+                + " language=" + (config.language.isEmpty() ? "auto" : config.language)
+                + " audio=" + (audio == null ? 0 : audio.length / 1024) + " KB ." + extensionOf(fileName));
         try {
             String text;
             if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
@@ -69,13 +82,43 @@ public final class TranscriptionRequestHandler {
                 }
             }
             result.putString(RESULT_TEXT, text);
+            TranscriptionLog.add(context, "app", "Done in " + (System.currentTimeMillis() - started)
+                    + " ms: " + (text.isEmpty() ? "no speech detected" : text.length() + " characters"));
         } catch (TranscriptionClient.TranscriptionException e) {
             result.putString(RESULT_ERROR, e.getMessage());
+            TranscriptionLog.add(context, "app", "Failed after " + (System.currentTimeMillis() - started)
+                    + " ms: " + e.getMessage());
         } catch (Exception e) {
             // Network failures: report the kind of failure, never URLs or headers.
             result.putString(RESULT_ERROR, "Network error (" + e.getClass().getSimpleName() + ")");
+            TranscriptionLog.add(context, "app", "Failed: " + e.getClass().getName());
         }
         return result;
+    }
+
+    /** Adds a line sent by the WhatsApp side; bounded, metadata only. */
+    @NonNull
+    public static Bundle log(@NonNull Context context, @NonNull Bundle extras) {
+        String message = extras.getString(EXTRA_MESSAGE);
+        if (message != null && !message.isEmpty()) {
+            TranscriptionLog.add(context, "whatsapp", message.length() > 300 ? message.substring(0, 300) : message);
+        }
+        return new Bundle();
+    }
+
+    private static String extensionOf(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        String ext = dot >= 0 ? fileName.substring(dot + 1) : "";
+        return ext.matches("[A-Za-z0-9]{1,5}") ? ext : "?";
+    }
+
+    private static String localStatus(Context context, TranscriptionClient.Config config) {
+        if (!TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) return " (API key or URL missing)";
+        String model = localModel(context);
+        if (!com.waenhancer.core.transcription.local.WhisperNative.isSupported()) {
+            return " (" + com.waenhancer.core.transcription.local.WhisperNative.unsupportedReason() + ")";
+        }
+        return " (model " + model + " not downloaded)";
     }
 
     /**
@@ -86,6 +129,7 @@ public final class TranscriptionRequestHandler {
     @Nullable
     public static String testConnection(@NonNull Context context) {
         TranscriptionClient.Config config = configFor(context);
+        TranscriptionLog.add(context, "app", "Connection test: provider=" + config.provider);
         try {
             if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
                 LocalTranscriber.transcribe(context, localModel(context),
@@ -93,13 +137,17 @@ public final class TranscriptionRequestHandler {
             } else {
                 new TranscriptionClient().transcribe(config, TranscriptionClient.silentWav(), "waex-test.wav");
             }
+            TranscriptionLog.add(context, "app", "Connection test passed");
             return null;
         } catch (TranscriptionClient.TranscriptionException e) {
             String message = e.getMessage() == null ? "Failed" : e.getMessage();
             // AssemblyAI only rejects the silent clip after upload and job creation succeeded,
             // which already proves the key works.
-            return message.startsWith("AssemblyAI: ") ? null : message;
+            boolean passed = message.startsWith("AssemblyAI: ");
+            TranscriptionLog.add(context, "app", "Connection test " + (passed ? "passed" : "failed: " + message));
+            return passed ? null : message;
         } catch (Exception e) {
+            TranscriptionLog.add(context, "app", "Connection test failed: " + e.getClass().getName());
             return "Network error (" + e.getClass().getSimpleName() + ")";
         }
     }

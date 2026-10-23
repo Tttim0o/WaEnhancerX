@@ -162,6 +162,7 @@
     <string name="waex_ui_choose_color_f2cd02c5" formatted="false">"Choose Color"</string>
     <string name="waex_ui_choose_where_to_show_the_waex_settings_44afa3ae" formatted="false">"Choose where to show the WAEX settings entry point"</string>
     <string name="waex_ui_classic_regular_2f519419" formatted="false">"Classic (Regular)"</string>
+    <string name="waex_ui_clear_83b12c22" formatted="false">"Clear"</string>
     <string name="waex_ui_clear_all_custom_rules_faed51b9" formatted="false">"Clear All Custom Rules?"</string>
     <string name="waex_ui_clear_all_ddceb7ad" formatted="false">"Clear All"</string>
     <string name="waex_ui_clear_search_3b7ea517" formatted="false">"Clear search"</string>
@@ -366,6 +367,7 @@
     <string name="waex_ui_hardware_locked_feature_activation_946923fc" formatted="false">"Hardware-locked feature activation"</string>
     <string name="waex_ui_hd_upload_ee403315" formatted="false">"HD Upload"</string>
     <string name="waex_ui_hex_code_fc70e187" formatted="false">"Hex Code"</string>
+    <string name="waex_ui_hide_ac20a57b" formatted="false">"Hide"</string>
     <string name="waex_ui_hide_audio_recording_state_dca180a4" formatted="false">"Hide audio recording state"</string>
     <string name="waex_ui_hide_forwarded_tag_a4f281a7" formatted="false">"Hide Forwarded Tag"</string>
     <string name="waex_ui_hide_home_tabs_1bb26596" formatted="false">"Hide Home Tabs"</string>
@@ -459,6 +461,7 @@
     <string name="waex_ui_locked_chats_unavailable_in_this_whats_05439a78" formatted="false">"Locked chats unavailable in this WhatsApp build"</string>
     <string name="waex_ui_locked_pro_feature_8239ac16" formatted="false">"Locked Pro feature"</string>
     <string name="waex_ui_locks_your_last_seen_timestamp_so_cont_3c49d617" formatted="false">"Locks your last seen timestamp so contacts won\'t see when you\'re active.\n\nRestart WhatsApp to apply changes?"</string>
+    <string name="waex_ui_log_copied_21706121" formatted="false">"Log copied"</string>
     <string name="waex_ui_long_press_whatsapp_title_eee432ef" formatted="false">"Long-press WhatsApp title"</string>
     <string name="waex_ui_maintainer_ba79e198" formatted="false">"MAINTAINER"</string>
     <string name="waex_ui_manage_1_s_8d56809c">"Manage %1$s"</string>
@@ -506,6 +509,7 @@
     <string name="waex_ui_no_contributors_found_faee6c16" formatted="false">"No contributors found"</string>
     <string name="waex_ui_no_custom_rules_yet_35ba92cb" formatted="false">"No custom rules yet"</string>
     <string name="waex_ui_no_custom_version_rules_added_yet_tap_f86be378" formatted="false">"No custom version rules added yet.\nTap \"Add Rule\" to select an unsupported app and automatically register its version branch."</string>
+    <string name="waex_ui_no_entries_yet_66c482dd" formatted="false">"No entries yet."</string>
     <string name="waex_ui_no_filters_added_bc59f30c" formatted="false">"No Filters Added"</string>
     <string name="waex_ui_no_hidden_read_receipt_to_send_15d6cfc0" formatted="false">"No hidden read receipt to send"</string>
     <string name="waex_ui_no_injected_hooks_matching_filter_fe90503b" formatted="false">"No injected hooks matching filter"</string>
@@ -598,6 +602,7 @@
     <string name="waex_ui_recording_tap_to_stop_b997fecf" formatted="false">"Recording… tap ⏹️ to stop."</string>
     <string name="waex_ui_recording_too_short_97c21f39" formatted="false">"Recording too short."</string>
     <string name="waex_ui_refined_pro_277942ba" formatted="false">"Refined (Pro)"</string>
+    <string name="waex_ui_refresh_0e916101" formatted="false">"Refresh"</string>
     <string name="waex_ui_refresh_diagnostics_7bce98ec" formatted="false">"Refresh diagnostics"</string>
     <string name="waex_ui_refresh_failed_1_s_5b508fd6">"Refresh failed: %1$s"</string>
     <string name="waex_ui_refresh_hooks_5fbeb9a0" formatted="false">"Refresh hooks"</string>
@@ -682,6 +687,7 @@
     <string name="waex_ui_share_call_recording_692216ae" formatted="false">"Share call recording"</string>
     <string name="waex_ui_share_selected_e3040dd9" formatted="false">"Share selected"</string>
     <string name="waex_ui_shield_heart_4bd16fe2" formatted="false">"Shield Heart"</string>
+    <string name="waex_ui_show_0df6f1ca" formatted="false">"Show"</string>
     <string name="waex_ui_show_hook_injection_toast_dc03f223" formatted="false">"Show hook injection toast"</string>
     <string name="waex_ui_show_in_3_dots_waex_menu_022a93a6" formatted="false">"Show in 3-dots / WAEX menu"</string>
     <string name="waex_ui_show_it_again_on_the_next_check_40bbb328" formatted="false">"Show it again on the next check"</string>
@@ -705,6 +711,7 @@
     <string name="waex_ui_status_saved_to_gallery_waex_9f345669" formatted="false">"Status saved to Gallery (WAEX)"</string>
     <string name="waex_ui_status_splitter_89951412" formatted="false">"Status Splitter"</string>
     <string name="waex_ui_status_text_b35d0184" formatted="false">"Status Text"</string>
+    <string name="waex_ui_steps_and_errors_only_transcripts_and_3b357802" formatted="false">"Steps and errors only. Transcripts and message text are never logged."</string>
     <string name="waex_ui_stickers_dbf9cbbe" formatted="false">"Stickers"</string>
     <string name="waex_ui_stop_cae7d57b" formatted="false">"Stop"</string>
     <string name="waex_ui_storage_access_a334c4ca" formatted="false">"Storage Access"</string>
@@ -759,6 +766,7 @@
     <string name="waex_ui_transcript_copied_758ba0c0" formatted="false">"Transcript copied"</string>
     <string name="waex_ui_transcription_failed_ccb68494" formatted="false">"Transcription failed"</string>
     <string name="waex_ui_transcription_language_8bc22eb0" formatted="false">"Transcription language"</string>
+    <string name="waex_ui_transcription_log_97dc1042" formatted="false">"Transcription log"</string>
     <string name="waex_ui_transforms_the_default_navigation_bar_c18f96ff" formatted="false">"Transforms the default navigation bar into a modern floating pill"</string>
     <string name="waex_ui_translucent_background_with_blurred_ba_0d5bf87c" formatted="false">"Translucent background with blurred backdrop"</string>
     <string name="waex_ui_translucent_glassmorphism_with_refract_a6528ef4" formatted="false">"Translucent glassmorphism with refraction border"</string>

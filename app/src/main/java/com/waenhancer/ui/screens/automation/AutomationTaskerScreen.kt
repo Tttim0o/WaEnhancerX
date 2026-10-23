@@ -836,6 +836,8 @@ fun AutomationTaskerScreen() {
                             if (connectionStatus == "fail" && connectionError.isNotEmpty()) {
                                 Text(text = connectionError, style = typography.labelSm, color = colors.error)
                             }
+
+                            TranscriptionLogSection()
                         }
                     }
                 }

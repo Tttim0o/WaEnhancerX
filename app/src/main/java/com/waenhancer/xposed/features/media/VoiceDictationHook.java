@@ -77,6 +77,7 @@ public final class VoiceDictationHook extends BaseFeature {
 
     @Override
     public void hook() {
+        VoiceTranscriptionBridge.attach(context);
         ActivityTracker.addListener(activity -> safe(() -> {
             if (!isConversation(activity) || !isEnabled(PREF_KEY, true)) return;
             // Readiness needs IPC: ask off the UI thread, then attach on it.
@@ -254,6 +255,7 @@ public final class VoiceDictationHook extends BaseFeature {
             newRecorder.prepare();
             newRecorder.start();
         } catch (IOException | RuntimeException e) {
+            VoiceTranscriptionBridge.log("Dictation could not start recording: " + e.getClass().getSimpleName());
             newRecorder.release();
             toast(UiText.get(R.string.waex_ui_could_not_start_recording_669ffa90, "Could not start recording."));
             return;
@@ -309,6 +311,7 @@ public final class VoiceDictationHook extends BaseFeature {
         VoiceTranscriptionBridge.interactive().post(safeOrReset(() -> {
             VoiceTranscriptionBridge.Result result;
             String audioInfo = VoiceTranscriptionBridge.describeAudio(file);
+            VoiceTranscriptionBridge.log("Dictation recorded " + audioInfo);
             try {
                 result = VoiceTranscriptionBridge.transcribeBytes(context,
                         VoiceTranscriptionBridge.readFile(file), file.getName());
