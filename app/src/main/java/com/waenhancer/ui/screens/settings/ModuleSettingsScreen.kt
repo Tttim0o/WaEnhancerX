@@ -303,8 +303,9 @@ fun ModuleSettingsScreen() {
                     style = WaexTheme.typography.bodySm, color = colors.onSurfaceVariant
                 )
                 hookingModeOptions().forEach { option ->
-                    val isLightweight = option.first == HookingModePolicy.LIGHTWEIGHT
-                    val locked = isLightweight && !isPro
+                    val isProMode = option.first == HookingModePolicy.LIGHTWEIGHT ||
+                        option.first == HookingModePolicy.CUSTOMIZED
+                    val locked = isProMode && !isPro
                     val selected = option.first == hookingMode
                     Surface(
                         shape = WaexTheme.radius.cardShape,
@@ -332,7 +333,7 @@ fun ModuleSettingsScreen() {
                                 Text(option.second, style = WaexTheme.typography.bodyLg,
                                     fontWeight = FontWeight.SemiBold, color = colors.onSurface,
                                     modifier = Modifier.weight(1f))
-                                if (isLightweight) WaexProChip(isUnlocked = isPro)
+                                if (isProMode) WaexProChip(isUnlocked = isPro)
                             }
                             Text(option.third, style = WaexTheme.typography.bodySm,
                                 color = colors.onSurfaceVariant)
@@ -440,7 +441,7 @@ private fun hookingModeOptions(): List<Triple<String, String, String>> = listOf(
     Triple(HookingModePolicy.COMPATIBILITY, "Maximum compatibility",
         "High RAM Usage (~500 MB+) · All hooks pre-loaded at startup."),
     Triple(HookingModePolicy.CUSTOMIZED, "Customized",
-        "Choose Startup or Lazy loading for each feature. Defaults match Balanced.")
+        "Pro only · Choose Startup or Lazy loading for each feature. Defaults match Balanced.")
 )
 
 private fun hookingModeLabel(mode: String): String = when (mode) {

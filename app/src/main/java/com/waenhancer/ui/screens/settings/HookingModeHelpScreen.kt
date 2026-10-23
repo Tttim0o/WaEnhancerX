@@ -294,10 +294,10 @@ fun HookingModeHelpScreen() {
             HookingProfileCard(
                 modeKey = HookingModePolicy.CUSTOMIZED,
                 title = "Customized",
-                badgeText = "Per-feature control",
+                badgeText = "Pro · Per-feature control",
                 isRecommended = false,
-                isPro = false,
-                isProUnlocked = true,
+                isPro = true,
+                isProUnlocked = isPro,
                 isSelected = activeMode == HookingModePolicy.CUSTOMIZED,
                 icon = Icons.Rounded.Tune,
                 ramUsage = "Varies",
@@ -310,8 +310,12 @@ fun HookingModeHelpScreen() {
                 ),
                 tradeoff = "Lazy background-sensitive hooks can miss events until their target screen is opened. Restart WhatsApp after changes.",
                 onSelect = {
-                    activeMode = HookingModePolicy.CUSTOMIZED
-                    prefs.putString(HookingModePolicy.KEY, HookingModePolicy.CUSTOMIZED)
+                    if (isPro) {
+                        activeMode = HookingModePolicy.CUSTOMIZED
+                        prefs.putString(HookingModePolicy.KEY, HookingModePolicy.CUSTOMIZED)
+                    } else {
+                        onActivatePro()
+                    }
                 }
             )
 
