@@ -388,9 +388,11 @@ public class BlueOnReplyHook extends BaseFeature {
     }
 
     public static boolean isManualStatusSeenEnabled(SharedPreferences prefs) {
-        return prefs != null && prefs.getBoolean("manual_status_seen", false)
-                && (prefs.getBoolean("stealth_status_view", false)
-                || prefs.getBoolean("hidestatusview", false));
+        // Show the "Send Seen" button whenever the user has enabled it, regardless of
+        // whether a stealth/hide-status-view setting is also active. The receipt capture
+        // in HideReceiptsHook is already gated by shouldHideStatusView, so on a miss the
+        // button simply shows a "no receipt to send" toast — which is the correct UX.
+        return prefs != null && prefs.getBoolean("manual_status_seen", false);
     }
 
     public static boolean isManualStatusSeenMenuPlacement(SharedPreferences prefs) {

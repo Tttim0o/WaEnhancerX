@@ -134,36 +134,60 @@ public class StatusDownloadHook extends BaseFeature {
             // Strategy 2: Search via StatusPlaybackContactFragment menu handlers
             Class<?> statusContactFragClass = resolveStatusPlaybackContactFragmentClass();
             Class<?> statusBaseFragClass = resolveStatusPlaybackBaseFragmentClass();
-            statusListField = findStatusListField(statusContactFragClass);
-            currentStatusIndexField = findCurrentStatusIndexField(bridge, statusBaseFragClass);
-            // The playback fragment reuses its menu while the user swipes. Refresh the
-            // existing action each time WhatsApp prepares a menu instead of keeping the
-            // label/icon chosen for the first status that was opened.
-            hookMenuRefreshMethods(statusContactFragClass);
-            hookMenuRefreshMethods(statusBaseFragClass);
-            hookStatusSeenIcon(statusContactFragClass);
-            hookStatusSeenIconActivity();
+            try {
+                statusListField = findStatusListField(statusContactFragClass);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " findStatusListField failed: " + t);
+            }
+            try {
+                currentStatusIndexField = findCurrentStatusIndexField(bridge, statusBaseFragClass);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " findCurrentStatusIndexField failed: " + t);
+            }
+
+            try {
+                hookMenuRefreshMethods(statusContactFragClass);
+                hookMenuRefreshMethods(statusBaseFragClass);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " hookMenuRefreshMethods failed: " + t);
+            }
+
+            try {
+                hookStatusSeenIcon(statusContactFragClass);
+                hookStatusSeenIcon(statusBaseFragClass);
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " hookStatusSeenIcon failed: " + t);
+            }
+
+            try {
+                hookStatusSeenIconActivity();
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " hookStatusSeenIconActivity failed: " + t);
+            }
 
             if (menuStatusMethod != null) {
                 final Class<?> contactClass = statusContactFragClass;
                 final Class<?> baseClass = statusBaseFragClass;
 
-                XposedBridge.hookMethod(menuStatusMethod, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        if (!isFeatureEnabled() && !BlueOnReplyHook.isManualStatusSeenEnabled(prefs)) return;
+                try {
+                    XposedBridge.hookMethod(menuStatusMethod, new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) {
+                            if (!isFeatureEnabled() && !BlueOnReplyHook.isManualStatusSeenEnabled(prefs)) return;
 
-                        try {
-                            handleStatusMenuHook(param, contactClass, baseClass);
-                        } catch (Throwable t) {
-                            XposedBridge.log(TAG + " Error handling status menu hook: " + t.getClass().getSimpleName());
+                            try {
+                                handleStatusMenuHook(param, contactClass, baseClass);
+                            } catch (Throwable t) {
+                                XposedBridge.log(TAG + " Error handling status menu hook: " + t);
+                            }
                         }
-                    }
-                });
-
+                    });
+                } catch (Throwable t) {
+                    XposedBridge.log(TAG + " hookMethod(menuStatusMethod) failed: " + t);
+                }
             }
         } catch (Throwable t) {
-            XposedBridge.log(TAG + " Error setting up status playback hook: " + t.getClass().getSimpleName());
+            XposedBridge.log(TAG + " Error setting up status playback hook: " + android.util.Log.getStackTraceString(t));
         }
     }
 
@@ -300,9 +324,13 @@ public class StatusDownloadHook extends BaseFeature {
 
     /** Adds a compact explicit-seen control beside WhatsApp's status reply/heart controls. */
     private void hookStatusSeenIcon(Class<?> fragmentClass) {
+        hookStatusSeenIconOnFragment(fragmentClass);
+    }
+
+    private void hookStatusSeenIconOnFragment(Class<?> fragmentClass) {
         if (fragmentClass == null) return;
         for (Method method : fragmentClass.getDeclaredMethods()) {
-            if (!"onViewCreated".equals(method.getName())) continue;
+            if (!"onViewCreated".equals(method.getName()) && !"onStart".equals(method.getName())) continue;
             XposedBridge.hookMethod(method, new XC_MethodHook() {
                 @Override protected void afterHookedMethod(MethodHookParam param) {
                     if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
@@ -319,15 +347,59 @@ public class StatusDownloadHook extends BaseFeature {
      * Some WhatsApp builds create that bar after the fragment's view callback,
      * so an activity-resume retry keeps the icon independent of menu inflation.
      */
+    /**
+     * The playback activity is the reliable lifecycle owner for the reply bar.
+     * Some WhatsApp builds create that bar after the fragment's view callback,
+     * so an activity-resume retry keeps the icon independent of menu inflation.
+     * Tries multiple known class names and falls back to DexKit search.
+     */
     private void hookStatusSeenIconActivity() {
+        // Known class paths across WA versions
+        String[] candidates = {
+                "com.whatsapp.status.playback.StatusPlaybackActivity",
+                "com.whatsapp.StatusPlaybackActivity",
+                "com.whatsapp.status.StatusPlaybackActivity"
+        };
+        Class<?> playbackActivity = null;
+        for (String name : candidates) {
+            playbackActivity = XposedHelpers.findClassIfExists(name, classLoader);
+            if (playbackActivity != null) break;
+        }
+        // DexKit fallback: find the activity that uses the reply bar resource name
+        if (playbackActivity == null) {
+            try {
+                var bridge = DexSearchEngine.getInstance().getBridge();
+                if (bridge != null) {
+                    var mdList = bridge.findMethod(FindMethod.create()
+                            .matcher(MethodMatcher.create()
+                                    .usingStrings("status_like_button_container", "reply_bar_tappable")));
+                    if (!mdList.isEmpty()) {
+                        Class<?> declaring = mdList.first().getMethodInstance(classLoader).getDeclaringClass();
+                        if (Activity.class.isAssignableFrom(declaring)) playbackActivity = declaring;
+                    }
+                }
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " DexKit activity search failed: " + t.getClass().getSimpleName());
+            }
+        }
+        if (playbackActivity == null) {
+            XposedBridge.log(TAG + " StatusPlaybackActivity not found — icon placement unavailable");
+            return;
+        }
+        final Class<?> activityClass = playbackActivity;
         try {
-            Class<?> playbackActivity = XposedHelpers.findClassIfExists(
-                    "com.whatsapp.status.playback.StatusPlaybackActivity", classLoader
-            );
-            if (playbackActivity == null) return;
-            XposedBridge.hookAllMethods(playbackActivity, "onResume", new XC_MethodHook() {
+            XposedBridge.hookAllMethods(activityClass, "onResume", new XC_MethodHook() {
                 @Override protected void afterHookedMethod(MethodHookParam param) {
                     if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
+                            && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
+                        scheduleStatusSeenIcon(param.thisObject);
+                    }
+                }
+            });
+            XposedBridge.hookAllMethods(activityClass, "onWindowFocusChanged", new XC_MethodHook() {
+                @Override protected void afterHookedMethod(MethodHookParam param) {
+                    if (Boolean.TRUE.equals(param.args[0])
+                            && BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
                             && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
                         scheduleStatusSeenIcon(param.thisObject);
                     }
@@ -336,6 +408,20 @@ public class StatusDownloadHook extends BaseFeature {
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Could not hook status icon activity: " + t.getClass().getSimpleName());
         }
+
+        // Safety net: Use ActivityTracker lifecycle callbacks to ensure we always catch the playback activity
+        ActivityTracker.addListener(new ActivityTracker.ActivityListener() {
+            @Override
+            public void onActivityResumed(@NonNull Activity activity) {
+                if ("StatusPlaybackActivity".equals(activity.getClass().getSimpleName())
+                        || activity.getClass().getName().contains("StatusPlaybackActivity")) {
+                    if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
+                            && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
+                        scheduleStatusSeenIcon(activity);
+                    }
+                }
+            }
+        });
     }
 
     /** Runs after WhatsApp has attached the playback reply bar to the activity window. */
@@ -348,7 +434,71 @@ public class StatusDownloadHook extends BaseFeature {
         root.post(() -> installStatusSeenIcon(sourceObject));
         root.postDelayed(() -> installStatusSeenIcon(sourceObject), 250L);
         root.postDelayed(() -> installStatusSeenIcon(sourceObject), 750L);
+        root.postDelayed(() -> installStatusSeenIcon(sourceObject), 1500L);
+        root.postDelayed(() -> installStatusSeenIcon(sourceObject), 3000L);
     }
+
+    /**
+     * Tries multiple known resource IDs for the like/reaction button across WhatsApp versions.
+     * Falls back to a view-tree traversal of all known reply-bar containers.
+     */
+    private View findLikeContainer(View root, String pkg) {
+        // Resource names used by different WA versions / build flavours
+        String[] likeNames = {
+                "status_like_button_container",
+                "like_button_container",
+                "status_reaction_button",
+                "status_like_button",
+                "reaction_button_container",
+                "status_emoji_reaction_button"
+        };
+        for (String name : likeNames) {
+            int id = root.getResources().getIdentifier(name, "id", pkg);
+            if (id != 0) {
+                View v = root.findViewById(id);
+                if (v != null) return v;
+            }
+        }
+        // Fallback: scan inside any known reply-bar container
+        String[] barNames = {
+                "reply_bar_tappable",
+                "status_reply_bar",
+                "reply_bar",
+                "status_footer_bar"
+        };
+        for (String barName : barNames) {
+            int id = root.getResources().getIdentifier(barName, "id", pkg);
+            if (id == 0) continue;
+            View bar = root.findViewById(id);
+            if (!(bar instanceof ViewGroup)) continue;
+            View found = findImageButtonContainer((ViewGroup) bar, 0);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    /**
+     * BFS scan: returns the last FrameLayout/ViewGroup child that directly wraps
+     * a single ImageView — the typical structure WA uses for the heart/reaction button.
+     */
+    private View findImageButtonContainer(ViewGroup group, int depth) {
+        if (depth > 4) return null;
+        View best = null;
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View child = group.getChildAt(i);
+            if (!(child instanceof ViewGroup)) continue;
+            ViewGroup childGroup = (ViewGroup) child;
+            // A like-button container is typically a small FrameLayout with one ImageView child.
+            if (childGroup.getChildCount() == 1 && childGroup.getChildAt(0) instanceof ImageView) {
+                best = childGroup;   // keep scanning to pick the last/rightmost one
+            }
+            View deeper = findImageButtonContainer(childGroup, depth + 1);
+            if (deeper != null) best = deeper;
+        }
+        return best;
+    }
+
+
 
     /** Reinserts the sibling control after WhatsApp replaces its reply bar on a status swipe. */
     private void watchStatusReplyBar(View root, Object sourceObject) {
@@ -365,8 +515,9 @@ public class StatusDownloadHook extends BaseFeature {
     }
 
     /**
-     * WhatsApp can keep the reply-bar View while changing only ViewPager pages. Listening
-     * to that pager refreshes the cached item even when the bar itself is not recreated.
+     * WhatsApp changes pages when swiping between statuses and contacts.
+     * Listening to ViewPager and page changes ensures the seen icon is injected
+     * into every newly presented status page.
      */
     private void watchStatusPager(View root, Object sourceObject) {
         String packageName = root.getContext().getPackageName();
@@ -376,14 +527,56 @@ public class StatusDownloadHook extends BaseFeature {
         synchronized (watchedStatusPagers) {
             if (!watchedStatusPagers.add(pager)) return;
         }
+
+        // 1. Layout changes (page commit/re-layout)
         pager.addOnLayoutChangeListener((view, left, top, right, bottom,
                                         oldLeft, oldTop, oldRight, oldBottom) -> {
             if (BlueOnReplyHook.isManualStatusSeenEnabled(prefs)
                     && "icon".equals(prefs.getString("manual_status_seen_placement", "menu"))) {
-                // Run after ViewPager has committed its current-page index.
                 root.post(() -> installStatusSeenIcon(sourceObject));
             }
         });
+
+        // 2. ViewPager.OnPageChangeListener via reflection / dynamic proxy
+        try {
+            Class<?> pageChangeListenerClass = XposedHelpers.findClassIfExists(
+                    "androidx.viewpager.widget.ViewPager$OnPageChangeListener",
+                    pager.getClass().getClassLoader()
+            );
+            if (pageChangeListenerClass == null) {
+                pageChangeListenerClass = XposedHelpers.findClassIfExists(
+                        "androidx.viewpager.widget.ViewPager$h",
+                        pager.getClass().getClassLoader()
+                );
+            }
+            if (pageChangeListenerClass != null) {
+                Object listenerProxy = java.lang.reflect.Proxy.newProxyInstance(
+                        pager.getClass().getClassLoader(),
+                        new Class<?>[]{pageChangeListenerClass},
+                        (proxy, method, args) -> {
+                            String name = method.getName();
+                            if ("onPageSelected".equals(name) || "onPageScrollStateChanged".equals(name)) {
+                                root.post(() -> installStatusSeenIcon(sourceObject));
+                                root.postDelayed(() -> installStatusSeenIcon(sourceObject), 150L);
+                                root.postDelayed(() -> installStatusSeenIcon(sourceObject), 400L);
+                            }
+                            return null;
+                        }
+                );
+                Method addListener = null;
+                for (Method m : pager.getClass().getMethods()) {
+                    if ("addOnPageChangeListener".equals(m.getName()) && m.getParameterTypes().length == 1) {
+                        addListener = m;
+                        break;
+                    }
+                }
+                if (addListener != null) {
+                    addListener.invoke(pager, listenerProxy);
+                }
+            }
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + " Could not attach OnPageChangeListener: " + t.getClass().getSimpleName());
+        }
     }
 
     private void installStatusSeenIcon(Object sourceObject) {
@@ -391,12 +584,16 @@ public class StatusDownloadHook extends BaseFeature {
         if (root == null) return;
         Context statusContext = root.getContext();
         String statusPackage = statusContext.getPackageName();
-        int replyBarId = root.getResources().getIdentifier("reply_bar_tappable", "id", statusPackage);
-        int likeContainerId = root.getResources().getIdentifier("status_like_button_container", "id", statusPackage);
-        View anchor = replyBarId == 0 ? null : root.findViewById(replyBarId);
-        View likeContainer = likeContainerId == 0 ? null : root.findViewById(likeContainerId);
-        if (!(anchor instanceof ViewGroup) || likeContainer == null || likeContainer.getParent() != anchor) return;
-        ViewGroup controls = (ViewGroup) anchor;
+
+        // Locate the like/reaction button using multiple resource names across WA versions.
+        View likeContainer = findLikeContainer(root, statusPackage);
+        if (likeContainer == null) {
+            return;
+        }
+        if (!(likeContainer.getParent() instanceof ViewGroup)) return;
+        ViewGroup controls = (ViewGroup) likeContainer.getParent();
+
+        // Check if the current likeContainer's parent already has the seen button
         View existing = controls.findViewWithTag("waex_status_seen_button");
         if (existing != null) {
             bindStatusSeenControl(existing, sourceObject);

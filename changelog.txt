@@ -1,7 +1,8 @@
 [Added]
 - Time Format (12/24 hours) for timestamp
 - In-App Screenshot / Screen Recording restrictions bypass
-- Send seen to specific status (Experimental)
+- Send seen to specific Status
+  - Seen button in status view reply bar (Experimental)
 - Added module settings for Hooking method (Lightweight, Balanced, Maximum Capability, Customized)
 
 [Improvements]
