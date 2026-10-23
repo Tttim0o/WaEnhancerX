@@ -1046,4 +1046,84 @@
     <string name="waex_ui_hma_reason_preset">"تم إخفاؤه بواسطة الإعداد المسبق \"xpose\" لـ HMA"</string>
     <string name="waex_ui_deleted_a_status">"حذفت حالة"</string>
     <string name="waex_ui_restarting_whatsapp_short">"إعادة تشغيل WhatsApp..."</string>
+    <string name="waex_ui_adds_to_the_message_field_tap_to_recor" formatted="false">"يضيف 🎙️ إلى حقل الرسالة. انقر للتسجيل، ثم انقر مرة أخرى لإدراج النص."</string>
+    <string name="waex_ui_an_openai_compatible_api_v1_audio_tran" formatted="false">"API (/v1/audio/transcriptions) متوافق مع OpenAI والذي يمكن للتطبيقات الأخرى استخدامه مع النماذج التي تم تنزيلها."</string>
+    <string name="waex_ui_anyone_on_your_network_with_the_key_ca" formatted="false">"يمكن لأي شخص على شبكتك لديه المفتاح استخدامه."</string>
+    <string name="waex_ui_api_key" formatted="false">"API مفتاح"</string>
+    <string name="waex_ui_automatic" formatted="false">"تلقائي"</string>
+    <string name="waex_ui_balanced_speed_and_accuracy" formatted="false">"السرعة والدقة المتوازنة"</string>
+    <string name="waex_ui_cancel" formatted="false">"إلغاء"</string>
+    <string name="waex_ui_clear" formatted="false">"واضح"</string>
+    <string name="waex_ui_connection_failed" formatted="false">"فشل الاتصال"</string>
+    <string name="waex_ui_copy_details" formatted="false">"نسخ التفاصيل"</string>
+    <string name="waex_ui_copy" formatted="false">"نسخ"</string>
+    <string name="waex_ui_could_not_start_recording" formatted="false">"لا يمكن بدء التسجيل."</string>
+    <string name="waex_ui_custom_api_key" formatted="false">"مفتاح API مخصص"</string>
+    <string name="waex_ui_custom_endpoint_url" formatted="false">"عنوان URL المخصص لنقطة النهاية"</string>
+    <string name="waex_ui_delete" formatted="false">"حذف"</string>
+    <string name="waex_ui_dictation_button" formatted="false">"زر الإملاء"</string>
+    <string name="waex_ui_download_suggested_model" formatted="false">"تحميل النموذج المقترح"</string>
+    <string name="waex_ui_english_only_more_accurate_for_english" formatted="false">"الإنجليزية فقط: أكثر دقة للغة الإنجليزية"</string>
+    <string name="waex_ui_example" formatted="false">"مثال"</string>
+    <string name="waex_ui_exempts_waex_from_battery_optimization" formatted="false">"يعفي WAEX من تحسين البطارية حتى لا يوقف Android الخادم."</string>
+    <string name="waex_ui_fast_fair_accuracy" formatted="false">"دقة سريعة وعادلة"</string>
+    <string name="waex_ui_fastest_lowest_accuracy" formatted="false">"الأسرع والأقل دقة"</string>
+    <string name="waex_ui_find_models" formatted="false">"البحث عن النماذج"</string>
+    <string name="waex_ui_hide" formatted="false">"إخفاء"</string>
+    <string name="waex_ui_in_use" formatted="false">"قيد الاستخدام"</string>
+    <string name="waex_ui_keep_alive_with_root" formatted="false">"البقاء على قيد الحياة مع الجذر"</string>
+    <string name="waex_ui_keep_running_when_waex_doesn_t_use_on" formatted="false">"استمر في التشغيل عندما لا يستخدم WAEX الطرز الموجودة على الجهاز"</string>
+    <string name="waex_ui_local_network" formatted="false">"الشبكة المحلية"</string>
+    <string name="waex_ui_log_copied" formatted="false">"تم نسخ السجل"</string>
+    <string name="waex_ui_may_be_too_heavy_for_this_phone" formatted="false">"قد يكون ثقيلًا جدًا بالنسبة لهذا الهاتف"</string>
+    <string name="waex_ui_model_name" formatted="false">"اسم النموذج"</string>
+    <string name="waex_ui_most_accurate_slow" formatted="false">"الأكثر دقة، بطيئة"</string>
+    <string name="waex_ui_new_key" formatted="false">"مفتاح جديد"</string>
+    <string name="waex_ui_new_voice_note" formatted="false">"مذكرة صوتية جديدة"</string>
+    <string name="waex_ui_no_entries_yet" formatted="false">"لا توجد إدخالات حتى الآن."</string>
+    <string name="waex_ui_no_speech_detected" formatted="false">"لم يتم اكتشاف أي كلام."</string>
+    <string name="waex_ui_not_running_waex_isn_t_using_on_device" formatted="false">"لا يعمل: WAEX لا يستخدم الطرز الموجودة على الجهاز."</string>
+    <string name="waex_ui_off" formatted="false">"إيقاف"</string>
+    <string name="waex_ui_off_each_new_voice_note_sent_or_receiv" formatted="false">"إيقاف: تتلقى كل ملاحظة صوتية جديدة، مرسلة أو مستلمة، إشعارًا باستخدام زر \"النسخ\"."</string>
+    <string name="waex_ui_off_record_only_when_you_tap_the_butto" formatted="false">"إيقاف: قم بالتسجيل فقط عند النقر فوق الزر الموجود على شاشة الاتصال."</string>
+    <string name="waex_ui_on_device_models" formatted="false">"النماذج الموجودة على الجهاز"</string>
+    <string name="waex_ui_on_device_transcription_isn_t_availabl" formatted="false">"لا يتوفر النسخ على الجهاز على هذا الهاتف"</string>
+    <string name="waex_ui_port" formatted="false">"ميناء"</string>
+    <string name="waex_ui_record_button_during_calls" formatted="false">"زر التسجيل أثناء المكالمات"</string>
+    <string name="waex_ui_recording_tap_to_stop" formatted="false">"التسجيل... اضغط على ⏹️ للإيقاف."</string>
+    <string name="waex_ui_recording_too_short" formatted="false">"التسجيل قصير جدًا."</string>
+    <string name="waex_ui_refresh" formatted="false">"تحديث"</string>
+    <string name="waex_ui_running" formatted="false">"الجري"</string>
+    <string name="waex_ui_runs_on_your_phone_nothing_is_uploaded" formatted="false">"يعمل على هاتفك، لا يتم تحميل أي شيء. النماذج الأكبر حجمًا أكثر دقة ولكنها أبطأ."</string>
+    <string name="waex_ui_searching" formatted="false">"البحث…"</string>
+    <string name="waex_ui_selected_download_it_to_start_using_it" formatted="false">"محدد: قم بتنزيله لبدء استخدامه."</string>
+    <string name="waex_ui_share_on_device_models_with_other_apps" formatted="false">"مشاركة النماذج الموجودة على الجهاز مع التطبيقات الأخرى (تجريبية)"</string>
+    <string name="waex_ui_show" formatted="false">"عرض"</string>
+    <string name="waex_ui_shows_a_small_record_stop_button_on_th" formatted="false">"يظهر زر تسجيل/إيقاف صغير على شاشة الاتصال."</string>
+    <string name="waex_ui_shows_next_to_the_time_of_voice_notes" formatted="false">"تظهر 📝 بجانب وقت الملاحظات الصوتية في الدردشات. اضغط عليه لقراءة النص."</string>
+    <string name="waex_ui_start_recording_automatically" formatted="false">"ابدأ التسجيل تلقائيًا"</string>
+    <string name="waex_ui_steps_and_errors_only_transcripts_and" formatted="false">"الخطوات والأخطاء فقط. لا يتم تسجيل النصوص ونص الرسالة أبدًا."</string>
+    <string name="waex_ui_stopped" formatted="false">"توقف"</string>
+    <string name="waex_ui_suggested" formatted="false">"مقترح"</string>
+    <string name="waex_ui_tap_a_model_to_choose_it_the_suggested" formatted="false">"اضغط على نموذج لاختياره. يتم استخدام الخيار المقترح حتى تختار آخر."</string>
+    <string name="waex_ui_tap_transcribe_to_turn_it_into_text" formatted="false">"اضغط على \"نسخ\" لتحويله إلى نص."</string>
+    <string name="waex_ui_this_device_only" formatted="false">"هذا الجهاز فقط"</string>
+    <string name="waex_ui_this_phone" formatted="false">"هذا الهاتف"</string>
+    <string name="waex_ui_transcribe" formatted="false">"نسخ"</string>
+    <string name="waex_ui_transcribe_automatically" formatted="false">"نسخ تلقائيا"</string>
+    <string name="waex_ui_transcribing_voice_note" formatted="false">"جارٍ تحويل الملاحظة الصوتية إلى نص…"</string>
+    <string name="waex_ui_transcript_button_on_voice_notes" formatted="false">"زر النسخ في الملاحظات الصوتية"</string>
+    <string name="waex_ui_transcript_copied" formatted="false">"تم نسخ النص"</string>
+    <string name="waex_ui_transcription_failed" formatted="false">"فشل النسخ"</string>
+    <string name="waex_ui_transcription_language" formatted="false">"لغة النسخ"</string>
+    <string name="waex_ui_transcription_log" formatted="false">"سجل النسخ"</string>
+    <string name="waex_ui_uses_the_openai_audio_transcriptions_r" formatted="false">"يستخدم تنسيق طلب OpenAI /audio/transcriptions."</string>
+    <string name="waex_ui_voice_note_is_too_long_to_transcribe" formatted="false">"الملاحظة الصوتية طويلة جدًا بحيث لا يمكن نسخها."</string>
+    <string name="waex_ui_voice_note_transcript" formatted="false">"نسخة المذكرة الصوتية"</string>
+    <string name="waex_ui_waex_voice_transcripts" formatted="false">"WAEX النصوص الصوتية"</string>
+    <string name="waex_ui_whatsapp_crashed_last_time" formatted="false">"WhatsApp تعطل في المرة الأخيرة"</string>
+    <string name="waex_ui_whatsapp_needs_microphone_access_to_di" formatted="false">"WhatsApp يحتاج إلى الوصول إلى الميكروفون للإملاء."</string>
+    <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"توقف WhatsApp بشكل غير متوقع أثناء نشاط WaEnhancer X. انسخ التفاصيل وأرسلها إلى من قام بهذا البناء."</string>
+    <string name="waex_ui_call_recording_log" formatted="false">"سجل تسجيل المكالمات"</string>
+    <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"الخطوات والأخطاء فقط. لا يتم تسجيل أرقام الهواتف والصوت أبدًا."</string>
 </resources>
