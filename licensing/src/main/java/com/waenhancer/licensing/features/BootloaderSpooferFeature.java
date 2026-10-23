@@ -24,7 +24,7 @@ public final class BootloaderSpooferFeature {
         public int totalScore, runtimeScore, ecScore, rsaScore, integrityScore;
         public boolean recommended, featureEnabled, hookActive;
         public boolean ecPresent, ecChainValid, ecKeyMatches, ecExpired;
-        public boolean rsaPresent, rsaChainValid, rsaKeyMatches, rsaExpired;
+        public boolean rsaPresent, rsaChainValid, rsaKeyMatches, rsaExpired, rsaNotInKeybox;
         public boolean basicIntegrity, deviceIntegrity, strongIntegritySupported;
     }
 
