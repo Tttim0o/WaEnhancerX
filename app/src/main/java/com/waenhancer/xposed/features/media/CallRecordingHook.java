@@ -39,6 +39,10 @@ import de.robv.android.xposed.XposedHelpers;
 public final class CallRecordingHook extends BaseFeature {
     private static final String TAG = "[WAEX][CallRecording]";
     private static final String ENABLED = "call_recording_enabled";
+    /** Start recording by itself when a call connects (the original behavior). */
+    private static final String AUTO_START = "call_recording_auto_start";
+    /** Show a record/stop button on the call screen. */
+    private static final String BUTTON = "call_recording_button";
     private static final Uri BRIDGE_URI = Uri.parse("content://" + HookProvider.AUTHORITY);
 
     private final AtomicBoolean recording = new AtomicBoolean(false);
@@ -60,6 +64,9 @@ public final class CallRecordingHook extends BaseFeature {
     private volatile ParcelFileDescriptor destination;
     private volatile String outputPath;
     private volatile String outputName;
+    private final android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
+    private volatile WeakReference<CallRecordButton> button;
+    private boolean activityListenerAdded;
 
     public CallRecordingHook(@NonNull Context context, @NonNull ClassLoader classLoader,
                              @NonNull SharedPreferences prefs) {
@@ -142,6 +149,7 @@ public final class CallRecordingHook extends BaseFeature {
                 }
             }));
             prefs.registerOnSharedPreferenceChangeListener(enabledListener);
+            installButtonListener();
             ready.set(true);
         } catch (RuntimeException | LinkageError failure) {
             // A failed attempt never becomes active, even if removing a callback fails.
@@ -204,7 +212,11 @@ public final class CallRecordingHook extends BaseFeature {
             }
             if (session != null && !session.matches(callback, snapshot.callId)) finishSession();
             boolean newSession = session == null;
-            if (newSession) session = new Session(callback, snapshot.callId);
+            if (newSession) {
+                session = new Session(callback, snapshot.callId);
+                main.post(this::showButtonOnCallScreen);
+            }
+            if (!isEnabled(AUTO_START, true) || session.stoppedByUser) return;
             if ((!newSession && recording.get()) || pendingStart != null) return;
             Session expected = session;
             pendingStart = worker.schedule(() -> {
@@ -215,6 +227,10 @@ public final class CallRecordingHook extends BaseFeature {
                 if (!canRecord(expected)) return;
                 startRecorder(expected);
                 if (!canRecord(expected)) stopRecorder("call no longer active");
+                main.post(() -> {
+                    CallRecordButton shown = button == null ? null : button.get();
+                    if (shown != null) shown.setRecording(recording.get());
+                });
             }, 2, TimeUnit.SECONDS);
         }
     }
@@ -222,6 +238,10 @@ public final class CallRecordingHook extends BaseFeature {
     /** Caller holds sessionLock; stopping the recorder happens only on the worker. */
     private void finishSession() {
         session = null;
+        main.post(() -> {
+            CallRecordButton.detach(button);
+            button = null;
+        });
         if (pendingStart != null) pendingStart.cancel(false);
         pendingStart = null;
         if (recording.get() && !stopQueued) {
@@ -384,9 +404,84 @@ public final class CallRecordingHook extends BaseFeature {
         }
     }
 
+    // ─── Record button on the call screen ───────────────────────────────
+
+    /** Re-adds the button when the call screen comes back (e.g. after leaving it mid-call). */
+    private void installButtonListener() {
+        if (activityListenerAdded) return;
+        activityListenerAdded = true;
+        com.waenhancer.xposed.utils.ActivityTracker.addListener(activity -> {
+            boolean inCall;
+            synchronized (sessionLock) {
+                inCall = session != null;
+            }
+            if (inCall) showButtonOnCallScreen();
+        });
+    }
+
+    /** UI thread. Never lets a button problem affect the call. */
+    private void showButtonOnCallScreen() {
+        try {
+            if (!isEnabled(ENABLED, false) || !isEnabled(BUTTON, true)) return;
+            android.app.Activity activity = com.waenhancer.xposed.utils.ActivityTracker.getCurrentActivity();
+            if (activity == null || activity.isFinishing()) return;
+            if (!isCallScreen(activity)) {
+                // Shows which screen a call uses on this WhatsApp version if the button is missing.
+                XposedBridge.log(TAG + " in call, not a call screen: " + activity.getClass().getName());
+                return;
+            }
+            CallRecordButton shown = CallRecordButton.attach(activity, this::toggleFromButton);
+            if (shown == null) return;
+            shown.setRecording(recording.get());
+            button = new WeakReference<>(shown);
+        } catch (Throwable t) {
+            XposedBridge.log(TAG + " record button unavailable: " + t.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * Activity names are kept in WhatsApp's manifest, so the call screen is recognised by name
+     * (e.g. VoipActivityV2, CallActivity, call screen variants), never the call list.
+     */
+    static boolean isCallScreen(android.app.Activity activity) {
+        return CallRecordButton.isCallScreenName(activity.getClass().getSimpleName());
+    }
+
+    private void toggleFromButton() {
+        worker.execute(() -> {
+            try {
+                Session current;
+                synchronized (sessionLock) {
+                    current = session;
+                    if (pendingStart != null) {
+                        pendingStart.cancel(false);
+                        pendingStart = null;
+                    }
+                }
+                if (current == null) return;
+                if (recording.get()) {
+                    current.stoppedByUser = true; // Auto-start must not undo a manual stop.
+                    stopRecorder("stopped from the call screen");
+                } else {
+                    current.stoppedByUser = false;
+                    startRecorder(current);
+                }
+            } catch (Throwable t) {
+                XposedBridge.log(TAG + " record button toggle failed: " + t.getClass().getSimpleName());
+            } finally {
+                main.post(() -> {
+                    CallRecordButton shown = button == null ? null : button.get();
+                    if (shown != null) shown.setRecording(recording.get());
+                });
+            }
+        });
+    }
+
     private static final class Session {
         final WeakReference<Object> owner;
         final String callId;
+        /** Set when the user stopped recording with the button during this call. */
+        volatile boolean stoppedByUser;
 
         Session(Object owner, String callId) {
             this.owner = new WeakReference<>(owner);
