@@ -49,7 +49,10 @@ android {
         externalNativeBuild {
             cmake {
                 abiFilters += "arm64-v8a"
-                arguments += listOf("-DANDROID_STL=c++_shared") // several native libraries share one C++ runtime
+                arguments += listOf(
+                    "-DANDROID_STL=c++_shared", // several native libraries share one C++ runtime
+                    "-DCMAKE_BUILD_TYPE=Release" // debug APKs too: unoptimised whisper.cpp is ~20x slower
+                )
             }
         }
     }

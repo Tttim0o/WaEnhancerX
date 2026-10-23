@@ -15,6 +15,7 @@ public final class WhisperNative {
     private static volatile Boolean sSupported;
     private static volatile String sUnsupportedReason;
     private static volatile String sBackend;
+    private static volatile String sCpuSummary;
 
     /**
      * ggml CPU backend libraries, best first, with the /proc/cpuinfo features each needs
@@ -70,6 +71,7 @@ public final class WhisperNative {
             try {
                 if (loadCpuBackend("libggml-cpu-" + backend[0] + ".so")) {
                     sBackend = backend[0].replace("android_", "");
+                    sCpuSummary = "CPU features:" + relevantFeatures(features) + "; tried " + tried;
                     sSupported = true;
                     return true;
                 }
@@ -85,6 +87,12 @@ public final class WhisperNative {
     @Nullable
     public static String backendName() {
         return sBackend;
+    }
+
+    /** The CPU flags and backends tried while loading, for the transcription log; null before. */
+    @Nullable
+    public static String cpuSummary() {
+        return sCpuSummary;
     }
 
     /** Only the instruction-set flags that decide the backend, for logs. */
