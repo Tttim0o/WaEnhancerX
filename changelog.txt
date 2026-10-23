@@ -36,7 +36,7 @@
   - Horizontal Inner Padding: 5dp
   - Vertical Inner Padding: 0dp
   - Selector type: Oval
-  - Selector Color: App Default or by your choice
+  - Selector Color: App Default or by your choice (with 30% opacity)
   - Hide Tab Labels (Icons Only): True
   - Icon Size: 26dp
   - Shadow: Enabled

@@ -111,6 +111,20 @@ fun FloatingBottomBarCustomizerScreen() {
         mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_selector_color_enabled", selectorColor != 0))
     }
     var showSelectorColorPicker by remember { mutableStateOf(false) }
+    var selectedIconColor by remember {
+        mutableIntStateOf(preferenceManager.getInt("floating_bottom_bar_selected_icon_color", 0))
+    }
+    var selectedIconColorEnabled by remember {
+        mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_selected_icon_color_enabled", selectedIconColor != 0))
+    }
+    var unselectedIconColor by remember {
+        mutableIntStateOf(preferenceManager.getInt("floating_bottom_bar_unselected_icon_color", 0))
+    }
+    var unselectedIconColorEnabled by remember {
+        mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_unselected_icon_color_enabled", unselectedIconColor != 0))
+    }
+    var showSelectedIconColorPicker by remember { mutableStateOf(false) }
+    var showUnselectedIconColorPicker by remember { mutableStateOf(false) }
     var scrollHideEnabled by remember {
         mutableStateOf(preferenceManager.getBoolean("floating_bottom_bar_scroll_hide", true))
     }
@@ -241,7 +255,9 @@ fun FloatingBottomBarCustomizerScreen() {
                                     else -> Color(0xFF00A884).copy(alpha = 0.2f)
                                 }
                                 val activeFill = if (selectorColorEnabled) Color(selectorColor) else defaultActiveFill
-                                val activeTint = if (isIosGlass || isRefined) Color.White else Color(0xFF00A884)
+                                val activeTint = if (selectedIconColorEnabled) {
+                                    Color(selectedIconColor)
+                                } else if (isIosGlass || isRefined) Color.White else Color(0xFF00A884)
                                 Box(
                                     modifier = Modifier
                                         .clip(activeShape)
@@ -290,7 +306,7 @@ fun FloatingBottomBarCustomizerScreen() {
                                 Icon(
                                     imageVector = WaexIcons.AutoAwesome,
                                     contentDescription = null,
-                                    tint = Color(0xFF8696A0),
+                                    tint = if (unselectedIconColorEnabled) Color(unselectedIconColor) else Color(0xFF8696A0),
                                     modifier = Modifier.size((iconSize * 0.8f).coerceIn(16f, 24f).dp)
                                 )
                                 if (!iconsOnly) {
@@ -310,7 +326,7 @@ fun FloatingBottomBarCustomizerScreen() {
                                 Icon(
                                     imageVector = WaexIcons.Contacts,
                                     contentDescription = null,
-                                    tint = Color(0xFF8696A0),
+                                    tint = if (unselectedIconColorEnabled) Color(unselectedIconColor) else Color(0xFF8696A0),
                                     modifier = Modifier.size((iconSize * 0.8f).coerceIn(16f, 24f).dp)
                                 )
                                 if (!iconsOnly) {
@@ -330,7 +346,7 @@ fun FloatingBottomBarCustomizerScreen() {
                                 Icon(
                                     imageVector = WaexIcons.Smartphone,
                                     contentDescription = null,
-                                    tint = Color(0xFF8696A0),
+                                    tint = if (unselectedIconColorEnabled) Color(unselectedIconColor) else Color(0xFF8696A0),
                                     modifier = Modifier.size((iconSize * 0.8f).coerceIn(16f, 24f).dp)
                                 )
                                 if (!iconsOnly) {
@@ -649,6 +665,24 @@ fun FloatingBottomBarCustomizerScreen() {
 
                             HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
 
+                            IconColorSettingRow(
+                                title = UiText.get(R.string.waex_ui_selected_icon_color, "Selected Icon Color"),
+                                isEnabled = selectedIconColorEnabled,
+                                color = selectedIconColor,
+                                onClick = { showSelectedIconColorPicker = true }
+                            )
+
+                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
+                            IconColorSettingRow(
+                                title = UiText.get(R.string.waex_ui_unselected_icon_color, "Unselected Icon Color"),
+                                isEnabled = unselectedIconColorEnabled,
+                                color = unselectedIconColor,
+                                onClick = { showUnselectedIconColorPicker = true }
+                            )
+
+                            HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant.copy(alpha = 0.5f))
+
                             // Icons Only switch
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -887,6 +921,108 @@ fun FloatingBottomBarCustomizerScreen() {
                 preferenceManager.remove("floating_bottom_bar_selector_color_enabled")
             }
         )
+    }
+
+    if (showSelectedIconColorPicker) {
+        WaexColorPickerDialog(
+            initialColorHex = String.format("#%08X", if (selectedIconColorEnabled) selectedIconColor else 0xFF00A884.toInt()),
+            onColorSelected = { hex ->
+                try {
+                    selectedIconColor = AndroidColor.parseColor(hex)
+                    preferenceManager.putInt("floating_bottom_bar_selected_icon_color", selectedIconColor)
+                    selectedIconColorEnabled = true
+                    preferenceManager.putBoolean("floating_bottom_bar_selected_icon_color_enabled", true)
+                } catch (_: IllegalArgumentException) {}
+                showSelectedIconColorPicker = false
+            },
+            onDismiss = { showSelectedIconColorPicker = false },
+            enableOpacity = true,
+            onUseDefault = {
+                selectedIconColorEnabled = false
+                preferenceManager.remove("floating_bottom_bar_selected_icon_color")
+                preferenceManager.remove("floating_bottom_bar_selected_icon_color_enabled")
+            }
+        )
+    }
+
+    if (showUnselectedIconColorPicker) {
+        WaexColorPickerDialog(
+            initialColorHex = String.format("#%08X", if (unselectedIconColorEnabled) unselectedIconColor else 0xFF8696A0.toInt()),
+            onColorSelected = { hex ->
+                try {
+                    unselectedIconColor = AndroidColor.parseColor(hex)
+                    preferenceManager.putInt("floating_bottom_bar_unselected_icon_color", unselectedIconColor)
+                    unselectedIconColorEnabled = true
+                    preferenceManager.putBoolean("floating_bottom_bar_unselected_icon_color_enabled", true)
+                } catch (_: IllegalArgumentException) {}
+                showUnselectedIconColorPicker = false
+            },
+            onDismiss = { showUnselectedIconColorPicker = false },
+            enableOpacity = true,
+            onUseDefault = {
+                unselectedIconColorEnabled = false
+                preferenceManager.remove("floating_bottom_bar_unselected_icon_color")
+                preferenceManager.remove("floating_bottom_bar_unselected_icon_color_enabled")
+            }
+        )
+    }
+}
+
+@Composable
+private fun IconColorSettingRow(
+    title: String,
+    isEnabled: Boolean,
+    color: Int,
+    onClick: () -> Unit
+) {
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    val radius = WaexTheme.radius
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(radius.smShape)
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = typography.bodyMd,
+                fontWeight = FontWeight.Medium,
+                color = colors.onSurface
+            )
+            Text(
+                text = if (isEnabled) String.format("#%08X", color)
+                else UiText.get(R.string.waex_ui_using_app_default_color, "Using app default color"),
+                style = typography.labelSm,
+                color = colors.onSurfaceVariant
+            )
+        }
+        if (isEnabled) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(Color(color))
+                    .border(1.dp, colors.outlineVariant, CircleShape)
+            )
+        } else {
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = colors.surfaceDim,
+                border = BorderStroke(1.dp, colors.outlineVariant)
+            ) {
+                Text(
+                    text = UiText.get(R.string.waex_ui_default, "Default"),
+                    style = typography.labelSm,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                )
+            }
+        }
     }
 }
 

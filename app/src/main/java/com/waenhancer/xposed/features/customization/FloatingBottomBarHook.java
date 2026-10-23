@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Canvas;
@@ -100,6 +101,8 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> indicatorGuards = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> ovalGeometryGuards = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> selectorColorGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> iconColorGuards = new WeakHashMap<>();
+    private static final WeakHashMap<ImageView, ColorStateList> originalIconTints = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, Integer> forcedSelectedTabs = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> renderedSelectedTabs = new WeakHashMap<>();
 
@@ -129,6 +132,10 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
     private static boolean selectorOval = false;
     private static int selectorColor = 0;
     private static boolean selectorColorEnabled = false;
+    private static int selectedIconColor = 0;
+    private static boolean selectedIconColorEnabled = false;
+    private static int unselectedIconColor = 0;
+    private static boolean unselectedIconColorEnabled = false;
 
     public FloatingBottomBarHook(@NonNull Context context, @NonNull ClassLoader classLoader, @NonNull SharedPreferences prefs) {
         super(context, classLoader, prefs);
@@ -168,6 +175,12 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         selectorOval = "oval".equals(prefs.getString("floating_bottom_bar_selector_type", "default"));
         selectorColor = getPrefColor(prefs, "floating_bottom_bar_selector_color", 0);
         selectorColorEnabled = prefs.getBoolean("floating_bottom_bar_selector_color_enabled", selectorColor != 0);
+        selectedIconColor = getPrefColor(prefs, "floating_bottom_bar_selected_icon_color", 0);
+        selectedIconColorEnabled = prefs.getBoolean(
+                "floating_bottom_bar_selected_icon_color_enabled", selectedIconColor != 0);
+        unselectedIconColor = getPrefColor(prefs, "floating_bottom_bar_unselected_icon_color", 0);
+        unselectedIconColorEnabled = prefs.getBoolean(
+                "floating_bottom_bar_unselected_icon_color_enabled", unselectedIconColor != 0);
 
         // Resolve resource IDs
         bottomNavId = getResourceId("bottom_nav", "id");
@@ -1349,7 +1362,62 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
             customizeNativeOvalIndicator(bar, density);
             installOvalGeometryGuard(bar, density);
         }
+        if (selectedIconColorEnabled || unselectedIconColorEnabled) {
+            applyCustomIconColors(bar);
+            installIconColorGuard(bar);
+        }
         applyPresetTabIndicators(bar, density);
+    }
+
+    private static void applyCustomIconColors(ViewGroup bar) {
+        for (int i = 0; i < bar.getChildCount(); i++) {
+            View child = bar.getChildAt(i);
+            if (!(child instanceof ViewGroup)) continue;
+            ViewGroup menu = (ViewGroup) child;
+            for (int j = 0; j < menu.getChildCount(); j++) {
+                View tab = menu.getChildAt(j);
+                boolean selected = (tab instanceof Checkable && ((Checkable) tab).isChecked())
+                        || tab.isSelected() || tab.isActivated();
+                View icon = findIconView(tab);
+                if (icon instanceof ImageView) {
+                    ImageView image = (ImageView) icon;
+                    if (!originalIconTints.containsKey(image)) {
+                        originalIconTints.put(image, image.getImageTintList());
+                    }
+
+                    boolean customColorEnabled = selected
+                            ? selectedIconColorEnabled : unselectedIconColorEnabled;
+                    if (customColorEnabled) {
+                        int color = selected ? selectedIconColor : unselectedIconColor;
+                        image.setImageTintList(ColorStateList.valueOf(color));
+                    } else {
+                        // This state uses WhatsApp's default. Restore its original stateful tint
+                        // after the icon leaves a state that had a custom solid color.
+                        image.setImageTintList(originalIconTints.get(image));
+                    }
+                }
+            }
+        }
+    }
+
+    private static void installIconColorGuard(ViewGroup bar) {
+        if (iconColorGuards.containsKey(bar)) return;
+        ViewTreeObserver.OnPreDrawListener guard = () -> {
+            applyCustomIconColors(bar);
+            return true;
+        };
+        iconColorGuards.put(bar, guard);
+        bar.getViewTreeObserver().addOnPreDrawListener(guard);
+        bar.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View view) {}
+
+            @Override public void onViewDetachedFromWindow(View view) {
+                ViewTreeObserver observer = view.getViewTreeObserver();
+                if (observer.isAlive()) observer.removeOnPreDrawListener(guard);
+                iconColorGuards.remove(bar);
+                view.removeOnAttachStateChangeListener(this);
+            }
+        });
     }
 
     private static void customizeNativeOvalIndicator(View view, float density) {

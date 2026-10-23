@@ -400,4 +400,7 @@
     <string name="status_style_vertical_circle">Vertical List (Circular Avatars)</string>
     <string name="status_style_vertical_square">Vertical List (Square Cards)</string>
     <string name="sending_read_blue_tick">Sending read blue tick…</string>
+    <string name="waex_ui_selected_icon_color">Selected Icon Color</string>
+    <string name="waex_ui_unselected_icon_color">Unselected Icon Color</string>
+    <string name="waex_ui_using_app_default_color">Using app default color</string>
 </resources>
