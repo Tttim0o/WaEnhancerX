@@ -18,6 +18,7 @@ public final class PreferenceLabels {
             case "blueonreply": return UiText.get(R.string.feat_blueonreply_title, "Send Blue Ticks upon Reply");
             case "bootloader_spoofer": return UiText.get(R.string.feat_bootloader_spoofer_title, "Bootloader Spoofer");
             case "broadcast_tag": return UiText.get(R.string.feat_broadcast_tag_title, "Show chat broadcast icon");
+            case "bypass_screenshot_restriction": return UiText.get(R.string.feat_bypass_screenshot_restriction_title, "Allow screenshots");
             case "bubble_colors": return UiText.get(R.string.feat_bubble_colors_title, "Change Bubble Colors");
             case "bypass_version_check": return UiText.get(R.string.feat_bypass_version_check_title, "Disable Version Check");
             case "call_privacy": return UiText.get(R.string.feat_call_privacy_title, "Block Calls");

@@ -139,6 +139,7 @@ fun GlobalPrivacySettingsScreen(
             "hide_read_receipts", "hideread_group", "blueonreply", "seentick", "hide_delivery_receipts", "hide_seen_receipts", "hideonceseen",
             "stealth_status_view", "autonext_status", "toast_viewed_status",
             "anti_view_once", "downloadviewonce", "download_view_once",
+            "bypass_screenshot_restriction",
             "anti_revoke", "hide_anti_revoke", "preserve_own_revoke", "antirevokestatus", "antidisappearing", "toastdeleted", "toast_viewed_message",
             "locked_chats_enhancer", "typearchive", "dnd_mode", "hide_chats", "custom_privacy",
             "message_bomber", "anti_edit_messages", "message_device_source", "revokeallmessages", "hide_forwarded_tag", "removeforwardlimit",

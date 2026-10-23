@@ -44,7 +44,8 @@
     "tabId": "privacy",
     "keys": [
       "anti_view_once",
-      "download_view_once"
+      "download_view_once",
+      "bypass_screenshot_restriction"
     ]
   },
   {

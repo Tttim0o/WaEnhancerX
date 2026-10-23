@@ -429,6 +429,7 @@ fun MainDashboardScreen(
 
                                             // Status Dot & Label
                                             Row(
+                                                modifier = Modifier.weight(1f),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                                             ) {
@@ -514,10 +515,14 @@ fun MainDashboardScreen(
                                                     style = typography.labelSm,
                                                     fontWeight = FontWeight.SemiBold,
                                                     color = colors.onSurface,
-                                                    fontSize = 11.sp
+                                                    fontSize = 11.sp,
+                                                    maxLines = 2,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    modifier = Modifier.weight(1f)
                                                 )
                                             }
                                             Row(
+                                                modifier = Modifier.padding(start = 8.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
@@ -526,7 +531,9 @@ fun MainDashboardScreen(
                                                     style = typography.labelSm,
                                                     color = colors.primary,
                                                     fontSize = 11.sp,
-                                                    fontWeight = FontWeight.Medium
+                                                    fontWeight = FontWeight.Medium,
+                                                    maxLines = 1,
+                                                    softWrap = false
                                                 )
                                                 Icon(
                                                     imageVector = WaexIcons.ChevronRight,

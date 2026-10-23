@@ -64,6 +64,7 @@ import com.waenhancer.xposed.features.privacy.HideChatsVaultHook;
 import com.waenhancer.xposed.features.privacy.HideForwardedTagHook;
 import com.waenhancer.xposed.features.privacy.HideReceiptsHook;
 import com.waenhancer.xposed.features.privacy.LockedChatsEnhancerHook;
+import com.waenhancer.xposed.features.privacy.ScreenshotRestrictionBypassHook;
 import com.waenhancer.xposed.features.privacy.TypingPrivacyHook;
 import com.waenhancer.licensing.features.AudioToVoiceStatusFeature;
 import com.waenhancer.licensing.features.BootloaderSpooferFeature;
@@ -197,6 +198,10 @@ public final class FeatureRegistry {
         registerFeature(AntiViewOnceHook.class, "Privacy",
                 () -> prefs.getBoolean("anti_view_once", false) || prefs.getBoolean("viewonce", false),
                 () -> new AntiViewOnceHook(context, classLoader, prefs));
+
+        registerFeature(ScreenshotRestrictionBypassHook.class, "Privacy",
+                () -> prefs.getBoolean("bypass_screenshot_restriction", false),
+                () -> new ScreenshotRestrictionBypassHook(context, classLoader, prefs));
 
         registerFeature(TypingPrivacyHook.class, "Privacy",
                 () -> prefs.getBoolean("typing_privacy", false) || prefs.getBoolean("hide_typing", false)

@@ -67,6 +67,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.waenhancer.ui.components.LicenseActivationModal
@@ -611,7 +613,7 @@ fun MainContainerScreen() {
                         shadowElevation = 6.dp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(54.dp)
+                            .height(66.dp)
                     ) {
                         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                             val totalWidth = maxWidth
@@ -705,7 +707,14 @@ fun MainContainerScreen() {
                                             style = typography.labelSm,
                                             fontWeight = FontWeight.Medium,
                                             color = contentColor,
-                                            fontSize = 10.sp
+                                            fontSize = 10.sp,
+                                            lineHeight = 10.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 2.dp)
                                         )
                                     }
                                 }
