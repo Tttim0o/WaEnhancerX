@@ -1,4 +1,5 @@
 [Added]
+- Added support for version 2.26.43.xx
 - Time Format (12/24 hours) for timestamp
 - In-App Screenshot / Screen Recording restrictions bypass
 - Send seen to specific Status

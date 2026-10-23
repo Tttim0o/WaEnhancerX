@@ -43,27 +43,27 @@ fun main(args:Array<String>){
     ck("module context requested by exact package",host.contextRequests.isNotEmpty() && host.contextRequests.all{it.first=="com.waenhancer"},true)
     ck("resource access never requests application code",host.contextRequests.all{it.second and Context.CONTEXT_INCLUDE_CODE==0},true)
     val hidden=Context("com.whatsapp",Resources("com.whatsapp",emptyMap(),mapOf(R.array.universal_supported_versions to arrayOf("9.99.1"))))
-    ck("hidden module uses static module rules",UniversalVersionValidator.evaluate(hidden,"2.26.40.76",prefs),D.BUILTIN_RULE)
+    ck("hidden module has no version rules",UniversalVersionValidator.evaluate(hidden,"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
     ck("reject foreign matching numeric table",UniversalVersionValidator.isSupported(hidden,"9.99.1",prefs),false)
     ck("never read foreign resource ID",hidden.resources.reads.size,0)
-    ck("null context uses static module rules",UniversalVersionValidator.evaluate(null,"2.26.40.76",prefs),D.BUILTIN_RULE)
-    ck("no-context bool uses verified module fallback",UniversalVersionValidator.isSupported("2.26.40.76",prefs),true)
-    ck("static rules remain identical to module array",UniversalVersionValidator.getBuiltinSupportedVersions(null),rules.toList())
-    ck("static fallback rejects unknown versions",UniversalVersionValidator.isSupported(null,"9.99.1",prefs),false)
-    ck("wrong context uses static module rules",UniversalVersionValidator.evaluate(Context("com.whatsapp",hidden.resources,hidden),"2.26.40.76",prefs),D.BUILTIN_RULE)
+    ck("null context has no built-in rules",UniversalVersionValidator.evaluate(null,"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
+    ck("no-context bool cannot infer support",UniversalVersionValidator.isSupported("2.26.40.76",prefs),false)
+    ck("no-context built-in list is empty",UniversalVersionValidator.getBuiltinSupportedVersions(null),emptyList<String>())
+    ck("no-context rejects unknown versions",UniversalVersionValidator.isSupported(null,"9.99.1",prefs),false)
+    ck("wrong context has no module rules",UniversalVersionValidator.evaluate(Context("com.whatsapp",hidden.resources,hidden),"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
     val foreignMatching=Context("com.whatsapp",Resources("com.whatsapp",names,mapOf(R.array.universal_supported_versions to rules)))
-    ck("wrong context cannot replace the static module fallback",UniversalVersionValidator.evaluate(Context("com.whatsapp",hidden.resources,foreignMatching),"2.26.40.76",prefs),D.BUILTIN_RULE)
+    ck("wrong context cannot supply module rules",UniversalVersionValidator.evaluate(Context("com.whatsapp",hidden.resources,foreignMatching),"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
     ck("wrong context rejected before its array read",foreignMatching.resources.reads.size,0)
     val misplacedModuleResources=Resources("com.waenhancer",names,mapOf(R.array.universal_supported_versions to rules))
     val wrongPackageContext=Context("com.whatsapp",misplacedModuleResources)
-    ck("wrong package cannot replace static module rules",UniversalVersionValidator.evaluate(Context("com.whatsapp",hidden.resources,wrongPackageContext),"2.26.40.76",prefs),D.BUILTIN_RULE)
+    ck("wrong package cannot supply module rules",UniversalVersionValidator.evaluate(Context("com.whatsapp",hidden.resources,wrongPackageContext),"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
     ck("unexpected context is rejected before reading even matching arrays",misplacedModuleResources.reads.size,0)
-    ck("foreign owner uses static module rules",UniversalVersionValidator.evaluate(module(rules,"com.whatsapp:array/universal_supported_versions"),"2.26.40.76",prefs),D.BUILTIN_RULE)
-    ck("foreign array name uses static module rules",UniversalVersionValidator.evaluate(module(rules,"com.waenhancer:array/another_array"),"2.26.40.76",prefs),D.BUILTIN_RULE)
+    ck("foreign owner is unavailable",UniversalVersionValidator.evaluate(module(rules,"com.whatsapp:array/universal_supported_versions"),"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
+    ck("foreign array name is unavailable",UniversalVersionValidator.evaluate(module(rules,"com.waenhancer:array/another_array"),"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
     ck("own numeric fallback verified by full name",UniversalVersionValidator.evaluate(module(rules,"com.waenhancer:array/universal_supported_versions",emptyMap()),"2.26.40.76",prefs),D.BUILTIN_RULE)
     for(failure in listOf(SecurityException("blocked"),PackageManager.NameNotFoundException(),NoClassDefFoundError("unavailable"))){
         val inaccessible=Context("com.whatsapp",hidden.resources,mod).apply{contextFailure=failure}
-        ck("resource access failure uses static module rules ${failure.javaClass.simpleName}",UniversalVersionValidator.evaluate(inaccessible,"2.26.40.76",prefs),D.BUILTIN_RULE)
+        ck("resource access failure has no rules ${failure.javaClass.simpleName}",UniversalVersionValidator.evaluate(inaccessible,"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
     }
     for(failure in listOf(AssertionError("controlled assertion"),OutOfMemoryError("controlled VM failure"),ThreadDeath())){
         val broken=Context("com.whatsapp",hidden.resources,mod).apply{contextFailure=failure}
@@ -72,7 +72,7 @@ fun main(args:Array<String>){
         ck("fatal or assertion error is not a rules result ${failure.javaClass.simpleName}",caught===failure,true)
     }
     for(list in listOf(emptyArray<String>(),arrayOf("bad"),arrayOf(""),arrayOf("2.26.40.xx",""),arrayOf("*.xx"))){
-        ck("invalid array uses static module rules",UniversalVersionValidator.evaluate(module(list),"2.26.40.76",prefs),D.BUILTIN_RULE)
+        ck("invalid array is unavailable",UniversalVersionValidator.evaluate(module(list),"2.26.40.76",prefs),D.RULES_UNAVAILABLE)
     }
     // A future 2.26.x branch can become supported as arrays.xml changes. Keep the
     // synthetic major-zero version outside that range and test 2.26.42 above.
@@ -80,17 +80,17 @@ fun main(args:Array<String>){
     for(v in listOf(null,""," ","v"))ck("version unavailable",UniversalVersionValidator.evaluate(mod,v,prefs),D.VERSION_UNAVAILABLE)
     val custom=Prefs().apply{values["customize_supported_versions"]=true;values["custom_supported_versions"]=setOf("9.99.1")}
     ck("intentional custom permission preserved",UniversalVersionValidator.evaluate(hidden,"9.99.1",custom),D.CUSTOM_RULE)
-    ck("custom does not admit other versions",UniversalVersionValidator.evaluate(hidden,"9.99.2",custom),D.UNSUPPORTED)
-    ck("built-in rule retains precedence",UniversalVersionValidator.evaluate(hidden,"2.26.40.76",custom),D.BUILTIN_RULE)
+    ck("custom does not invent unavailable built-ins",UniversalVersionValidator.evaluate(hidden,"9.99.2",custom),D.RULES_UNAVAILABLE)
+    ck("built-in rule retains precedence",UniversalVersionValidator.evaluate(host,"2.26.40.76",custom),D.BUILTIN_RULE)
     custom.values["customize_supported_versions"]=false
-    ck("disabled custom not auto-enabled",UniversalVersionValidator.evaluate(hidden,"9.99.1",custom),D.UNSUPPORTED)
+    ck("disabled custom does not replace missing rules",UniversalVersionValidator.evaluate(hidden,"9.99.1",custom),D.RULES_UNAVAILABLE)
     val bypass=Prefs().apply{values["bypass_version_check"]=true}
     ck("explicit existing bypass preserved",UniversalVersionValidator.evaluate(hidden,"99.8.7",bypass),D.EXPLICIT_BYPASS)
     ck("even bypass needs version",UniversalVersionValidator.evaluate(hidden,"",bypass),D.VERSION_UNAVAILABLE)
     ck("unreadable preferences named honestly",UniversalVersionValidator.evaluate(mod,"2.26.40.76",Prefs().apply{fail=true}),D.PREFERENCES_UNAVAILABLE)
     ck("evaluating did not change preferences",prefs.values.size,0)
     val loader=VersionGuard.javaClass.classLoader
-    ck("guard accepts only declared fallback rules",VersionGuard.verifyAndGuard(hidden,loader,prefs),true)
+    ck("guard accepts only array-declared rules",VersionGuard.verifyAndGuard(host,loader,prefs),true)
     val unavailablePrefs=Prefs().apply{fail=true}
     ck("guard pauses on unreadable settings",VersionGuard.verifyAndGuard(hidden,loader,unavailablePrefs),false)
     ck("guard forwards unavailable decision",VersionGuard.runtimeStatus(),"COMPATIBILITY_UNAVAILABLE")

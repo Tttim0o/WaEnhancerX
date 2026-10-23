@@ -15,6 +15,7 @@ import com.waenhancer.xposed.utils.WhatsAppProcessRestarter;
 import de.robv.android.xposed.XposedBridge;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -119,12 +120,11 @@ public final class RestartPromptController {
         if (changes == null || changes.isEmpty()) {
             return UiText.get(R.string.waex_ui_your_wa_enhancer_preferences_changed_r, "Your WA Enhancer preferences changed. Restart WhatsApp to apply them.");
         }
-        List<String> sorted = new ArrayList<>();
+        Set<String> resolved = new LinkedHashSet<>();
         for (String change : changes) {
-            // Resolve catalog titles first and generate a readable label for subordinate or
-            // legacy preference keys. Catalog-only features must not leak raw keys to the UI.
-            sorted.add(PreferenceLabels.text(change));
+            resolved.add(PreferenceLabels.text(change));
         }
+        List<String> sorted = new ArrayList<>(resolved);
         sorted.sort(String.CASE_INSENSITIVE_ORDER);
         StringBuilder message = new StringBuilder(UiText.get(R.string.waex_ui_restart_whatsapp_to_apply, "Restart WhatsApp to apply:\n\n"));
         int shown = Math.min(sorted.size(), 8);
