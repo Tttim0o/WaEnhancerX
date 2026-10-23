@@ -95,6 +95,7 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
     private static final WeakHashMap<View, Float> targetTranslations = new WeakHashMap<>();
     private static final WeakHashMap<View, View> scrollableBottomBarCache = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> mainScrollableCache = new WeakHashMap<>();
+    private static final WeakHashMap<View, ContentPadding> contentPaddingCache = new WeakHashMap<>();
     private static final WeakHashMap<Activity, Float> scrollGestureY = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> indicatorGuards = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, ViewTreeObserver.OnPreDrawListener> ovalGeometryGuards = new WeakHashMap<>();
@@ -191,10 +192,19 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
                         int id = view.getId();
                         boolean isBottomBar = id > 0 && (id == bottomNavId || id == navigationBarId || id == tabLayoutId);
                         boolean isFab = id > 0 && fabIds.contains(id);
-                        if (!isBottomBar && !isFab) return;
+                        boolean isScrollable = isScrollableClass(view.getClass());
+                        if (!isBottomBar && !isFab && !isScrollable) return;
 
                         Activity activity = getActivityFromView(view);
                         if (homeClass == null || activity == null || !homeClass.isInstance(activity)) return;
+
+                        if (isScrollable) {
+                            // At attach time the pager/list may not have its final dimensions yet.
+                            // Run once after layout and once after the tab transition settles.
+                            view.post(() -> applyContentBottomSpacing(view));
+                            view.postDelayed(() -> applyContentBottomSpacing(view), 250L);
+                            return;
+                        }
 
                         if (isBottomBar) {
                             if (view instanceof ViewGroup && isEnabled("floating_bottom_bar", false)) {
@@ -291,6 +301,7 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
         targetTranslations.remove(root);
         scrollableBottomBarCache.remove(root);
         mainScrollableCache.remove(root);
+        restoreContentPadding(root);
         forcedSelectedTabs.remove(root);
         for (int index = 0; index < root.getChildCount(); index++) {
             View child = root.getChildAt(index);
@@ -643,6 +654,7 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
                 updateOverlayLayout(rootView, container, bar);
                 applyPillStyle(container, bar);
                 positionFabsAboveBar(rootView, container);
+                applyContentBottomSpacingInTree(rootView);
                 return true;
             }
 
@@ -708,6 +720,7 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
             bar.post(() -> applyHorizontalPaddingToTabItems(bar, padH));
             applyPillStyle(container, bar);
             positionFabsAboveBar(rootView, container);
+            applyContentBottomSpacingInTree(rootView);
             return true;
         } catch (Throwable e) {
             XposedBridge.log(TAG + " Error setting up floating bar: " + e);
@@ -1120,6 +1133,86 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
             }
         } catch (Throwable ignored) {}
         return 0;
+    }
+
+    /**
+     * The floating navigation is an overlay, so WhatsApp no longer reserves layout space for it.
+     * Give each home-tab scroller enough trailing padding to move its last item above the pill.
+     * The original padding is retained so WhatsApp's own list insets are not lost.
+     */
+    private static void applyContentBottomSpacing(View scrollable) {
+        if (!(scrollable instanceof ViewGroup) || !scrollable.isAttachedToWindow()
+                || !isMainTabScrollable(scrollable)) return;
+        ViewGroup scrollGroup = (ViewGroup) scrollable;
+
+        View bottomNav = findBottomNavForScrollable(scrollable);
+        if (bottomNav == null) return;
+
+        View barTarget = getBarAnimationTarget(bottomNav);
+        int barHeight = barTarget.getHeight();
+        if (barHeight <= 0) barHeight = bottomNav.getHeight();
+        if (barHeight <= 0) return;
+
+        int bottomMargin = 0;
+        ViewGroup.LayoutParams params = barTarget.getLayoutParams();
+        if (params instanceof ViewGroup.MarginLayoutParams) {
+            bottomMargin = ((ViewGroup.MarginLayoutParams) params).bottomMargin;
+        }
+
+        ContentPadding original = contentPaddingCache.get(scrollable);
+        if (original == null) {
+            original = new ContentPadding(scrollable.getPaddingLeft(), scrollable.getPaddingTop(),
+                    scrollable.getPaddingRight(), scrollable.getPaddingBottom(),
+                    scrollGroup.getClipToPadding());
+            contentPaddingCache.put(scrollable, original);
+        }
+
+        float density = scrollable.getResources().getDisplayMetrics().density;
+        int breathingRoom = Math.round(8f * density);
+        int requiredBottom = original.bottom + barHeight + bottomMargin + breathingRoom;
+        if (scrollable.getPaddingLeft() != original.left
+                || scrollable.getPaddingTop() != original.top
+                || scrollable.getPaddingRight() != original.right
+                || scrollable.getPaddingBottom() != requiredBottom) {
+            scrollable.setPadding(original.left, original.top, original.right, requiredBottom);
+        }
+        // Padding becomes scrollable content instead of permanently shrinking/clipping the list.
+        scrollGroup.setClipToPadding(false);
+    }
+
+    private static void applyContentBottomSpacingInTree(View view) {
+        if (view == null) return;
+        if (isScrollableClass(view.getClass())) applyContentBottomSpacing(view);
+        if (!(view instanceof ViewGroup)) return;
+        ViewGroup group = (ViewGroup) view;
+        for (int i = 0; i < group.getChildCount(); i++) {
+            applyContentBottomSpacingInTree(group.getChildAt(i));
+        }
+    }
+
+    private static void restoreContentPadding(View view) {
+        ContentPadding original = contentPaddingCache.remove(view);
+        if (original == null) return;
+        view.setPadding(original.left, original.top, original.right, original.bottom);
+        if (view instanceof ViewGroup) {
+            ((ViewGroup) view).setClipToPadding(original.clipToPadding);
+        }
+    }
+
+    private static final class ContentPadding {
+        final int left;
+        final int top;
+        final int right;
+        final int bottom;
+        final boolean clipToPadding;
+
+        ContentPadding(int left, int top, int right, int bottom, boolean clipToPadding) {
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+            this.clipToPadding = clipToPadding;
+        }
     }
 
     private FrameLayout findRootView(View startView) {
