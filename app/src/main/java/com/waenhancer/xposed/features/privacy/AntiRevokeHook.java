@@ -843,13 +843,7 @@ public class AntiRevokeHook extends BaseFeature {
                             });
 
                     try {
-                        Method getViewMethod = XposedHelpers.findMethodBestMatch(
-                                boundAdapter.getClass(),
-                                "getView",
-                                int.class,
-                                View.class,
-                                ViewGroup.class
-                        );
+                        Method getViewMethod = findConcreteAdapterGetView(boundAdapter.getClass());
 
                         if (getViewMethod == null) {
                             XposedBridge.log(TAG + " getView method not found on " + boundAdapter.getClass().getName());
@@ -920,6 +914,31 @@ public class AntiRevokeHook extends BaseFeature {
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Error setting up ListView adapter hook: " + t.getClass().getSimpleName());
         }
+    }
+
+    /**
+     * WhatsApp frequently inherits ListAdapter#getView from an obfuscated base class.
+     * XposedHelpers.findMethodBestMatch can miss that implementation and report the
+     * Class arguments themselves as the requested signature. Walk the hierarchy and
+     * hook the concrete declaration that the adapter actually dispatches to.
+     */
+    @Nullable
+    private static Method findConcreteAdapterGetView(@NonNull Class<?> adapterClass) {
+        Class<?> current = adapterClass;
+        while (current != null && current != Object.class) {
+            try {
+                Method method = current.getDeclaredMethod(
+                        "getView", int.class, View.class, ViewGroup.class);
+                if (!Modifier.isAbstract(method.getModifiers())) {
+                    method.setAccessible(true);
+                    return method;
+                }
+            } catch (NoSuchMethodException ignored) {
+                // The concrete implementation may live on an obfuscated superclass.
+            }
+            current = current.getSuperclass();
+        }
+        return null;
     }
 
     // ─── Status Playback UI Hook ─────────────────────────────────────────

@@ -83,6 +83,12 @@ android {
 
     buildTypes {
         debug {
+            // Debug APKs are distributed to testers, so run the same whole-program
+            // shrinking/obfuscation pass as release. The mapping file remains under
+            // app/build/outputs/mapping/debug for local crash retracing.
+            // AGP deliberately disables R8 obfuscation for debuggable variants.
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("releaseConfig")
         }
         release {
@@ -108,7 +114,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
         jniLibs {
-            useLegacyPackaging = false
+            // Xposed injects WAEX code into WhatsApp's process. DexSearchEngine loads
+            // libdexkit.so through WAEX's absolute nativeLibraryDir path, so the .so
+            // must be extracted instead of being mmap'd directly from the APK.
+            useLegacyPackaging = true
         }
     }
 

@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.waenhancer.app.R;
 import com.waenhancer.xposed.core.BaseFeature;
@@ -172,13 +173,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
 
                             if (!hookedAdapterClasses.add(adapter.getClass())) return;
 
-                            Method getViewMethod = XposedHelpers.findMethodBestMatch(
-                                    adapter.getClass(),
-                                    "getView",
-                                    int.class,
-                                    View.class,
-                                    ViewGroup.class
-                            );
+                            Method getViewMethod = findConcreteAdapterGetView(adapter.getClass());
                             if (getViewMethod == null) return;
 
                             XposedBridge.hookMethod(getViewMethod, new XC_MethodHook() {
@@ -284,6 +279,25 @@ public class MessageDeviceSourceHook extends BaseFeature {
                     if (nested != null) return nested;
                 } catch (Throwable ignored) {
                 }
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Method findConcreteAdapterGetView(@NonNull Class<?> adapterClass) {
+        Class<?> current = adapterClass;
+        while (current != null && current != Object.class) {
+            try {
+                Method method = current.getDeclaredMethod(
+                        "getView", int.class, View.class, ViewGroup.class);
+                if (!java.lang.reflect.Modifier.isAbstract(method.getModifiers())) {
+                    method.setAccessible(true);
+                    return method;
+                }
+            } catch (NoSuchMethodException ignored) {
+                // WhatsApp adapters commonly inherit this method from an obfuscated base.
             }
             current = current.getSuperclass();
         }
