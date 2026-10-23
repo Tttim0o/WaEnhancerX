@@ -809,6 +809,8 @@ private fun TargetCompatibilityBottomSheet(
     val installedTargets = remember(apps) { apps.filter { it.isInstalled } }
     val isYellow = targetSummary.healthy == null
     val isRed = targetSummary.healthy == false
+    // True when isYellow but all apps are already hooked — means custom version rule, not "not yet opened"
+    val isCustomRuleYellow = isYellow && installedTargets.isNotEmpty() && installedTargets.all { it.isHooked }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -896,8 +898,9 @@ private fun TargetCompatibilityBottomSheet(
                         )
                         Text(
                             text = when {
-                                isYellow -> stringResource(R.string.diag_target_sheet_partial_warning)
                                 isRed -> stringResource(R.string.diag_status_review_required)
+                                isCustomRuleYellow -> stringResource(R.string.diag_target_sheet_custom_rule_warning)
+                                isYellow -> stringResource(R.string.diag_target_sheet_partial_warning)
                                 else -> stringResource(R.string.diag_target_sheet_all_ok)
                             },
                             style = typography.bodySm,

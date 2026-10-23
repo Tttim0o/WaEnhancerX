@@ -782,6 +782,7 @@
     <string name="waex_ui_verification_failed" formatted="false">"Verification failed."</string>
     <string name="waex_ui_verify_activate" formatted="false">"Verify &amp; Activate"</string>
     <string name="waex_ui_verify_selected_keybox" formatted="false">"Verify selected keybox"</string>
+    <string name="waex_ui_verifying_keybox" formatted="false">"Verifying keybox…"</string>
     <string name="waex_ui_verifying_with_server" formatted="false">"Verifying with Server…"</string>
     <string name="waex_ui_version_with_date">"Version %1$s • %2$s"</string>
     <string name="waex_ui_version_1_s">"Version %1$s"</string>

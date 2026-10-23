@@ -771,6 +771,7 @@
     <string name="waex_ui_verification_failed" formatted="false">"No se pudo verificar."</string>
     <string name="waex_ui_verify_activate" formatted="false">"Verificar y activar"</string>
     <string name="waex_ui_verify_selected_keybox" formatted="false">"Verificar el archivo de claves seleccionado"</string>
+    <string name="waex_ui_verifying_keybox" formatted="false">"Verificando el archivo de claves…"</string>
     <string name="waex_ui_verifying_with_server" formatted="false">"Verificando con el servidor…"</string>
     <string name="waex_ui_version_with_date">"Versión %1$s  •  %2$s"</string>
     <string name="waex_ui_version_1_s">"Versión %1$s"</string>

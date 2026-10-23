@@ -57,6 +57,41 @@ fun BootloaderSpooferScreen() {
     var verifying by remember { mutableStateOf(false) }
     var report by remember { mutableStateOf<BootloaderSpooferFeature.VerificationReport?>(null) }
     var showReport by remember { mutableStateOf(false) }
+    // Cache: track which source the report was generated for and when.
+    // Key: "custom" or "managed"; value: epoch-millis of last successful verify.
+    var reportSource by remember { mutableStateOf("") }
+    var reportCachedAt by remember { mutableStateOf(0L) }
+    val cacheValidMs = 60 * 60 * 1_000L // 1 hour
+
+    fun isReportCacheValid(forCustom: Boolean): Boolean {
+        val expectedSource = if (forCustom) "custom" else "managed"
+        return reportSource == expectedSource &&
+                System.currentTimeMillis() - reportCachedAt < cacheValidMs &&
+                report != null
+    }
+
+    fun runVerify(forCustom: Boolean, autoOpen: Boolean = true) {
+        if (isReportCacheValid(forCustom)) {
+            if (autoOpen) showReport = true
+            return
+        }
+        verifying = true
+        if (autoOpen) showReport = true
+        scope.launch {
+            val selectedXml = withContext(Dispatchers.IO) {
+                prefs.getString(
+                    if (forCustom) BootloaderSpooferFeature.CUSTOM_XML
+                    else BootloaderSpooferFeature.DEFAULT_XML, ""
+                )
+            }
+            report = withContext(Dispatchers.Default) {
+                BootloaderSpooferFeature.verify(context, selectedXml, !forCustom)
+            }
+            reportSource = if (forCustom) "custom" else "managed"
+            reportCachedAt = System.currentTimeMillis()
+            verifying = false
+        }
+    }
 
     val importer = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -73,6 +108,8 @@ fun BootloaderSpooferScreen() {
                 customReady = true
                 custom = true
                 prefs.putBoolean(BootloaderSpooferFeature.CUSTOM_ENABLED, true)
+                // Invalidate cache so next verify runs fresh for the new custom keybox.
+                reportSource = ""
                 Toast.makeText(context, UiText.get(R.string.waex_ui_custom_keybox_imported, "Custom keybox imported"), Toast.LENGTH_SHORT).show()
             }.onFailure { Toast.makeText(context, UiText.get(R.string.waex_ui_invalid_keybox_1_s, "Invalid keybox: %1\$s", it.message), Toast.LENGTH_LONG).show() }
         }
@@ -125,7 +162,14 @@ fun BootloaderSpooferScreen() {
                     HorizontalDivider(color = colors.outlineVariant)
                     SettingRow(UiText.get(R.string.waex_ui_use_custom_keybox, "Use Custom Keybox"),
                         if (customReady) UiText.get(R.string.waex_ui_imported_keybox_selected, "Imported keybox selected") else UiText.get(R.string.waex_ui_import_a_keybox_xml_before_enabling, "Import a keybox.xml before enabling"), custom,
-                        customReady) { custom = it; prefs.putBoolean(BootloaderSpooferFeature.CUSTOM_ENABLED, it) }
+                        customReady) {
+                        custom = it
+                        prefs.putBoolean(BootloaderSpooferFeature.CUSTOM_ENABLED, it)
+                        // Source changed — invalidate cache and silently re-verify in background.
+                        reportSource = ""
+                        val canVerifyNew = if (it) customReady else prefs.getString(BootloaderSpooferFeature.DEFAULT_XML, "").isNotBlank()
+                        if (canVerifyNew) runVerify(forCustom = it, autoOpen = false)
+                    }
                 }
             }
             Surface(shape = radius.bentoCardShape, color = colors.surfaceDim,
@@ -156,22 +200,18 @@ fun BootloaderSpooferScreen() {
                     OutlinedButton(onClick = { importer.launch("*/*") }, modifier = Modifier.fillMaxWidth()) {
                         Text(if (customReady) UiText.get(R.string.waex_ui_replace_custom_keybox_xml, "Replace custom keybox.xml") else UiText.get(R.string.waex_ui_import_custom_keybox_xml, "Import custom keybox.xml"))
                     }
-                    OutlinedButton(onClick = {
-                        verifying = true
-                        scope.launch {
-                            val selectedXml = withContext(Dispatchers.IO) {
-                                prefs.getString(if (custom) BootloaderSpooferFeature.CUSTOM_XML
-                                else BootloaderSpooferFeature.DEFAULT_XML, "")
-                            }
-                            report = withContext(Dispatchers.Default) {
-                                BootloaderSpooferFeature.verify(context, selectedXml, !custom)
-                            }
-                            verifying = false; showReport = true
+                    OutlinedButton(
+                        onClick = { runVerify(forCustom = custom) },
+                        enabled = !verifying && (if (custom) customReady else managedReady),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (verifying) {
+                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                            Spacer(Modifier.width(8.dp))
+                            Text(UiText.get(R.string.waex_ui_verifying_keybox, "Verifying keybox…"))
+                        } else {
+                            Text(UiText.get(R.string.waex_ui_verify_selected_keybox, "Verify selected keybox"))
                         }
-                    }, enabled = !verifying && (if (custom) customReady else managedReady),
-                        modifier = Modifier.fillMaxWidth()) {
-                        if (verifying) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                        else Text(UiText.get(R.string.waex_ui_verify_selected_keybox, "Verify selected keybox"))
                     }
                 }
             }
@@ -179,7 +219,11 @@ fun BootloaderSpooferScreen() {
                 style = typography.bodyMd, color = colors.onSurfaceVariant)
         }
     }
-    if (showReport && report != null) VerificationSheet(report!!, onDismiss = { showReport = false })
+    if (showReport) VerificationSheet(
+        report = report,
+        isLoading = verifying,
+        onDismiss = { showReport = false; if (!verifying) report = null }
+    )
 }
 
 private fun formatUpdated(value: String): String {
@@ -198,11 +242,16 @@ private fun formatUpdated(value: String): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun VerificationSheet(report: BootloaderSpooferFeature.VerificationReport, onDismiss: () -> Unit) {
+private fun VerificationSheet(
+    report: BootloaderSpooferFeature.VerificationReport?,
+    isLoading: Boolean,
+    onDismiss: () -> Unit
+) {
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
     val radius = WaexTheme.radius
     val scoreColor = when {
+        isLoading || report == null -> colors.onSurfaceVariant
         report.totalScore >= 85 -> Color(0xFF10B981)
         report.totalScore >= 60 -> Color(0xFFF59E0B)
         else -> colors.error
@@ -244,7 +293,8 @@ private fun VerificationSheet(report: BootloaderSpooferFeature.VerificationRepor
                         color = colors.onSurface
                     )
                     Text(
-                        report.source,
+                        if (isLoading) UiText.get(R.string.waex_ui_verifying_keybox, "Verifying keybox…")
+                        else report?.source ?: "",
                         style = typography.labelSm,
                         color = colors.onSurfaceVariant
                     )
@@ -275,104 +325,132 @@ private fun VerificationSheet(report: BootloaderSpooferFeature.VerificationRepor
                 border = BorderStroke(1.dp, scoreColor.copy(alpha = 0.3f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                "${report.totalScore}",
-                                style = typography.headlineMd,
-                                fontWeight = FontWeight.Bold,
-                                color = scoreColor,
-                                fontSize = 28.sp
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 28.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(36.dp),
+                                strokeWidth = 3.dp,
+                                color = colors.primary
                             )
                             Text(
-                                " / 100",
+                                UiText.get(R.string.waex_ui_verifying_keybox, "Verifying keybox…"),
                                 style = typography.bodyMd,
-                                color = colors.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 4.dp, start = 2.dp)
+                                color = colors.onSurfaceVariant
                             )
                         }
                     }
-
-                    Spacer(Modifier.weight(1f))
-
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(scoreColor.copy(alpha = 0.15f))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                } else {
+                    Row(
+                        Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            if (report.recommended) UiText.get(R.string.waex_ui_recommended, "RECOMMENDED") else UiText.get(R.string.waex_ui_needs_attention, "NEEDS ATTENTION"),
-                            style = typography.labelSm,
-                            fontWeight = FontWeight.Bold,
-                            color = scoreColor,
-                            fontSize = 11.sp
-                        )
+                        Column {
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                Text(
+                                    "${report?.totalScore ?: 0}",
+                                    style = typography.headlineMd,
+                                    fontWeight = FontWeight.Bold,
+                                    color = scoreColor,
+                                    fontSize = 28.sp
+                                )
+                                Text(
+                                    " / 100",
+                                    style = typography.bodyMd,
+                                    color = colors.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 4.dp, start = 2.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.weight(1f))
+
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(scoreColor.copy(alpha = 0.15f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                if (report?.recommended == true) UiText.get(R.string.waex_ui_recommended, "RECOMMENDED") else UiText.get(R.string.waex_ui_needs_attention, "NEEDS ATTENTION"),
+                                style = typography.labelSm,
+                                fontWeight = FontWeight.Bold,
+                                color = scoreColor,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
             }
 
-            if (report.error.isNotBlank()) {
-                AuditCard(UiText.get(R.string.waex_ui_parse_error, "Parse error"), 0, 0, listOf(report.error to false))
-            } else {
-                AuditCard(
-                    UiText.get(R.string.waex_ui_spoofer_runtime, "Spoofer Runtime"),
-                    report.runtimeScore,
-                    10,
-                    listOf(
-                        UiText.get(R.string.waex_ui_feature_enabled, "Feature enabled") to report.featureEnabled,
-                        UiText.get(R.string.waex_ui_whatsapp_hook_active, "WhatsApp hook active") to report.hookActive
+            if (!isLoading) {
+                if (report != null && report.error.isNotBlank()) {
+                    AuditCard(UiText.get(R.string.waex_ui_parse_error, "Parse error"), 0, 0, listOf(report.error to false))
+                } else if (report != null) {
+                    AuditCard(
+                        UiText.get(R.string.waex_ui_spoofer_runtime, "Spoofer Runtime"),
+                        report.runtimeScore,
+                        10,
+                        listOf(
+                            UiText.get(R.string.waex_ui_feature_enabled, "Feature enabled") to report.featureEnabled,
+                            UiText.get(R.string.waex_ui_whatsapp_hook_active, "WhatsApp hook active") to report.hookActive
+                        )
                     )
-                )
 
-                AuditCard(
-                    UiText.get(R.string.waex_ui_ec_attestation_chain, "EC Attestation Chain"),
-                    report.ecScore,
-                    40,
-                    listOf(
-                        UiText.get(R.string.waex_ui_certificates_parsed, "Certificates parsed") to report.ecPresent,
-                        UiText.get(R.string.waex_ui_trust_chain_verified, "Trust chain verified") to report.ecChainValid,
-                        UiText.get(R.string.waex_ui_private_key_matches, "Private key matches") to report.ecKeyMatches,
-                        UiText.get(R.string.waex_ui_certificate_is_current, "Certificate is current") to !report.ecExpired
+                    AuditCard(
+                        UiText.get(R.string.waex_ui_ec_attestation_chain, "EC Attestation Chain"),
+                        report.ecScore,
+                        40,
+                        listOf(
+                            UiText.get(R.string.waex_ui_certificates_parsed, "Certificates parsed") to report.ecPresent,
+                            UiText.get(R.string.waex_ui_trust_chain_verified, "Trust chain verified") to report.ecChainValid,
+                            UiText.get(R.string.waex_ui_private_key_matches, "Private key matches") to report.ecKeyMatches,
+                            UiText.get(R.string.waex_ui_certificate_is_current, "Certificate is current") to !report.ecExpired
+                        )
                     )
-                )
 
-                AuditCard(
-                    UiText.get(R.string.waex_ui_rsa_attestation_chain, "RSA Attestation Chain"),
-                    report.rsaScore,
-                    20,
-                    listOf(
-                        UiText.get(R.string.waex_ui_certificates_parsed, "Certificates parsed") to report.rsaPresent,
-                        UiText.get(R.string.waex_ui_trust_chain_verified, "Trust chain verified") to report.rsaChainValid,
-                        UiText.get(R.string.waex_ui_private_key_matches, "Private key matches") to report.rsaKeyMatches,
-                        UiText.get(R.string.waex_ui_certificate_is_current, "Certificate is current") to !report.rsaExpired
+                    AuditCard(
+                        UiText.get(R.string.waex_ui_rsa_attestation_chain, "RSA Attestation Chain"),
+                        report.rsaScore,
+                        20,
+                        listOf(
+                            UiText.get(R.string.waex_ui_certificates_parsed, "Certificates parsed") to report.rsaPresent,
+                            UiText.get(R.string.waex_ui_trust_chain_verified, "Trust chain verified") to report.rsaChainValid,
+                            UiText.get(R.string.waex_ui_private_key_matches, "Private key matches") to report.rsaKeyMatches,
+                            UiText.get(R.string.waex_ui_certificate_is_current, "Certificate is current") to !report.rsaExpired
+                        )
                     )
-                )
 
-                AuditCard(
-                    UiText.get(R.string.waex_ui_integrity_estimate, "Integrity Estimate"),
-                    report.integrityScore,
-                    30,
-                    listOf(
-                        UiText.get(R.string.waex_ui_basic_integrity_supported, "Basic integrity supported") to report.basicIntegrity,
-                        UiText.get(R.string.waex_ui_device_integrity_supported, "Device integrity supported") to report.deviceIntegrity,
-                        UiText.get(R.string.waex_ui_strong_integrity_supported, "Strong integrity supported") to report.strongIntegritySupported
+                    AuditCard(
+                        UiText.get(R.string.waex_ui_integrity_estimate, "Integrity Estimate"),
+                        report.integrityScore,
+                        30,
+                        listOf(
+                            UiText.get(R.string.waex_ui_basic_integrity_supported, "Basic integrity supported") to report.basicIntegrity,
+                            UiText.get(R.string.waex_ui_device_integrity_supported, "Device integrity supported") to report.deviceIntegrity,
+                            UiText.get(R.string.waex_ui_strong_integrity_supported, "Strong integrity supported") to report.strongIntegritySupported
+                        )
                     )
+                }
+
+                Text(
+                    UiText.get(R.string.waex_ui_this_is_a_local_configuration_audit_no, "This is a local configuration audit, not a live Google Play Integrity verdict."),
+                    style = typography.labelSm,
+                    color = colors.onSurfaceVariant.copy(alpha = 0.8f)
                 )
             }
 
-            Text(
-                UiText.get(R.string.waex_ui_this_is_a_local_configuration_audit_no, "This is a local configuration audit, not a live Google Play Integrity verdict."),
-                style = typography.labelSm,
-                color = colors.onSurfaceVariant.copy(alpha = 0.8f)
-            )
-
             Button(
                 onClick = onDismiss,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(46.dp),

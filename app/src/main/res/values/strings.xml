@@ -350,6 +350,7 @@
     <string name="diag_target_sheet_title">Target Compatibility</string>
     <string name="diag_target_sheet_desc">Live injection and hook status across all detected WhatsApp installations.</string>
     <string name="diag_target_sheet_partial_warning">Some installed WhatsApp applications have not reported active injection. Open them once to initialize hooks and confirm compatibility.</string>
+    <string name="diag_target_sheet_custom_rule_warning">All apps are injected and active. A custom version rule is in effect; compatibility with this version has not been officially verified.</string>
     <string name="diag_target_sheet_all_ok">All installed WhatsApp applications are active and hooked.</string>
     <string name="diag_target_sheet_unconfirmed_badge">Runtime Unconfirmed</string>
     <string name="diag_target_sheet_injected_badge">Injected</string>
