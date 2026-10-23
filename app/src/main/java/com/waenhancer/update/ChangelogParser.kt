@@ -42,7 +42,7 @@ object ChangelogParser {
                 sections.add(ChangelogSection(title, currentItems.toList()))
             } else if (title == null && currentItems.isNotEmpty()) {
                 // Intro text or ungrouped text
-                sections.add(ChangelogSection(UiText.get(R.string.waex_ui_overview_d4b1ea57, "Overview"), currentItems.toList()))
+                sections.add(ChangelogSection(UiText.get(R.string.waex_ui_overview, "Overview"), currentItems.toList()))
             }
             currentItems.clear()
         }

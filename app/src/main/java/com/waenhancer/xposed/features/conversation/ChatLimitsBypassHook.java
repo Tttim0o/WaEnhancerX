@@ -16,6 +16,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import org.luckypray.dexkit.query.FindClass;
+import org.luckypray.dexkit.query.matchers.ClassMatcher;
+import org.luckypray.dexkit.result.ClassData;
 
 /**
  * Chat Limits Bypass Hook:
@@ -52,8 +59,9 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method chatPinLimitMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_pinned_in_chat_limit_getter_v2",
+                    "waex_pinned_in_chat_limit_getter_v2",
                     (bridge, loader) -> {
+                        // Strategy A: WA Business uses full log string with class/method path.
                         MethodData pinSelectedCaller = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingString(
@@ -67,13 +75,63 @@ public class ChatLimitsBypassHook extends BaseFeature {
                             return structuralMatch;
                         }
 
+                        // Strategy B: Regular WA may use a shorter log string without the class prefix.
+                        MethodData pinSelectedCallerShort = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("pinSelectedJids max=", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        Method structuralMatchShort = findSelfTypedStaticIntInvoke(pinSelectedCallerShort, loader);
+                        if (structuralMatchShort != null) {
+                            return structuralMatchShort;
+                        }
+
+                        // Strategy C: Look for any method that logs about pinning and calls a static int getter.
+                        MethodData pinCallerAny = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("pinSelectedJids", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        Method structuralMatchAny = findSelfTypedStaticIntInvoke(pinCallerAny, loader);
+                        if (structuralMatchAny != null) {
+                            return structuralMatchAny;
+                        }
+
+                        // Strategy D (legacy WA Business fallback): R.string resource ID 3732.
                         MethodData legacy = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingNumber(3732)
                                         .returnType(int.class)
                                 )
                         ).firstOrNull();
-                        return legacy != null ? legacy.getMethodInstance(loader) : null;
+                        if (legacy != null) return legacy.getMethodInstance(loader);
+
+                        // Strategy E: Search for a no-arg static int method whose name contains
+                        // "max" or "limit" invoked from a method that contains "pinned" string.
+                        MethodData pinnedStringCaller = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("pinned", StringMatchType.Contains)
+                                        .returnType(void.class)
+                                )
+                        ).firstOrNull();
+                        if (pinnedStringCaller != null) {
+                            for (MethodData invoked : pinnedStringCaller.getInvokes()) {
+                                if (!invoked.isMethod()) continue;
+                                try {
+                                    Method candidate = invoked.getMethodInstance(loader);
+                                    if (candidate.getReturnType() == int.class
+                                            && Modifier.isStatic(candidate.getModifiers())
+                                            && candidate.getParameterTypes().length == 0) {
+                                        String methodName = candidate.getName().toLowerCase();
+                                        if (methodName.contains("max") || methodName.contains("limit")) {
+                                            return candidate;
+                                        }
+                                    }
+                                } catch (Throwable ignored) {}
+                            }
+                        }
+
+                        return null;
                     }
             );
 
@@ -92,14 +150,23 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method setPinMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_chat_settings_set_pin",
+                    "waex_chat_settings_set_pin",
                     (bridge, loader) -> {
+                        // Primary (WA Business has the full qualified log string).
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingString("ChatSettingsStore/setPin", StringMatchType.Contains)
                                 )
                         ).firstOrNull();
-                        return md != null ? md.getMethodInstance(loader) : null;
+                        if (md != null) return md.getMethodInstance(loader);
+
+                        // Fallback: Regular WA uses "setPin" without the class prefix in its log tag.
+                        MethodData fallback = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("setPin", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        return fallback != null ? fallback.getMethodInstance(loader) : null;
                     }
             );
 
@@ -118,14 +185,23 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method pinnedHashSetMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_pinned_hash_set_getter",
+                    "waex_pinned_hash_set_getter",
                     (bridge, loader) -> {
+                        // Primary: WA Business uses both strings together.
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingString("getPinnedJids/QUERY_CHAT_SETTINGS", StringMatchType.Contains)
                                 )
                         ).firstOrNull();
-                        return md != null ? md.getMethodInstance(loader) : null;
+                        if (md != null) return md.getMethodInstance(loader);
+
+                        // Fallback: Regular WA may only log "getPinnedJids" without the query suffix.
+                        MethodData fallback = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("getPinnedJids", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        return fallback != null ? fallback.getMethodInstance(loader) : null;
                     }
             );
 
@@ -160,7 +236,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
                             Set<Object> originalKeys = originalMap.keySet();
                             Class<?> currentClass = hostInstance.getClass();
                             while (currentClass != null && currentClass != Object.class) {
-                                for (java.lang.reflect.Field field : currentClass.getDeclaredFields()) {
+                                for (Field field : currentClass.getDeclaredFields()) {
                                     if (Set.class.isAssignableFrom(field.getType())) {
                                         try {
                                             field.setAccessible(true);
@@ -185,7 +261,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method pinFilterMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_pinned_selection_filter",
+                    "waex_pinned_selection_filter",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -199,7 +275,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
                             try {
                                 Method instance = invoke.getMethodInstance(loader);
                                 if (Set.class.isAssignableFrom(instance.getReturnType())
-                                        && instance.getParameterCount() == 2
+                                        && instance.getParameterTypes().length == 2
                                         && Iterable.class.isAssignableFrom(instance.getParameterTypes()[0])
                                         && Set.class.isAssignableFrom(instance.getParameterTypes()[1])) {
                                     return instance;
@@ -271,7 +347,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
 
     private void hookCollectionConstructors() {
         try {
-            java.lang.reflect.Constructor<?> setConstructor = java.util.LinkedHashSet.class.getConstructor(int.class);
+            Constructor<?> setConstructor = LinkedHashSet.class.getConstructor(int.class);
             XposedBridge.hookMethod(setConstructor, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
@@ -291,7 +367,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
         }
 
         try {
-            java.lang.reflect.Constructor<?> listConstructor = java.util.ArrayList.class.getConstructor(int.class);
+            Constructor<?> listConstructor = ArrayList.class.getConstructor(int.class);
             XposedBridge.hookMethod(listConstructor, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
@@ -328,11 +404,11 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Class<?> multiSelectionLimitInfoClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_multi_selection_limit_info_class",
+                    "waex_multi_selection_limit_info_class",
                     (bridge, loader) -> {
-                        org.luckypray.dexkit.result.ClassData cd = bridge.findClass(
-                                org.luckypray.dexkit.query.FindClass.create().matcher(
-                                        org.luckypray.dexkit.query.matchers.ClassMatcher.create()
+                        ClassData cd = bridge.findClass(
+                                FindClass.create().matcher(
+                                        ClassMatcher.create()
                                                 .addUsingString("MultiSelectionLimitInfo")
                                 )
                         ).firstOrNull();
@@ -341,7 +417,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             );
 
             if (multiSelectionLimitInfoClass != null) {
-                for (java.lang.reflect.Constructor<?> constructor : multiSelectionLimitInfoClass.getDeclaredConstructors()) {
+                for (Constructor<?> constructor : multiSelectionLimitInfoClass.getDeclaredConstructors()) {
                     XposedBridge.hookMethod(constructor, new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) {
@@ -368,7 +444,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method forwardLimitMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_forward_limit_getter",
+                    "waex_forward_limit_getter",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -399,7 +475,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method revokeWindowMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_revoke_time_window_check",
+                    "waex_revoke_time_window_check",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()

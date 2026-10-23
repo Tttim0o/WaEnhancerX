@@ -52,6 +52,7 @@ import com.waenhancer.ui.components.rememberRuntimeObservationClock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.BorderStroke
+import com.waenhancer.utils.InternalLabels
 
 @Composable
 fun SystemHealthScreen() {
@@ -100,13 +101,13 @@ fun SystemHealthScreen() {
     Scaffold(
         topBar = {
             WaexTopBar(
-                UiText.get(R.string.waex_ui_system_diagnostics_005acd73, "System Diagnostics"),
+                UiText.get(R.string.waex_ui_system_diagnostics, "System Diagnostics"),
                 onBackClick = { nav.popBack() },
                 actions = {
                     IconButton(onClick = { refreshTrigger++ }) {
                         Icon(
                             imageVector = WaexIcons.Refresh,
-                            contentDescription = UiText.get(R.string.waex_ui_refresh_diagnostics_7bce98ec, "Refresh diagnostics"),
+                            contentDescription = UiText.get(R.string.waex_ui_refresh_diagnostics, "Refresh diagnostics"),
                             tint = colors.onSurface
                         )
                     }
@@ -131,36 +132,36 @@ fun SystemHealthScreen() {
                 Modifier.fillMaxSize().padding(insets).verticalScroll(rememberScrollState()).padding(horizontal = spacing.pageMargin, vertical = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DiagnosticCard(UiText.get(R.string.waex_ui_module_framework_b4c7101d, "Module & Framework"), listOf(
-                    UiText.get(R.string.waex_ui_module_status_78cf7255, "Module status") to if (data.moduleActive) UiText.get(R.string.diag_status_active, "Active") else UiText.get(R.string.diag_status_inactive, "Inactive"),
-                    UiText.get(R.string.waex_ui_module_version_d923cdd4, "Module version") to "${data.moduleVersion} (${data.moduleVersionCode})",
-                    UiText.get(R.string.waex_ui_xposed_framework_171b0ce2, "Xposed framework") to com.waenhancer.utils.InternalLabels.text(data.framework.name),
-                    UiText.get(R.string.waex_ui_framework_package_2cd0a851, "Framework package") to (data.framework.packageName ?: UiText.get(R.string.waex_ui_not_available_67a926f7, "Not available")),
-                    UiText.get(R.string.waex_ui_framework_version_b4522d19, "Framework version") to (data.framework.version ?: UiText.get(R.string.waex_ui_not_available_67a926f7, "Not available")),
-                    UiText.get(R.string.waex_ui_xposed_api_09eb1963, "Xposed API") to (data.framework.api?.toString() ?: UiText.get(R.string.waex_ui_not_reported_yet_355b4779, "Not reported yet")),
-                    UiText.get(R.string.waex_ui_root_allowed_fb11f039, "Root allowed") to if (data.rootAllowed) UiText.get(R.string.waex_ui_yes_85a39ab3, "Yes") else UiText.get(R.string.waex_ui_no_1ea442a1, "No")
+                DiagnosticCard(UiText.get(R.string.waex_ui_module_framework, "Module & Framework"), listOf(
+                    UiText.get(R.string.waex_ui_module_status, "Module status") to if (data.moduleActive) UiText.get(R.string.diag_status_active, "Active") else UiText.get(R.string.diag_status_inactive, "Inactive"),
+                    UiText.get(R.string.waex_ui_module_version, "Module version") to "${data.moduleVersion} (${data.moduleVersionCode})",
+                    UiText.get(R.string.waex_ui_xposed_framework, "Xposed framework") to InternalLabels.text(data.framework.name),
+                    UiText.get(R.string.waex_ui_framework_package, "Framework package") to (data.framework.packageName ?: UiText.get(R.string.waex_ui_not_available_label, "Not available")),
+                    UiText.get(R.string.waex_ui_framework_version, "Framework version") to (data.framework.version ?: UiText.get(R.string.waex_ui_not_available_label, "Not available")),
+                    UiText.get(R.string.waex_ui_xposed_api, "Xposed API") to (data.framework.api?.toString() ?: UiText.get(R.string.waex_ui_not_reported_yet, "Not reported yet")),
+                    UiText.get(R.string.waex_ui_root_allowed, "Root allowed") to if (data.rootAllowed) UiText.get(R.string.waex_ui_yes, "Yes") else UiText.get(R.string.waex_ui_no, "No")
                 ), if (data.moduleActive) Color(0xFF10B981) else colors.error)
 
-                DiagnosticCard(UiText.get(R.string.waex_ui_device_environment_663d37f3, "Device Environment"), listOf(
+                DiagnosticCard(UiText.get(R.string.waex_ui_device_environment, "Device Environment"), listOf(
                     "Android" to "${data.androidVersion} (API ${data.sdk})",
-                    UiText.get(R.string.waex_ui_device_6ba0bdec, "Device") to data.device,
-                    UiText.get(R.string.waex_ui_supported_abis_05063fc8, "Supported ABIs") to data.abis,
-                    UiText.get(R.string.waex_ui_kernel_8a716159, "Kernel") to data.kernel,
-                    "SELinux" to com.waenhancer.utils.InternalLabels.text(data.selinux)
+                    UiText.get(R.string.waex_ui_device, "Device") to data.device,
+                    UiText.get(R.string.waex_ui_supported_abis, "Supported ABIs") to data.abis,
+                    UiText.get(R.string.waex_ui_kernel, "Kernel") to data.kernel,
+                    "SELinux" to InternalLabels.text(data.selinux)
                 ), colors.primary)
 
                 DiagnosticCard(
-                    UiText.get(R.string.waex_ui_hook_runtime_3e54a2b2, "Hook Runtime"),
+                    UiText.get(R.string.waex_ui_hook_runtime, "Hook Runtime"),
                     buildList {
-                        add(UiText.get(R.string.waex_ui_reported_hooked_targets_0f7b326d, "Reported hooked targets") to com.waenhancer.utils.InternalLabels.text(data.hookedTargets))
-                        add(UiText.get(R.string.waex_ui_manager_process_hooked_a78a75a7, "Manager process hooked") to if (data.moduleActive) UiText.get(R.string.waex_ui_yes_85a39ab3, "Yes") else UiText.get(R.string.waex_ui_no_1ea442a1, "No"))
-                        add(UiText.get(R.string.waex_ui_runtime_api_captured_2625bdc2, "Runtime API captured") to if (data.framework.api != null) UiText.get(R.string.waex_ui_yes_85a39ab3, "Yes") else UiText.get(R.string.waex_ui_no_1ea442a1, "No"))
+                        add(UiText.get(R.string.waex_ui_reported_hooked_targets, "Reported hooked targets") to InternalLabels.text(data.hookedTargets))
+                        add(UiText.get(R.string.waex_ui_manager_process_hooked, "Manager process hooked") to if (data.moduleActive) UiText.get(R.string.waex_ui_yes, "Yes") else UiText.get(R.string.waex_ui_no, "No"))
+                        add(UiText.get(R.string.waex_ui_runtime_api_captured, "Runtime API captured") to if (data.framework.api != null) UiText.get(R.string.waex_ui_yes, "Yes") else UiText.get(R.string.waex_ui_no, "No"))
                         targetApps.forEach { app ->
-                            add(UiText.get(R.string.waex_ui_1_s_hooks_f0333300, "%1\$s hooks", app.appName) to com.waenhancer.utils.InternalLabels.text(app.injectionEvidence.label))
-                            add(UiText.get(R.string.waex_ui_1_s_preference_bridge_c27008b2, "%1\$s preference bridge", app.appName) to com.waenhancer.utils.InternalLabels.text(TargetRuntimePresentation.bridge(app)))
-                            add(UiText.get(R.string.waex_ui_1_s_initialization_a35e3f64, "%1\$s initialization", app.appName) to com.waenhancer.utils.InternalLabels.text(TargetRuntimePresentation.initialization(app)))
+                            add(UiText.get(R.string.waex_ui_1_s_hooks, "%1\$s hooks", app.appName) to InternalLabels.text(app.injectionEvidence.label))
+                            add(UiText.get(R.string.waex_ui_1_s_preference_bridge, "%1\$s preference bridge", app.appName) to InternalLabels.text(TargetRuntimePresentation.bridge(app)))
+                            add(UiText.get(R.string.waex_ui_1_s_initialization, "%1\$s initialization", app.appName) to InternalLabels.text(TargetRuntimePresentation.initialization(app)))
                             app.initializationError?.takeIf { it.isNotBlank() }?.let {
-                                add(UiText.get(R.string.waex_ui_1_s_last_error_2f54987d, "%1\$s last error", app.appName) to it)
+                                add(UiText.get(R.string.waex_ui_1_s_last_error, "%1\$s last error", app.appName) to it)
                             }
                         }
                     },
@@ -180,13 +181,13 @@ fun SystemHealthScreen() {
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                UiText.get(R.string.waex_ui_show_hook_injection_toast_dc03f223, "Show hook injection toast"),
+                                UiText.get(R.string.waex_ui_show_hook_injection_toast, "Show hook injection toast"),
                                 style = typography.bodyLg,
                                 fontWeight = FontWeight.SemiBold,
                                 color = colors.onSurface
                             )
                             Text(
-                                UiText.get(R.string.waex_ui_show_the_injecting_hooks_notification_3b01d0c9, "Show the injecting hooks notification when WhatsApp opens"),
+                                UiText.get(R.string.waex_ui_show_the_injecting_hooks_notification, "Show the injecting hooks notification when WhatsApp opens"),
                                 style = typography.bodyMd,
                                 color = colors.onSurfaceVariant
                             )
@@ -213,13 +214,13 @@ fun SystemHealthScreen() {
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                UiText.get(R.string.waex_ui_show_restart_sheet_after_changes_7fd4dac3, "Show restart sheet after changes"),
+                                UiText.get(R.string.waex_ui_show_restart_sheet_after_changes, "Show restart sheet after changes"),
                                 style = typography.bodyLg,
                                 fontWeight = FontWeight.SemiBold,
                                 color = colors.onSurface
                             )
                             Text(
-                                UiText.get(R.string.waex_ui_preferences_refresh_immediately_restar_e3de7bee, "Preferences refresh immediately; restarting WhatsApp re-injects hooks that only load at startup"),
+                                UiText.get(R.string.waex_ui_preferences_refresh_immediately_restar, "Preferences refresh immediately; restarting WhatsApp re-injects hooks that only load at startup"),
                                 style = typography.bodyMd,
                                 color = colors.onSurfaceVariant
                             )
@@ -237,6 +238,7 @@ fun SystemHealthScreen() {
             }
         }
     }
+
 }
 
 @Composable

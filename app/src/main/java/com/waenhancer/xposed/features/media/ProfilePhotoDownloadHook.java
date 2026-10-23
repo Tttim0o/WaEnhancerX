@@ -1,6 +1,8 @@
 package com.waenhancer.xposed.features.media;
 
 import com.waenhancer.app.R;
+import com.waenhancer.utils.ContactIdentityPolicy;
+import com.waenhancer.utils.ContactNameResolver;
 import com.waenhancer.utils.UiText;
 
 import android.app.Activity;
@@ -33,10 +35,15 @@ import org.luckypray.dexkit.query.matchers.ClassMatcher;
 import org.luckypray.dexkit.result.ClassData;
 
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,6 +55,10 @@ import de.robv.android.xposed.XposedHelpers;
 public final class ProfilePhotoDownloadHook extends BaseFeature {
     private static final String TAG = "[WAEX][ProfilePhotoDownload]";
     private static final int MENU_ID = 0x57414558;
+    private static final String PREF_SAVE_DUPLICATES = "download_profile_save_duplicates";
+    private static final String PREF_SAVED_IDENTITIES = "download_profile_saved_identities";
+    private static final Object SAVED_IDENTITIES_LOCK = new Object();
+    private final AtomicBoolean saveInFlight = new AtomicBoolean();
     private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "WAEX-ProfilePhotoSave");
         thread.setDaemon(true);
@@ -70,10 +81,10 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
             XposedBridge.log(TAG + " profile viewer class not found");
             return;
         }
-        Set<?> hooks = XposedBridge.hookAllMethods(viewer, "onCreateOptionsMenu",
+        XposedBridge.hookAllMethods(viewer, "onCreateOptionsMenu",
                 new XC_MethodHook() {
                     @Override protected void afterHookedMethod(MethodHookParam param) {
-                        if (!isEnabled("download_profile", false)
+                        if (param.hasThrowable() || !isEnabled("download_profile", false)
                                 || !(param.thisObject instanceof Activity)
                                 || param.args.length == 0
                                 || !(param.args[0] instanceof Menu)) return;
@@ -102,16 +113,47 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
 
     private void installMenuAction(Activity activity, Menu menu) {
         if (menu.findItem(MENU_ID) != null) return;
-        MenuItem item = menu.add(Menu.NONE, MENU_ID, Menu.NONE, UiText.get(R.string.waex_ui_download_d6eafe82, "Download"));
+        MenuItem item = menu.add(Menu.NONE, MENU_ID, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
         item.setIcon(android.R.drawable.stat_sys_download_done);
         item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         item.setOnMenuItemClickListener(ignored -> {
-            Bitmap bitmap = captureDisplayedPhoto(activity);
-            if (bitmap == null) {
-                Toast.makeText(activity, UiText.get(R.string.waex_ui_profile_photo_is_not_ready_yet_8ff494b5, "Profile photo is not ready yet"), Toast.LENGTH_SHORT).show();
-                return true;
+            if (!isEnabled("download_profile", false) || activity.isFinishing()
+                    || activity.isDestroyed() || !saveInFlight.compareAndSet(false, true)) return true;
+            Bitmap captured = null;
+            boolean submitted = false;
+            try {
+                boolean saveDuplicates = isEnabled(PREF_SAVE_DUPLICATES, true);
+                String profileIdentity = saveDuplicates ? null : profileIdentity(activity);
+                if (profileIdentity != null && hasSavedProfile(profileIdentity)) {
+                    Toast.makeText(activity, UiText.get(R.string.profile_photo_already_saved,
+                            "Profile photo already saved"), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                // Admit before copying the displayed bitmap: repeated clicks must not
+                // allocate and queue another full-resolution copy while one save runs.
+                captured = captureDisplayedPhoto(activity);
+                if (captured == null) {
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_profile_photo_is_not_ready_yet,
+                            "Profile photo is not ready yet"), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                Context application = activity.getApplicationContext();
+                if (application == null) application = context;
+                final Context storageContext = application;
+                final Bitmap ownedBitmap = captured;
+                final WeakReference<Activity> owner = new WeakReference<>(activity);
+                io.execute(() -> saveBitmap(storageContext, owner, ownedBitmap, profileIdentity));
+                submitted = true;
+            } catch (RuntimeException | LinkageError failure) {
+                logFailure("capture or scheduling", failure);
+                Toast.makeText(activity, UiText.get(R.string.waex_ui_couldn_t_save_profile_photo,
+                        "Couldn't save profile photo"), Toast.LENGTH_LONG).show();
+            } finally {
+                if (!submitted) {
+                    if (captured != null) captured.recycle();
+                    saveInFlight.set(false);
+                }
             }
-            io.execute(() -> saveBitmap(activity, bitmap));
             return true;
         });
     }
@@ -122,7 +164,10 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
         Drawable drawable = best.getDrawable();
         if (drawable instanceof BitmapDrawable) {
             Bitmap source = ((BitmapDrawable) drawable).getBitmap();
-            if (source != null) {
+            if (source != null && !source.isRecycled()) {
+                // Preserve the existing 40MP capture ceiling for bitmap-backed
+                // drawables too, before allocating the independent ARGB copy.
+                if ((long) source.getWidth() * source.getHeight() > 40_000_000L) return null;
                 Bitmap safe = source.copy(Bitmap.Config.ARGB_8888, false);
                 if (safe != null) return safe;
             }
@@ -138,10 +183,21 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
         int top = drawable.getBounds().top;
         int right = drawable.getBounds().right;
         int bottom = drawable.getBounds().bottom;
-        drawable.setBounds(0, 0, width, height);
-        drawable.draw(canvas);
-        drawable.setBounds(left, top, right, bottom);
-        return rendered;
+        boolean complete = false;
+        try {
+            drawable.setBounds(0, 0, width, height);
+            drawable.draw(canvas);
+            complete = true;
+            return rendered;
+        } finally {
+            boolean restored = false;
+            try {
+                drawable.setBounds(left, top, right, bottom);
+                restored = true;
+            } finally {
+                if (!complete || !restored) rendered.recycle();
+            }
+        }
     }
 
     private ImageView findLargestImage(View view, ImageView current) {
@@ -170,12 +226,12 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
         return (long) Math.max(0, width) * Math.max(0, height);
     }
 
-    private void saveBitmap(Activity activity, Bitmap bitmap) {
+    private void saveBitmap(Context storageContext, WeakReference<Activity> owner, Bitmap bitmap,
+                            String profileIdentity) {
         Uri output = null;
         boolean success = false;
         try {
-            String name = "WAEX_Profile_" + new SimpleDateFormat(
-                    "yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".jpg";
+            String name = "WAEX_Profile_" + UUID.randomUUID() + ".jpg";
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.DISPLAY_NAME, name);
             values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
@@ -184,32 +240,103 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
                         Environment.DIRECTORY_PICTURES + "/WAEX/Profile Photos");
                 values.put(MediaStore.Images.Media.IS_PENDING, 1);
             }
-            output = activity.getContentResolver().insert(
+            output = storageContext.getContentResolver().insert(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
             if (output == null) throw new IllegalStateException("MediaStore rejected the file");
-            try (OutputStream stream = activity.getContentResolver().openOutputStream(output)) {
+            try (OutputStream stream = storageContext.getContentResolver().openOutputStream(output)) {
                 if (stream == null || !bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream)) {
                     throw new IllegalStateException("Could not encode the image");
                 }
+                stream.flush();
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ContentValues ready = new ContentValues();
                 ready.put(MediaStore.Images.Media.IS_PENDING, 0);
-                activity.getContentResolver().update(output, ready, null, null);
+                if (storageContext.getContentResolver().update(output, ready, null, null) != 1) {
+                    throw new IllegalStateException("MediaStore did not publish the image");
+                }
             }
             success = true;
-        } catch (Throwable failure) {
-            XposedBridge.log(TAG + " save failed: " + failure);
-            if (output != null) try {
-                activity.getContentResolver().delete(output, null, null);
-            } catch (Throwable ignored) {}
+            if (profileIdentity != null) markProfileSaved(profileIdentity);
+        } catch (Exception | LinkageError failure) {
+            logFailure("save", failure);
         } finally {
-            bitmap.recycle();
-            boolean saved = success;
-            activity.runOnUiThread(() -> Toast.makeText(activity,
-                    saved ? UiText.get(R.string.waex_ui_profile_photo_saved_to_pictures_waex_p_a8c4bd76, "Profile photo saved to Pictures/WAEX/Profile Photos")
-                            : UiText.get(R.string.waex_ui_couldn_t_save_profile_photo_296d0ed9, "Couldn't save profile photo"),
-                    Toast.LENGTH_LONG).show());
+            try {
+                if (!success && output != null) {
+                    try {
+                        // Never delete an earlier export or any host-owned image.
+                        storageContext.getContentResolver().delete(output, null, null);
+                    } catch (RuntimeException | LinkageError failure) {
+                        logFailure("rollback", failure);
+                    }
+                }
+            } finally {
+                bitmap.recycle();
+                saveInFlight.set(false);
+            }
+            final boolean saved = success;
+            Activity activity = owner.get();
+            if (activity != null && !activity.isFinishing() && !activity.isDestroyed()) {
+                activity.runOnUiThread(() -> {
+                    Activity current = owner.get();
+                    if (current == null || current.isFinishing() || current.isDestroyed()) return;
+                    Toast.makeText(current,
+                            saved ? UiText.get(R.string.waex_ui_profile_photo_saved_to_pictures_waex_p,
+                                    "Profile photo saved to Pictures/WAEX/Profile Photos")
+                                    : UiText.get(R.string.waex_ui_couldn_t_save_profile_photo,
+                                    "Couldn't save profile photo"), Toast.LENGTH_LONG).show();
+                });
+            }
         }
+    }
+
+    /** Returns a non-reversible, stable per-contact key; never persist a raw WhatsApp JID. */
+    private static String profileIdentity(Activity activity) {
+        try {
+            String jid = ContactIdentityPolicy.canonicalJid(
+                    ContactNameResolver.INSTANCE.extractJidFromActivity(activity));
+            if (jid == null) return null;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(jid.getBytes(StandardCharsets.UTF_8));
+            StringBuilder encoded = new StringBuilder(hash.length * 2);
+            for (byte value : hash) {
+                int unsigned = value & 0xff;
+                encoded.append(Character.forDigit(unsigned >>> 4, 16));
+                encoded.append(Character.forDigit(unsigned & 0x0f, 16));
+            }
+            return encoded.toString();
+        } catch (NoSuchAlgorithmException | RuntimeException | LinkageError ignored) {
+            return null;
+        }
+    }
+
+    private boolean hasSavedProfile(String profileIdentity) {
+        synchronized (SAVED_IDENTITIES_LOCK) {
+            try {
+                return prefs.getStringSet(PREF_SAVED_IDENTITIES, Collections.emptySet())
+                        .contains(profileIdentity);
+            } catch (RuntimeException | LinkageError ignored) {
+                return false;
+            }
+        }
+    }
+
+    private void markProfileSaved(String profileIdentity) {
+        synchronized (SAVED_IDENTITIES_LOCK) {
+            try {
+                Set<String> saved = new LinkedHashSet<>(prefs.getStringSet(
+                        PREF_SAVED_IDENTITIES, Collections.emptySet()));
+                saved.add(profileIdentity);
+                prefs.edit().putStringSet(PREF_SAVED_IDENTITIES, saved).commit();
+            } catch (RuntimeException | LinkageError failure) {
+                logFailure("remember saved profile", failure);
+            }
+        }
+    }
+
+    private static void logFailure(String operation, Throwable failure) {
+        try {
+            XposedBridge.log(TAG + " " + operation + " failed: " + failure.getClass().getSimpleName());
+        } catch (RuntimeException | LinkageError ignored) {}
     }
 }

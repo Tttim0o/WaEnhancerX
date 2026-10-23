@@ -101,7 +101,7 @@ fun UpdateDownloadSheet(
                     if (!session.claimTerminal()) return@post
                     mainHandler.removeCallbacks(progressTask)
                     dismiss()
-                    Toast.makeText(context, UiText.get(R.string.waex_ui_download_failed_1_s_1f37f501, "Download failed: %1\$s", error.message), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, UiText.get(R.string.waex_ui_download_failed_1_s, "Download failed: %1\$s", error.message), Toast.LENGTH_LONG).show()
                 }
             }
         }, expectedSha256, expectedSize)
@@ -125,7 +125,7 @@ fun UpdateDownloadSheet(
                 .padding(horizontal = 24.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(UiText.get(R.string.waex_ui_downloading_update_01436823, "Downloading update"), style = typography.headlineMd, fontWeight = FontWeight.Bold, color = colors.onSurface)
+            Text(UiText.get(R.string.waex_ui_downloading_update, "Downloading update"), style = typography.headlineMd, fontWeight = FontWeight.Bold, color = colors.onSurface)
             LinearProgressIndicator(
                 progress = { downloadProgress / 100f },
                 modifier = Modifier.fillMaxWidth(),

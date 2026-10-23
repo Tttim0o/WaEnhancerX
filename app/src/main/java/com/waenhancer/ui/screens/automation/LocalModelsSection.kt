@@ -88,19 +88,19 @@ fun LocalModelsSection(language: String) {
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
-            text = UiText.get(R.string.waex_ui_on_device_models_2c7e25e0, "On-device models"),
+            text = UiText.get(R.string.waex_ui_on_device_models, "On-device models"),
             style = typography.labelSm,
             color = colors.onSurfaceVariant
         )
         Text(
-            text = UiText.get(R.string.waex_ui_runs_on_your_phone_nothing_is_uploaded_086e584c,
+            text = UiText.get(R.string.waex_ui_runs_on_your_phone_nothing_is_uploaded,
                 "Runs on your phone, nothing is uploaded. Larger models are more accurate but slower."),
             style = typography.labelSm,
             color = colors.onSurfaceVariant
         )
         if (supported == false) {
             Text(
-                text = UiText.get(R.string.waex_ui_on_device_transcription_isn_t_availabl_678d16ae,
+                text = UiText.get(R.string.waex_ui_on_device_transcription_isn_t_availabl,
                     "On-device transcription isn't available on this phone") +
                         ": " + (WhisperNative.unsupportedReason() ?: ""),
                 style = typography.bodyMd,
@@ -108,7 +108,7 @@ fun LocalModelsSection(language: String) {
             )
         }
         Text(
-            text = UiText.get(R.string.waex_ui_this_phone_154bf57e, "This phone") + ": " +
+            text = UiText.get(R.string.waex_ui_this_phone, "This phone") + ": " +
                     ramGb.toInt() + " GB RAM · " + cores + " cores" +
                     (WhisperNative.backendName()?.let { " · $it" } ?: ""),
             style = typography.bodyMd,
@@ -128,13 +128,13 @@ fun LocalModelsSection(language: String) {
                 modifier = Modifier.fillMaxWidth().height(44.dp)
             ) {
                 Text(
-                    UiText.get(R.string.waex_ui_download_suggested_model_e50dd5e8, "Download suggested model") +
+                    UiText.get(R.string.waex_ui_download_suggested_model, "Download suggested model") +
                             " · " + suggestion.model.label + " (" + suggestion.model.sizeLabel() + ")"
                 )
             }
         }
         Text(
-            text = UiText.get(R.string.waex_ui_tap_a_model_to_choose_it_the_suggested_eb991557,
+            text = UiText.get(R.string.waex_ui_tap_a_model_to_choose_it_the_suggested,
                 "Tap a model to choose it. The suggested one is used until you pick another."),
             style = typography.labelSm,
             color = colors.onSurfaceVariant
@@ -170,17 +170,17 @@ fun LocalModelsSection(language: String) {
                         Text(text = hint(model), style = typography.labelSm, color = colors.onSurfaceVariant)
                         val tags = buildList {
                             if (isSuggested) {
-                                add(UiText.get(R.string.waex_ui_suggested_93b63bab, "Suggested") + ": " +
+                                add(UiText.get(R.string.waex_ui_suggested, "Suggested") + ": " +
                                         suggestion.reason.substringAfter(": "))
                             }
-                            if (isChosen && downloaded) add(UiText.get(R.string.waex_ui_in_use_750af77a, "In use"))
+                            if (isChosen && downloaded) add(UiText.get(R.string.waex_ui_in_use, "In use"))
                         }
                         if (tags.isNotEmpty()) {
                             Text(text = tags.joinToString(" · "), style = typography.labelSm, color = colors.primary)
                         }
                         if (isChosen && !downloaded && progress?.running != true) {
                             Text(
-                                text = UiText.get(R.string.waex_ui_selected_download_it_to_start_using_it_238cfe9b,
+                                text = UiText.get(R.string.waex_ui_selected_download_it_to_start_using_it,
                                     "Selected: download it to start using it."),
                                 style = typography.labelSm,
                                 color = colors.primary
@@ -188,7 +188,7 @@ fun LocalModelsSection(language: String) {
                         }
                         if (tooHeavy) {
                             Text(
-                                text = UiText.get(R.string.waex_ui_may_be_too_heavy_for_this_phone_3cbbd162,
+                                text = UiText.get(R.string.waex_ui_may_be_too_heavy_for_this_phone,
                                     "May be too heavy for this phone"),
                                 style = typography.labelSm,
                                 color = colors.error
@@ -198,19 +198,19 @@ fun LocalModelsSection(language: String) {
                     }
                     when {
                         progress?.running == true -> TextButton(onClick = { LocalModelStore.cancel(model.id) }) {
-                            Text(UiText.get(R.string.waex_ui_cancel_19766ed6, "Cancel"))
+                            Text(UiText.get(R.string.waex_ui_cancel, "Cancel"))
                         }
                         !downloaded -> TextButton(onClick = {
                             choose(model)
                             LocalModelStore.download(context, model)
                         }) {
-                            Text(UiText.get(R.string.waex_ui_download_d6eafe82, "Download"))
+                            Text(UiText.get(R.string.waex_ui_download, "Download"))
                         }
                         else -> TextButton(onClick = {
                             // Deleting waits for a running transcription to finish: not on the UI thread.
                             scope.launch { withContext(Dispatchers.IO) { LocalModelStore.delete(context, model) } }
                         }) {
-                            Text(UiText.get(R.string.waex_ui_delete_e2d0a549, "Delete"), color = colors.error)
+                            Text(UiText.get(R.string.waex_ui_delete, "Delete"), color = colors.error)
                         }
                     }
                 }
@@ -236,13 +236,13 @@ fun LocalModelsSection(language: String) {
 /** One line about speed and accuracy for each model size. */
 private fun hint(model: LocalModels.Model): String {
     val tier = when {
-        model.id.startsWith("tiny") -> UiText.get(R.string.waex_ui_fastest_lowest_accuracy_531b6dab, "Fastest, lowest accuracy")
-        model.id.startsWith("base") -> UiText.get(R.string.waex_ui_fast_fair_accuracy_e10bb756, "Fast, fair accuracy")
-        model.id.startsWith("small") -> UiText.get(R.string.waex_ui_balanced_speed_and_accuracy_4bb5501b, "Balanced speed and accuracy")
-        else -> UiText.get(R.string.waex_ui_most_accurate_slow_fb61e038, "Most accurate, slow")
+        model.id.startsWith("tiny") -> UiText.get(R.string.waex_ui_fastest_lowest_accuracy, "Fastest, lowest accuracy")
+        model.id.startsWith("base") -> UiText.get(R.string.waex_ui_fast_fair_accuracy, "Fast, fair accuracy")
+        model.id.startsWith("small") -> UiText.get(R.string.waex_ui_balanced_speed_and_accuracy, "Balanced speed and accuracy")
+        else -> UiText.get(R.string.waex_ui_most_accurate_slow, "Most accurate, slow")
     }
     return if (model.englishOnly) {
-        tier + " · " + UiText.get(R.string.waex_ui_english_only_more_accurate_for_english_351e57f6,
+        tier + " · " + UiText.get(R.string.waex_ui_english_only_more_accurate_for_english,
             "English only: more accurate for English")
     } else tier
 }

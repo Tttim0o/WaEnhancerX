@@ -73,7 +73,7 @@ public class LockedChatsEnhancerHook extends BaseFeature {
         Method notificationMethod = engine.findMethodWithCache(
                 context,
                 classLoader,
-                "wpp_locked_chats_notification_query",
+                "waex_locked_chats_notification_query",
                 (bridge, loader) -> {
                     MethodData md = bridge.findMethod(FindMethod.create()
                             .matcher(MethodMatcher.create()
@@ -103,7 +103,7 @@ public class LockedChatsEnhancerHook extends BaseFeature {
         Method lockedChatsQueryMethod = engine.findMethodWithCache(
                 context,
                 classLoader,
-                "wpp_locked_chats_query_list",
+                "waex_locked_chats_query_list",
                 (bridge, loader) -> {
                     ClassData convMgrClass = bridge.findClass(FindClass.create()
                             .matcher(ClassMatcher.create()
@@ -144,7 +144,7 @@ public class LockedChatsEnhancerHook extends BaseFeature {
         Class<?> chatCacheClass = engine.findClassWithCache(
                 context,
                 classLoader,
-                "wpp_chat_cache_class",
+                "waex_chat_cache_class",
                 (bridge, loader) -> {
                     ClassData cd = bridge.findClass(FindClass.create()
                             .matcher(ClassMatcher.create()
@@ -166,7 +166,7 @@ public class LockedChatsEnhancerHook extends BaseFeature {
             Method loadedContactsMethod = engine.findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_loaded_contacts_method",
+                    "waex_loaded_contacts_method",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()

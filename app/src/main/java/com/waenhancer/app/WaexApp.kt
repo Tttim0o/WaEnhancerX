@@ -12,6 +12,7 @@ import android.content.Context
 import com.waenhancer.licensing.features.BootloaderSpooferFeature
 import com.waenhancer.utils.LocaleHelper
 import com.waenhancer.utils.WhatsAppPackageDetector
+import com.waenhancer.utils.UiText
 
 @HiltAndroidApp
 class WaexApp : Application() {
@@ -28,7 +29,7 @@ class WaexApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        com.waenhancer.utils.UiText.initialize(this, PreferenceStores.publicStore(this))
+        UiText.initialize(this, PreferenceStores.publicStore(this))
         FeatureCatalog.initialize(this)
         val lang = LocaleHelper.getSelectedLanguageCode(this)
         if (lang != "system") {

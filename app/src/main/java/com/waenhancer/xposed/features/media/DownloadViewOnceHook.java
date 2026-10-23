@@ -137,7 +137,8 @@ public class DownloadViewOnceHook extends BaseFeature {
                 Class<?> mediaViewFragmentClass = XposedHelpers.findClassIfExists("com.whatsapp.mediaview.MediaViewFragment", classLoader);
                 if (mediaViewFragmentClass != null) {
                     for (Method m : mediaViewFragmentClass.getMethods()) {
-                        if (m.getParameterCount() >= 2 && m.getParameterTypes()[0] == Menu.class) {
+                        Class<?>[] parameterTypes = m.getParameterTypes();
+                        if (parameterTypes.length >= 2 && parameterTypes[0] == Menu.class) {
                             menuMethod = m;
                             break;
                         }
@@ -199,7 +200,7 @@ public class DownloadViewOnceHook extends BaseFeature {
     private Class<?> resolveViewOnceViewerActivityClass() {
         try {
             Class<?> cls = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_view_once_viewer_activity",
+                    context, classLoader, "waex_view_once_viewer_activity",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()

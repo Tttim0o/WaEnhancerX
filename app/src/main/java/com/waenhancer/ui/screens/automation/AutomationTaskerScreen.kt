@@ -161,7 +161,7 @@ fun AutomationTaskerScreen() {
     var transcriptionLanguage by remember { mutableStateOf(preferenceManager.getString("transcription_language", "")) }
     var showLanguageDropdown by remember { mutableStateOf(false) }
     val transcriptionLanguages = listOf(
-        "" to UiText.get(R.string.waex_ui_automatic_d461a493, "Automatic"),
+        "" to UiText.get(R.string.waex_ui_automatic, "Automatic"),
         "sk" to "Slovenčina", "cs" to "Čeština", "en" to "English", "de" to "Deutsch",
         "hu" to "Magyar", "pl" to "Polski", "uk" to "Українська", "es" to "Español"
     )
@@ -516,13 +516,13 @@ fun AutomationTaskerScreen() {
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_transcribe_automatically_2de4db94, "Transcribe automatically"),
+                                        text = UiText.get(R.string.waex_ui_transcribe_automatically, "Transcribe automatically"),
                                         style = typography.bodyMd,
                                         fontWeight = FontWeight.SemiBold,
                                         color = colors.onSurface
                                     )
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_off_each_new_voice_note_sent_or_receiv_efafc048, "Off: each new voice note, sent or received, gets a notification with a Transcribe button."),
+                                        text = UiText.get(R.string.waex_ui_off_each_new_voice_note_sent_or_receiv, "Off: each new voice note, sent or received, gets a notification with a Transcribe button."),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant
                                     )
@@ -543,13 +543,13 @@ fun AutomationTaskerScreen() {
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_transcript_button_on_voice_notes_09080da3, "Transcript button on voice notes"),
+                                        text = UiText.get(R.string.waex_ui_transcript_button_on_voice_notes, "Transcript button on voice notes"),
                                         style = typography.bodyMd,
                                         fontWeight = FontWeight.SemiBold,
                                         color = colors.onSurface
                                     )
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_shows_next_to_the_time_of_voice_notes_1a90c809, "Shows 📝 next to the time of voice notes in chats. Tap it to read the transcript."),
+                                        text = UiText.get(R.string.waex_ui_shows_next_to_the_time_of_voice_notes, "Shows 📝 next to the time of voice notes in chats. Tap it to read the transcript."),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant
                                     )
@@ -570,13 +570,13 @@ fun AutomationTaskerScreen() {
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_dictation_button_084c4a1d, "Dictation button"),
+                                        text = UiText.get(R.string.waex_ui_dictation_button, "Dictation button"),
                                         style = typography.bodyMd,
                                         fontWeight = FontWeight.SemiBold,
                                         color = colors.onSurface
                                     )
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_adds_to_the_message_field_tap_to_recor_b871bea0, "Adds 🎙️ to the message field. Tap to record, tap again to insert the text."),
+                                        text = UiText.get(R.string.waex_ui_adds_to_the_message_field_tap_to_recor, "Adds 🎙️ to the message field. Tap to record, tap again to insert the text."),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant
                                     )
@@ -594,7 +594,7 @@ fun AutomationTaskerScreen() {
                             // Provider Dropdown selection
                             Column {
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_ai_transcription_provider_39d10f0b, "AI Transcription Provider"),
+                                    text = UiText.get(R.string.waex_ui_ai_transcription_provider, "AI Transcription Provider"),
                                     style = typography.labelSm,
                                     color = colors.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 6.dp)
@@ -637,7 +637,7 @@ fun AutomationTaskerScreen() {
                             if (transcriptionProvider == "Groq") {
                                 Column {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_groq_api_key_af3ea8bb, "Groq API Key"),
+                                        text = UiText.get(R.string.waex_ui_groq_api_key, "Groq API Key"),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant,
                                         modifier = Modifier.padding(bottom = 6.dp)
@@ -675,12 +675,12 @@ fun AutomationTaskerScreen() {
                                 LocalModelsSection(language = transcriptionLanguage)
                             } else if (transcriptionProvider == "Custom") {
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_uses_the_openai_audio_transcriptions_r_d7f9316b, "Uses the OpenAI /audio/transcriptions request format."),
+                                    text = UiText.get(R.string.waex_ui_uses_the_openai_audio_transcriptions_r, "Uses the OpenAI /audio/transcriptions request format."),
                                     style = typography.labelSm,
                                     color = colors.onSurfaceVariant
                                 )
                                 TranscriptionTextField(
-                                    label = UiText.get(R.string.waex_ui_custom_endpoint_url_aabf1f97, "Custom Endpoint URL"),
+                                    label = UiText.get(R.string.waex_ui_custom_endpoint_url, "Custom Endpoint URL"),
                                     value = customUrl,
                                     onValueChange = {
                                         customUrl = it
@@ -689,7 +689,7 @@ fun AutomationTaskerScreen() {
                                     }
                                 )
                                 TranscriptionTextField(
-                                    label = UiText.get(R.string.waex_ui_custom_api_key_acb781f9, "Custom API Key"),
+                                    label = UiText.get(R.string.waex_ui_custom_api_key, "Custom API Key"),
                                     value = customKey,
                                     onValueChange = {
                                         customKey = it
@@ -699,7 +699,7 @@ fun AutomationTaskerScreen() {
                                     isSecret = true
                                 )
                                 TranscriptionTextField(
-                                    label = UiText.get(R.string.waex_ui_model_name_a501a70a, "Model Name"),
+                                    label = UiText.get(R.string.waex_ui_model_name, "Model Name"),
                                     value = customModel,
                                     onValueChange = {
                                         customModel = it
@@ -726,8 +726,8 @@ fun AutomationTaskerScreen() {
                                         enabled = !discoveringModels && customUrl.isNotBlank()
                                     ) {
                                         Text(
-                                            if (discoveringModels) UiText.get(R.string.waex_ui_searching_c31723ab, "Searching…")
-                                            else UiText.get(R.string.waex_ui_find_models_1e2793bd, "Find models")
+                                            if (discoveringModels) UiText.get(R.string.waex_ui_searching, "Searching…")
+                                            else UiText.get(R.string.waex_ui_find_models, "Find models")
                                         )
                                     }
                                     DropdownMenu(
@@ -752,7 +752,7 @@ fun AutomationTaskerScreen() {
                             } else {
                                 Column {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_assemblyai_api_key_1a41b574, "AssemblyAI API Key"),
+                                        text = UiText.get(R.string.waex_ui_assemblyai_api_key, "AssemblyAI API Key"),
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant,
                                         modifier = Modifier.padding(bottom = 6.dp)
@@ -791,7 +791,7 @@ fun AutomationTaskerScreen() {
                             // Spoken language: a fixed language is more accurate than detection
                             Column {
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_transcription_language_8bc22eb0, "Transcription language"),
+                                    text = UiText.get(R.string.waex_ui_transcription_language, "Transcription language"),
                                     style = typography.labelSm,
                                     color = colors.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 6.dp)
@@ -810,7 +810,7 @@ fun AutomationTaskerScreen() {
                                     ) {
                                         Text(
                                             text = transcriptionLanguages.firstOrNull { it.first == transcriptionLanguage }?.second
-                                                ?: UiText.get(R.string.waex_ui_automatic_d461a493, "Automatic"),
+                                                ?: UiText.get(R.string.waex_ui_automatic, "Automatic"),
                                             style = typography.bodyMd,
                                             color = colors.onSurface
                                         )
@@ -844,7 +844,7 @@ fun AutomationTaskerScreen() {
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text(text = UiText.get(R.string.waex_ui_connection_status_3693e288, "Connection Status"), style = typography.bodyMd, color = colors.onSurfaceVariant)
+                                    Text(text = UiText.get(R.string.waex_ui_connection_status, "Connection Status"), style = typography.bodyMd, color = colors.onSurfaceVariant)
                                     when (connectionStatus) {
                                         "ok" -> {
                                             Icon(
@@ -853,9 +853,9 @@ fun AutomationTaskerScreen() {
                                                 tint = Color(0xFF22C55E),
                                                 modifier = Modifier.size(13.dp)
                                             )
-                                            Text(text = UiText.get(R.string.waex_ui_connected_22965568, "Connected"), style = typography.labelSm, color = Color(0xFF22C55E), fontWeight = FontWeight.Bold)
+                                            Text(text = UiText.get(R.string.waex_ui_connected, "Connected"), style = typography.labelSm, color = Color(0xFF22C55E), fontWeight = FontWeight.Bold)
                                         }
-                                        "fail" -> Text(text = UiText.get(R.string.waex_ui_connection_failed_596c52f1, "Connection failed"), style = typography.labelSm, color = colors.error, fontWeight = FontWeight.Bold)
+                                        "fail" -> Text(text = UiText.get(R.string.waex_ui_connection_failed, "Connection failed"), style = typography.labelSm, color = colors.error, fontWeight = FontWeight.Bold)
                                         "verifying" -> CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = colors.primary)
                                     }
                                 }
@@ -879,7 +879,7 @@ fun AutomationTaskerScreen() {
                                     ),
                                     modifier = Modifier.height(36.dp)
                                 ) {
-                                    Text(text = UiText.get(R.string.waex_ui_test_532eaabd, "Test"), style = typography.bodyMd)
+                                    Text(text = UiText.get(R.string.waex_ui_test, "Test"), style = typography.bodyMd)
                                 }
                             }
                             if (connectionStatus == "fail" && connectionError.isNotEmpty()) {

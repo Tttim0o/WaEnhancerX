@@ -18,6 +18,7 @@ import com.waenhancer.config.PreferenceStores
 import com.waenhancer.xposed.utils.ModuleStatus
 import org.json.JSONArray
 import java.io.File
+import android.os.SystemClock
 
 data class InjectedHookItem(
     val name: String,
@@ -272,7 +273,7 @@ object WhatsAppPackageDetector {
                     recordedBoot = recordedBoot,
                     currentBoot = currentBoot,
                     reportedPid = reportedPid,
-                    runningPids = runtimeSnapshot?.pidsFor(pkg, android.os.SystemClock.elapsedRealtime()),
+                    runningPids = runtimeSnapshot?.pidsFor(pkg, SystemClock.elapsedRealtime()),
                     lastActiveTime = lastActiveTime,
                     now = System.currentTimeMillis()
                 )
@@ -283,7 +284,7 @@ object WhatsAppPackageDetector {
                     HookedAppInfo(
                         packageName = pkg,
                         appName = friendlyName,
-                        versionName = "v${pInfo.versionName ?: UiText.get(R.string.waex_ui_unknown_b764cdc0, "Unknown")}",
+                        versionName = "v${pInfo.versionName ?: UiText.get(R.string.waex_ui_unknown, "Unknown")}",
                         isInstalled = true,
                         isHooked = isInjected,
                         injectedHooks = injectedHooks,
@@ -296,14 +297,14 @@ object WhatsAppPackageDetector {
                     )
                 )
             } catch (e: PackageManager.NameNotFoundException) {
-                // Only list standard WPP / Business if uninstalled as placeholders if no apps are installed
+                // Only list standard WAEX / Business if uninstalled as placeholders if no apps are installed
                 if (pkg == "com.whatsapp" || pkg == "com.whatsapp.w4b") {
                     val name = if (pkg == "com.whatsapp") "WhatsApp" else "WhatsApp Business"
                     result.add(
                         HookedAppInfo(
                             packageName = pkg,
                             appName = name,
-                            versionName = UiText.get(R.string.waex_ui_not_installed_d08041a7, "Not Installed"),
+                            versionName = UiText.get(R.string.waex_ui_not_installed, "Not Installed"),
                             isInstalled = false,
                             isHooked = false,
                             injectedHooks = emptyList(),

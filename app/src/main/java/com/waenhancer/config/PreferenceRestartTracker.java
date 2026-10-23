@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Collections;
 
 /** Records user-facing feature names that require the hooked app to restart. */
 public final class PreferenceRestartTracker {
@@ -31,7 +32,7 @@ public final class PreferenceRestartTracker {
         if (!requiresRestart(key)) return;
 
         Set<String> pending = new LinkedHashSet<>(preferences.getStringSet(
-                PENDING_CHANGES, java.util.Collections.emptySet()));
+                PENDING_CHANGES, Collections.emptySet()));
         // Store the stable key and resolve its current UI title when the sheet is built.
         pending.add(key);
         preferences.edit()

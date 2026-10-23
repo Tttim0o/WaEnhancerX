@@ -3,6 +3,7 @@ package com.waenhancer.xposed.views;
 import android.content.Context;
 import android.widget.FrameLayout;
 import android.widget.ListAdapter;
+import android.widget.BaseAdapter;
 
 public class IGStatusView extends FrameLayout {
 
@@ -51,8 +52,8 @@ public class IGStatusView extends FrameLayout {
 
     public void updateList() {
         post(() -> {
-            if (mStatusAdapter instanceof android.widget.BaseAdapter) {
-                ((android.widget.BaseAdapter) mStatusAdapter).notifyDataSetChanged();
+            if (mStatusAdapter instanceof BaseAdapter) {
+                ((BaseAdapter) mStatusAdapter).notifyDataSetChanged();
             } else if (mStatusListView != null) {
                 mStatusListView.refreshData();
             }

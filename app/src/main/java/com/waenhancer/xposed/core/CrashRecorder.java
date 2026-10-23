@@ -122,18 +122,18 @@ public final class CrashRecorder {
             if (activity.isFinishing() || activity.isDestroyed()) return;
             new WaexBottomSheet(activity)
                     .asBottomSheet()
-                    .setTitle(UiText.get(R.string.waex_ui_whatsapp_crashed_last_time_f08802c3,
+                    .setTitle(UiText.get(R.string.waex_ui_whatsapp_crashed_last_time,
                             "WhatsApp crashed last time"))
-                    .setMessage(UiText.get(R.string.waex_ui_whatsapp_stopped_unexpectedly_while_wa_01fcf48f,
+                    .setMessage(UiText.get(R.string.waex_ui_whatsapp_stopped_unexpectedly_while_wa,
                             "WhatsApp stopped unexpectedly while WaEnhancer X was active. Copy the details and send them to whoever made this build."))
-                    .setPositiveButton(UiText.get(R.string.waex_ui_copy_details_ec7ee282, "Copy details"),
+                    .setPositiveButton(UiText.get(R.string.waex_ui_copy_details, "Copy details"),
                             (dialog, which) -> {
                                 ClipboardManager clipboard = activity.getSystemService(ClipboardManager.class);
                                 if (clipboard != null) {
                                     clipboard.setPrimaryClip(ClipData.newPlainText("WAEX crash report", report));
                                 }
                             })
-                    .setNegativeButton(UiText.get(R.string.waex_ui_close_7d9eb7ac, "Close"),
+                    .setNegativeButton(UiText.get(R.string.waex_ui_close, "Close"),
                             (dialog, which) -> dialog.dismiss())
                     .show();
         } catch (Throwable t) {

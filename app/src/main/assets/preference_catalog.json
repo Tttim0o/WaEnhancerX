@@ -44,7 +44,8 @@
     "tabId": "privacy",
     "keys": [
       "anti_view_once",
-      "download_view_once"
+      "download_view_once",
+      "bypass_screenshot_restriction"
     ]
   },
   {
@@ -96,15 +97,13 @@
       "message_bomber",
       "anti_edit_messages",
       "message_device_source",
-      "preserve_delete_for_me",
       "revokeallmessages",
       "hide_forwarded_tag",
       "removeforwardlimit",
       "sticker_confirm_alert",
       "removeseemore",
       "stamp_copied_message",
-      "doubletap2like",
-      "doubletap2like_emoji"
+      "doubletap2like"
     ],
     "proKeys": [
       "message_bomber"
@@ -157,7 +156,6 @@
     "tabIndex": 2,
     "tabId": "media",
     "keys": [
-      "call_recording",
       "download_view_once",
       "media_preview",
       "download_profile"
@@ -243,6 +241,7 @@
     "tabIndex": -1,
     "tabId": "settings",
     "keys": [
+      "app_interface_size",
       "show_hook_toast",
       "show_restart_sheet",
       "supported_versions",

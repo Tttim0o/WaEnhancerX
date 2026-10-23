@@ -46,8 +46,8 @@ import kotlinx.coroutines.withContext
  */
 @Composable
 fun TranscriptionLogSection(
-    title: String = UiText.get(R.string.waex_ui_transcription_log_97dc1042, "Transcription log"),
-    note: String = UiText.get(R.string.waex_ui_steps_and_errors_only_transcripts_and_3b357802,
+    title: String = UiText.get(R.string.waex_ui_transcription_log, "Transcription log"),
+    note: String = UiText.get(R.string.waex_ui_steps_and_errors_only_transcripts_and,
         "Steps and errors only. Transcripts and message text are never logged."),
     source: String? = null
 ) {
@@ -81,8 +81,8 @@ fun TranscriptionLogSection(
                 modifier = Modifier.weight(1f)
             )
             TextButton(onClick = { expanded = !expanded }) {
-                Text(if (expanded) UiText.get(R.string.waex_ui_hide_ac20a57b, "Hide")
-                else UiText.get(R.string.waex_ui_show_0df6f1ca, "Show"))
+                Text(if (expanded) UiText.get(R.string.waex_ui_hide, "Hide")
+                else UiText.get(R.string.waex_ui_show, "Show"))
             }
         }
         if (!expanded) return@Column
@@ -102,7 +102,7 @@ fun TranscriptionLogSection(
                 .padding(8.dp)
         ) {
             Text(
-                text = if (log.isBlank()) UiText.get(R.string.waex_ui_no_entries_yet_66c482dd, "No entries yet.")
+                text = if (log.isBlank()) UiText.get(R.string.waex_ui_no_entries_yet, "No entries yet.")
                 else log.lines().asReversed().joinToString("\n"),
                 fontFamily = FontFamily.Monospace,
                 fontSize = 11.sp,
@@ -113,13 +113,13 @@ fun TranscriptionLogSection(
             TextButton(onClick = {
                 val clipboard = context.getSystemService(ClipboardManager::class.java)
                 clipboard?.setPrimaryClip(ClipData.newPlainText("WAEX $title", log))
-                Toast.makeText(context, UiText.get(R.string.waex_ui_log_copied_21706121, "Log copied"),
+                Toast.makeText(context, UiText.get(R.string.waex_ui_log_copied, "Log copied"),
                     Toast.LENGTH_SHORT).show()
             }, enabled = log.isNotBlank()) {
-                Text(UiText.get(R.string.waex_ui_copy_e21f935f, "Copy"))
+                Text(UiText.get(R.string.waex_ui_copy, "Copy"))
             }
             TextButton(onClick = { reloads++ }) {
-                Text(UiText.get(R.string.waex_ui_refresh_0e916101, "Refresh"))
+                Text(UiText.get(R.string.waex_ui_refresh, "Refresh"))
             }
             TextButton(onClick = {
                 scope.launch {
@@ -132,7 +132,7 @@ fun TranscriptionLogSection(
                     reloads++
                 }
             }, enabled = log.isNotBlank()) {
-                Text(UiText.get(R.string.waex_ui_clear_83b12c22, "Clear"), color = colors.error)
+                Text(UiText.get(R.string.waex_ui_clear, "Clear"), color = colors.error)
             }
         }
     }

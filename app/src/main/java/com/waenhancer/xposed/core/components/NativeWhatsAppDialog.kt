@@ -160,7 +160,7 @@ class NativeWhatsAppDialog(private val context: Context) {
                 sBuilderMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_material_dialog_builder",
+                    "waex_material_dialog_builder",
                     { bridge, loader ->
                         // Strategy 1: Resolve from CallConfirmationFragment Bundle method invokes
                         try {

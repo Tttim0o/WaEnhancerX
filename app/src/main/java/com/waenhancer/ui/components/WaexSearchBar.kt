@@ -94,7 +94,7 @@ fun WaexSearchBar(
                 ) {
                     Icon(
                         imageVector = WaexIcons.Clear,
-                        contentDescription = UiText.get(R.string.waex_ui_clear_search_3b7ea517, "Clear search"),
+                        contentDescription = UiText.get(R.string.waex_ui_clear_search, "Clear search"),
                         tint = colors.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )

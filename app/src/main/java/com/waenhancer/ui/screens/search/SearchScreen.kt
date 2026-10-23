@@ -219,7 +219,7 @@ fun SearchScreen() {
                                                 lineHeight = 17.sp
                                             )
                                             Text(
-                                                text = UiText.get(R.string.waex_ui_section_1_s_ab7f31a7, "Section: %1\$s", LocalizationHelper.getSection(context, pref)),
+                                                text = UiText.get(R.string.waex_ui_section_1_s, "Section: %1\$s", LocalizationHelper.getSection(context, pref)),
                                                 style = typography.labelSm,
                                                 color = colors.primary,
                                                 fontSize = 11.sp,

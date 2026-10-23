@@ -27,6 +27,7 @@ import com.waenhancer.licensing.features.BootloaderSpooferFeature;
 import com.waenhancer.xposed.core.db.PreservedMessageStore;
 import com.waenhancer.update.UpdateCheckCoordinator;
 import com.waenhancer.utils.WhatsAppPackageDetector;
+import com.waenhancer.xposed.utils.AppRestartHelper;
 
 /**
  * HookProvider provides preference IPC bridge between WaEnhancerX UI and target processes (WhatsApp / WA Business).
@@ -66,6 +67,19 @@ public class HookProvider extends ContentProvider {
             if ("request_update_check".equals(method)) {
                 UpdateCheckCoordinator.request(context, UpdateCheckCoordinator.TRIGGER_WHATSAPP, false);
                 Bundle result = new Bundle();
+                result.putBoolean("accepted", true);
+                return result;
+            }
+
+            if ("restart_target".equals(method)) {
+                String pkg = arg != null ? arg : (extras != null
+                        ? extras.getString("package") : null);
+                if (pkg == null || !callerOwnsPackage(context, callerUid, pkg)) {
+                    return writeResult(false);
+                }
+                // The injected menu already displayed "Restarting WhatsApp…".
+                AppRestartHelper.restartPackage(context, pkg, null, false);
+                Bundle result = writeResult(true);
                 result.putBoolean("accepted", true);
                 return result;
             }
@@ -277,9 +291,9 @@ public class HookProvider extends ContentProvider {
                 boolean fromMe = extras.getBoolean("fromMe", false);
                 boolean isGroup = extras.getBoolean("isGroup", false);
 
-                PreservedMessageStore.getInstance(context)
-                        .insertPreservedMessage(jid, contactName, senderName, msgId, text, timestamp, fromMe, isGroup);
-                return Bundle.EMPTY;
+                boolean saved = PreservedMessageStore.getInstance(context)
+                        .tryInsertPreservedMessage(jid, contactName, senderName, msgId, text, timestamp, fromMe, isGroup);
+                return writeResult(saved);
             }
 
             return null;

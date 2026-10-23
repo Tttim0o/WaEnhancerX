@@ -230,7 +230,7 @@ public final class VoiceDictationHook extends BaseFeature {
         Activity activity = ActivityTracker.getCurrentActivity();
         if (activity == null) return;
         if (context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            toast(UiText.get(R.string.waex_ui_whatsapp_needs_microphone_access_to_di_5fa2efe0,
+            toast(UiText.get(R.string.waex_ui_whatsapp_needs_microphone_access_to_di,
                     "WhatsApp needs microphone access to dictate."));
             return;
         }
@@ -257,7 +257,7 @@ public final class VoiceDictationHook extends BaseFeature {
         } catch (IOException | RuntimeException e) {
             VoiceTranscriptionBridge.log("Dictation could not start recording: " + e.getClass().getSimpleName());
             newRecorder.release();
-            toast(UiText.get(R.string.waex_ui_could_not_start_recording_669ffa90, "Could not start recording."));
+            toast(UiText.get(R.string.waex_ui_could_not_start_recording, "Could not start recording."));
             return;
         }
         recorder = newRecorder;
@@ -267,7 +267,7 @@ public final class VoiceDictationHook extends BaseFeature {
         recordingActivity = new WeakReference<>(activity);
         state = State.RECORDING;
         setGlyph(field, STOP);
-        toast(UiText.get(R.string.waex_ui_recording_tap_to_stop_b997fecf, "Recording… tap ⏹️ to stop."));
+        toast(UiText.get(R.string.waex_ui_recording_tap_to_stop, "Recording… tap ⏹️ to stop."));
     }
 
     /** Returns true when a usable recording was finished. */
@@ -302,7 +302,7 @@ public final class VoiceDictationHook extends BaseFeature {
             deleteRecording();
             state = State.IDLE;
             if (field != null) setGlyph(field, MIC);
-            toast(UiText.get(R.string.waex_ui_recording_too_short_97c21f39, "Recording too short."));
+            toast(UiText.get(R.string.waex_ui_recording_too_short, "Recording too short."));
             return;
         }
         recording = null; // Owned by the transcription task from here on.
@@ -325,10 +325,10 @@ public final class VoiceDictationHook extends BaseFeature {
                 EditText target = recordingField.get();
                 if (target != null) setGlyph(target, MIC);
                 if (done.text == null) {
-                    toast(UiText.get(R.string.waex_ui_transcription_failed_ccb68494, "Transcription failed")
+                    toast(UiText.get(R.string.waex_ui_transcription_failed, "Transcription failed")
                             + ": " + done.error);
                 } else if (done.text.isEmpty()) {
-                    toast(UiText.get(R.string.waex_ui_no_speech_detected_3bf350b0, "No speech detected.")
+                    toast(UiText.get(R.string.waex_ui_no_speech_detected, "No speech detected.")
                             + " " + audioInfo);
                 } else if (target != null) {
                     insertAtCursor(target, done.text);

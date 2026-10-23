@@ -39,6 +39,8 @@ import org.luckypray.dexkit.query.FindClass;
 import org.luckypray.dexkit.query.enums.StringMatchType;
 import org.luckypray.dexkit.query.matchers.ClassMatcher;
 import org.luckypray.dexkit.result.ClassData;
+import com.waenhancer.xposed.utils.WhatsAppProcessRestarter;
+import java.util.Locale;
 
 /**
  * Home Screen Header Actions Hook:
@@ -308,7 +310,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         ViewParent parent = view.getParent();
         for (int depth = 0; parent instanceof View && depth < 5; depth++) {
             View parentView = (View) parent;
-            String className = parentView.getClass().getSimpleName().toLowerCase(java.util.Locale.ROOT);
+            String className = parentView.getClass().getSimpleName().toLowerCase(Locale.ROOT);
             if (className.contains("toolbar") || className.contains("actionbar")
                     || className.contains("appbar")) {
                 toolbarAncestor = true;
@@ -340,7 +342,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         if (id == View.NO_ID) return "no-id";
         try {
             return view.getResources().getResourceEntryName(id)
-                    .toLowerCase(java.util.Locale.ROOT);
+                    .toLowerCase(Locale.ROOT);
         } catch (Throwable ignored) {
             return "unknown";
         }
@@ -349,7 +351,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
     private Class<?> resolveHomeActivityClass() {
         try {
             Class<?> cls = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_home_activity_class",
+                    context, classLoader, "waex_home_activity_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()
@@ -499,7 +501,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         if (isEnabled("ghostmode", false)) {
             boolean active = prefs.getBoolean("ghostmode_active", false);
             MenuItem item = target.add(Menu.NONE, MENU_ID_GHOST_MODE, Menu.NONE,
-                    active ? UiText.get(R.string.waex_ui_ghost_mode_on_c6fad9c9, "Ghost Mode: ON") : UiText.get(R.string.waex_ui_ghost_mode_off_33af0cd9, "Ghost Mode: OFF"));
+                    active ? UiText.get(R.string.waex_ui_ghost_mode_on, "Ghost Mode: ON") : UiText.get(R.string.waex_ui_ghost_mode_off, "Ghost Mode: OFF"));
             item.setShowAsAction(showAsAction);
             item.setOnMenuItemClickListener(mi -> handleItemSelected(mi, activity));
         }
@@ -507,7 +509,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         if (isEnabled("freezelastseen", false)) {
             boolean active = prefs.getBoolean("freeze_last_seen_active", false);
             MenuItem item = target.add(Menu.NONE, MENU_ID_FREEZE_LS, Menu.NONE,
-                    active ? UiText.get(R.string.waex_ui_freeze_last_seen_on_ad444fb9, "Freeze Last Seen: ON") : UiText.get(R.string.waex_ui_freeze_last_seen_off_2cb42c68, "Freeze Last Seen: OFF"));
+                    active ? UiText.get(R.string.waex_ui_freeze_last_seen_on, "Freeze Last Seen: ON") : UiText.get(R.string.waex_ui_freeze_last_seen_off, "Freeze Last Seen: OFF"));
             item.setShowAsAction(showAsAction);
             item.setOnMenuItemClickListener(mi -> handleItemSelected(mi, activity));
         }
@@ -515,19 +517,19 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         if (isEnabled("show_dndmode", false)) {
             boolean active = isDndEnabled();
             MenuItem item = target.add(Menu.NONE, MENU_ID_DND, Menu.NONE,
-                    active ? UiText.get(R.string.waex_ui_dnd_on_58025d4c, "DND: ON") : UiText.get(R.string.waex_ui_dnd_off_1695672b, "DND: OFF"));
+                    active ? UiText.get(R.string.waex_ui_dnd_on, "DND: ON") : UiText.get(R.string.waex_ui_dnd_off, "DND: OFF"));
             item.setShowAsAction(showAsAction);
             item.setOnMenuItemClickListener(mi -> handleItemSelected(mi, activity));
         }
 
         if (isEnabled("restartbutton", false)) {
-            MenuItem item = target.add(Menu.NONE, MENU_ID_RESTART, Menu.NONE, UiText.get(R.string.waex_ui_restart_whatsapp_e68a0fd3, "Restart WhatsApp"));
+            MenuItem item = target.add(Menu.NONE, MENU_ID_RESTART, Menu.NONE, UiText.get(R.string.waex_ui_restart_whatsapp, "Restart WhatsApp"));
             item.setShowAsAction(showAsAction);
             item.setOnMenuItemClickListener(mi -> handleItemSelected(mi, activity));
         }
 
         if (isEnabled("open_wae", false)) {
-            MenuItem item = target.add(Menu.NONE, MENU_ID_SETTINGS, Menu.NONE, UiText.get(R.string.waex_ui_wa_enhancer_settings_ff30ce0c, "WA Enhancer Settings"));
+            MenuItem item = target.add(Menu.NONE, MENU_ID_SETTINGS, Menu.NONE, UiText.get(R.string.waex_ui_wa_enhancer_settings, "WA Enhancer Settings"));
             item.setShowAsAction(showAsAction);
             item.setOnMenuItemClickListener(mi -> handleItemSelected(mi, activity));
         }
@@ -537,12 +539,12 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
     /** Always place recovery actions in overflow, not as conspicuous toolbar icons. */
     private void appendRecoveryEntries(Menu target, Activity activity) {
         if (isArchivedHidden() && isArchiveMenuEnabled()) {
-            MenuItem item = target.add(Menu.NONE, MENU_ID_ARCHIVED, Menu.NONE, UiText.get(R.string.waex_ui_open_archived_chats_791f3567, "Open archived chats"));
+            MenuItem item = target.add(Menu.NONE, MENU_ID_ARCHIVED, Menu.NONE, UiText.get(R.string.waex_ui_open_archived_chats_label, "Open archived chats"));
             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
             item.setOnMenuItemClickListener(mi -> handleItemSelected(mi, activity));
         }
         if (isHideLockedChatsEnabled() && isLockedMenuEnabled()) {
-            MenuItem item = target.add(Menu.NONE, MENU_ID_LOCKED, Menu.NONE, UiText.get(R.string.waex_ui_open_locked_chats_d1a58216, "Open locked chats"));
+            MenuItem item = target.add(Menu.NONE, MENU_ID_LOCKED, Menu.NONE, UiText.get(R.string.waex_ui_open_locked_chats_label, "Open locked chats"));
             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
             item.setOnMenuItemClickListener(mi -> handleItemSelected(mi, activity));
         }
@@ -630,7 +632,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
                     /* onRestart   */ () -> forceRestartWhatsApp(activity),
                     /* onSettings  */ () -> {
                         try {
-                            android.content.Intent intent =
+                            Intent intent =
                                     activity.getPackageManager().getLaunchIntentForPackage("com.waenhancer");
                             if (intent != null) activity.startActivity(intent);
                         } catch (Throwable ignored) {}
@@ -673,7 +675,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
             if (activityObj instanceof Activity) {
                 Activity activity = (Activity) activityObj;
                 try {
-                    android.content.Intent intent =
+                    Intent intent =
                             activity.getPackageManager().getLaunchIntentForPackage("com.waenhancer");
                     if (intent != null) activity.startActivity(intent);
                 } catch (Throwable ignored) {}
@@ -699,7 +701,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
             forceRestartWhatsApp(activity);
         } else if (itemId == MENU_ID_SETTINGS) {
             try {
-                android.content.Intent intent =
+                Intent intent =
                         activity.getPackageManager().getLaunchIntentForPackage("com.waenhancer");
                 if (intent != null) activity.startActivity(intent);
             } catch (Throwable ignored) {}
@@ -718,14 +720,14 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
                     "com.whatsapp.conversation.conversationslist.ArchivedConversationsActivity",
                     classLoader);
             if (archived == null || !Activity.class.isAssignableFrom(archived)) {
-                Toast.makeText(activity, UiText.get(R.string.waex_ui_archived_chats_unavailable_in_this_wha_a75f8af5, "Archived chats unavailable in this WhatsApp build"),
+                Toast.makeText(activity, UiText.get(R.string.waex_ui_archived_chats_unavailable_in_this_wha, "Archived chats unavailable in this WhatsApp build"),
                         Toast.LENGTH_SHORT).show();
                 return;
             }
             activity.startActivity(new Intent(activity, archived));
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Cannot open archived chats: " + t.getClass().getSimpleName());
-            Toast.makeText(activity, UiText.get(R.string.waex_ui_could_not_open_archived_chats_d18485fc, "Could not open archived chats"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, UiText.get(R.string.waex_ui_could_not_open_archived_chats, "Could not open archived chats"), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -741,14 +743,14 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
                     "com.whatsapp.conversation.conversationslist.LockedConversationsActivity",
                     classLoader);
             if (locked == null || !Activity.class.isAssignableFrom(locked)) {
-                Toast.makeText(activity, UiText.get(R.string.waex_ui_locked_chats_unavailable_in_this_whats_05439a78, "Locked chats unavailable in this WhatsApp build"),
+                Toast.makeText(activity, UiText.get(R.string.waex_ui_locked_chats_unavailable_in_this_whats, "Locked chats unavailable in this WhatsApp build"),
                         Toast.LENGTH_SHORT).show();
                 return;
             }
             activity.startActivity(new Intent(activity, locked));
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Cannot open locked chats: " + t.getClass().getSimpleName());
-            Toast.makeText(activity, UiText.get(R.string.waex_ui_could_not_open_locked_chats_cfe581e0, "Could not open locked chats"), Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, UiText.get(R.string.waex_ui_could_not_open_locked_chats, "Could not open locked chats"), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -767,7 +769,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
                 UiText.get(R.string.waex_ui_restarting_whatsapp_short, "Restarting WhatsApp…"),
                 Toast.LENGTH_SHORT).show();
         activity.getWindow().getDecorView().postDelayed(
-                () -> com.waenhancer.xposed.utils.WhatsAppProcessRestarter.restart(activity),
+                () -> WhatsAppProcessRestarter.restart(activity),
                 350L);
     }
 
@@ -780,11 +782,11 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         if (!active) {
             new WaexBottomSheet(activity)
                     .asBottomSheet()
-                    .setTitle(UiText.get(R.string.waex_ui_activate_ghost_mode_2481d3ff, "Activate Ghost Mode?"))
-                    .setMessage(UiText.get(R.string.waex_ui_ghost_mode_hides_your_online_status_fr_aef9e9dc, "Ghost Mode hides your online status, freezes last seen, and silences typing & read receipts from all contacts.\n\nRestart WhatsApp to apply changes?"))
-                    .setPositiveButton(UiText.get(R.string.waex_ui_activate_restart_017ecc0d, "Activate & Restart"), (d, w) -> {
+                    .setTitle(UiText.get(R.string.waex_ui_activate_ghost_mode, "Activate Ghost Mode?"))
+                    .setMessage(UiText.get(R.string.waex_ui_ghost_mode_hides_your_online_status_fr, "Ghost Mode hides your online status, freezes last seen, and silences typing & read receipts from all contacts.\n\nRestart WhatsApp to apply changes?"))
+                    .setPositiveButton(UiText.get(R.string.waex_ui_activate_restart, "Activate & Restart"), (d, w) -> {
                         prefs.edit().putBoolean("ghostmode_active", true).apply();
-                        Toast.makeText(activity, UiText.get(R.string.waex_ui_ghost_mode_activated_970ac067, "Ghost Mode Activated"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity, UiText.get(R.string.waex_ui_ghost_mode_activated, "Ghost Mode Activated"), Toast.LENGTH_SHORT).show();
                         activity.invalidateOptionsMenu();
                         d.dismiss();
                         forceRestartWhatsApp(activity);
@@ -794,11 +796,11 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         } else {
             new WaexBottomSheet(activity)
                     .asBottomSheet()
-                    .setTitle(UiText.get(R.string.waex_ui_deactivate_ghost_mode_ae52c22b, "Deactivate Ghost Mode?"))
-                    .setMessage(UiText.get(R.string.waex_ui_deactivating_restores_your_normal_onli_e7fff0e3, "Deactivating restores your normal online visibility, typing indicators, and read receipts.\n\nRestart WhatsApp to apply changes?"))
-                    .setPositiveButton(UiText.get(R.string.waex_ui_deactivate_restart_5f1c0ebe, "Deactivate & Restart"), (d, w) -> {
+                    .setTitle(UiText.get(R.string.waex_ui_deactivate_ghost_mode, "Deactivate Ghost Mode?"))
+                    .setMessage(UiText.get(R.string.waex_ui_deactivating_restores_your_normal_onli, "Deactivating restores your normal online visibility, typing indicators, and read receipts.\n\nRestart WhatsApp to apply changes?"))
+                    .setPositiveButton(UiText.get(R.string.waex_ui_deactivate_restart, "Deactivate & Restart"), (d, w) -> {
                         prefs.edit().putBoolean("ghostmode_active", false).apply();
-                        Toast.makeText(activity, UiText.get(R.string.waex_ui_ghost_mode_deactivated_7b9d7043, "Ghost Mode Deactivated"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity, UiText.get(R.string.waex_ui_ghost_mode_deactivated, "Ghost Mode Deactivated"), Toast.LENGTH_SHORT).show();
                         activity.invalidateOptionsMenu();
                         d.dismiss();
                         forceRestartWhatsApp(activity);
@@ -813,11 +815,11 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         if (!active) {
             new WaexBottomSheet(activity)
                     .asBottomSheet()
-                    .setTitle(UiText.get(R.string.waex_ui_freeze_last_seen_200aea50, "Activate Freeze Last Seen?"))
-                    .setMessage(UiText.get(R.string.waex_ui_locks_your_last_seen_timestamp_so_cont_3c49d617, "Locks your last seen timestamp so contacts won't see when you're active.\n\nRestart WhatsApp to apply changes?"))
-                    .setPositiveButton(UiText.get(R.string.waex_ui_freeze_restart_bfdfd4fc, "Freeze & Restart"), (d, w) -> {
+                    .setTitle(UiText.get(R.string.waex_ui_freeze_last_seen, "Activate Freeze Last Seen?"))
+                    .setMessage(UiText.get(R.string.waex_ui_locks_your_last_seen_timestamp_so_cont, "Locks your last seen timestamp so contacts won't see when you're active.\n\nRestart WhatsApp to apply changes?"))
+                    .setPositiveButton(UiText.get(R.string.waex_ui_freeze_restart, "Freeze & Restart"), (d, w) -> {
                         prefs.edit().putBoolean("freeze_last_seen_active", true).apply();
-                        Toast.makeText(activity, UiText.get(R.string.waex_ui_last_seen_frozen_263b4306, "Last Seen Frozen"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity, UiText.get(R.string.waex_ui_last_seen_frozen, "Last Seen Frozen"), Toast.LENGTH_SHORT).show();
                         activity.invalidateOptionsMenu();
                         d.dismiss();
                         forceRestartWhatsApp(activity);
@@ -827,11 +829,11 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         } else {
             new WaexBottomSheet(activity)
                     .asBottomSheet()
-                    .setTitle(UiText.get(R.string.waex_ui_unfreeze_last_seen_2b755d69, "Deactivate Freeze Last Seen?"))
-                    .setMessage(UiText.get(R.string.waex_ui_whatsapp_will_resume_updating_your_las_13fe4e9d, "WhatsApp will resume updating your last seen timestamp normally.\n\nRestart WhatsApp to apply changes?"))
-                    .setPositiveButton(UiText.get(R.string.waex_ui_unfreeze_restart_482e080f, "Unfreeze & Restart"), (d, w) -> {
+                    .setTitle(UiText.get(R.string.waex_ui_unfreeze_last_seen, "Deactivate Freeze Last Seen?"))
+                    .setMessage(UiText.get(R.string.waex_ui_whatsapp_will_resume_updating_your_las, "WhatsApp will resume updating your last seen timestamp normally.\n\nRestart WhatsApp to apply changes?"))
+                    .setPositiveButton(UiText.get(R.string.waex_ui_unfreeze_restart, "Unfreeze & Restart"), (d, w) -> {
                         prefs.edit().putBoolean("freeze_last_seen_active", false).apply();
-                        Toast.makeText(activity, UiText.get(R.string.waex_ui_last_seen_unfrozen_9b59cac2, "Last Seen Unfrozen"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(activity, UiText.get(R.string.waex_ui_last_seen_unfrozen, "Last Seen Unfrozen"), Toast.LENGTH_SHORT).show();
                         activity.invalidateOptionsMenu();
                         d.dismiss();
                         forceRestartWhatsApp(activity);
