@@ -1018,4 +1018,16 @@
     <string name="waex_ui_hma_reason_preset">Oculto por el ajuste predefinido «xposed» de HMA</string>
     <string name="waex_ui_deleted_a_status">" eliminó un estado"</string>
     <string name="waex_ui_restarting_whatsapp_short">Reiniciando WhatsApp…</string>
+    <string name="waex_ui_bottom_bar_shadow" formatted="false">"sombra"</string>
+    <string name="waex_ui_bottom_bar_shadow_desc" formatted="false">"Mostrar una sombra debajo de la barra flotante."</string>
+    <string name="waex_ui_horizontal_inner_padding" formatted="false">"Acolchado interior horizontal."</string>
+    <string name="waex_ui_selector_type" formatted="false">"Tipo de selector"</string>
+    <string name="waex_ui_selector_color" formatted="false">"Color seleccionador"</string>
+    <string name="waex_ui_use_default_selector_color" formatted="false">"Usando el color del selector predeterminado de WhatsApp"</string>
+    <string name="waex_ui_use_app_default_color" formatted="false">"Usar el color predeterminado de la aplicación"</string>
+    <string name="waex_ui_opacity_value">"Opacidad: %1$d%%"</string>
+    <string name="waex_ui_default" formatted="false">"Predeterminado"</string>
+    <string name="waex_ui_oval" formatted="false">"Ovalado"</string>
+    <string name="waex_ui_ec_only_keybox" formatted="false">"EC-solo cuadro de claves"</string>
+    <string name="waex_ui_rsa_not_applicable" formatted="false">"RSA no aplicable"</string>
 </resources>
