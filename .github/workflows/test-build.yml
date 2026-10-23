@@ -1,0 +1,104 @@
+# Personal test build for the test-build branch only. Uses the free-only
+# stand-in licensing module and a non-official signing key. Never merge.
+name: Test build (stand-in licensing)
+
+on:
+  push:
+    branches: [test-build, 'ci/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write # Publishes the pre-release below.
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0 ndk;27.2.12479018 cmake;3.22.1'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Test versions sort above the release they are based on, so the in-app updater
+      # offers each new test build: 2.0.4 -> 2.0.4-test.<run>, versionCode 20400 -> 20400<run>.
+      - name: Test version
+        id: version
+        run: |
+          set -euo pipefail
+          base_name=$(grep -E '^VERSION_NAME=' gradle.properties | cut -d= -f2)
+          base_code=$(grep -E '^VERSION_CODE=' gradle.properties | cut -d= -f2)
+          echo "name=${base_name}-test.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "code=$(( base_code * 1000 + GITHUB_RUN_NUMBER % 1000 ))" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare signing key
+        env:
+          TEST_KEYSTORE_B64: ${{ secrets.TEST_KEYSTORE_B64 }}
+        run: |
+          set -euo pipefail
+          if [ -n "${TEST_KEYSTORE_B64:-}" ]; then
+            echo "$TEST_KEYSTORE_B64" | base64 -d > key.jks
+          else
+            echo "::warning::No TEST_KEYSTORE_B64 secret; using a one-off key. Each build will need an uninstall before installing."
+            keytool -genkeypair -keystore key.jks -alias test -storepass testpass -keypass testpass \
+              -dname "CN=WAEX local test build" -keyalg RSA -keysize 2048 -validity 3650
+          fi
+          sha=$(keytool -exportcert -keystore key.jks -alias test -storepass testpass | sha256sum | cut -d' ' -f1)
+          # Point the build's certificate check at this test key (CI copy only).
+          sed -i -E "s/\"[0-9a-f]{64}\"/\"$sha\"/" app/build.gradle.kts
+          grep -n "$sha" app/build.gradle.kts
+
+      - name: Build debug APK and run unit tests
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug :app:testDebugUnitTest --continue --stacktrace \
+            -PVERSION_NAME=${{ steps.version.outputs.name }} -PVERSION_CODE=${{ steps.version.outputs.code }} \
+            -PUPDATE_REPOSITORY=${{ github.repository }} \
+            -PandroidStoreFile=key.jks -PandroidStorePassword=testpass \
+            -PandroidKeyAlias=test -PandroidKeyPassword=testpass
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-report
+          path: app/build/reports/tests/testDebugUnitTest/
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: waex-test-build
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      # Runs only when the build and unit tests above succeeded.
+      - name: Publish pre-release
+        if: github.ref == 'refs/heads/test-build'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${{ steps.version.outputs.name }}"
+          # "<versionCode>-<version>" is the tag format the in-app updater parses.
+          tag="${{ steps.version.outputs.code }}-${version}"
+          apk=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          {
+            echo "**Unofficial personal test build. Not an official WaEnhancerX release.**"
+            echo
+            echo "Built from \`test-build\` (${GITHUB_SHA::7}) with a free-only stand-in for the private licensing module (Pro features off), signed with this fork's test key: test builds update over each other from the app's updater. Uninstall the official WaEnhancerX before the first install."
+            echo
+            echo "Recent changes:"
+            git log --no-merges --format='- %s' -12 HEAD -- app licensing
+          } > notes.md
+          gh release create "$tag" "$apk" --target "$GITHUB_SHA" --prerelease \
+            --title "Test build ${version} (unofficial)" --notes-file notes.md
+          echo "Download: https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/$(basename "$apk")" >> "$GITHUB_STEP_SUMMARY"
