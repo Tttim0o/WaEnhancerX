@@ -1069,4 +1069,21 @@
     <string name="waex_ui_voice_note_transcript" formatted="false">"Voice note transcript"</string>
     <string name="waex_ui_waex_voice_transcripts" formatted="false">"WAEX voice transcripts"</string>
     <string name="waex_ui_whatsapp_needs_microphone_access_to_di" formatted="false">"WhatsApp needs microphone access to dictate."</string>
+    <string name="waex_ui_balanced_speed_and_accuracy" formatted="false">"Balanced speed and accuracy"</string>
+    <string name="waex_ui_cancel" formatted="false">"Cancel"</string>
+    <string name="waex_ui_delete" formatted="false">"Delete"</string>
+    <string name="waex_ui_download_suggested_model" formatted="false">"Download suggested model"</string>
+    <string name="waex_ui_english_only_more_accurate_for_english" formatted="false">"English only: more accurate for English"</string>
+    <string name="waex_ui_fast_fair_accuracy" formatted="false">"Fast, fair accuracy"</string>
+    <string name="waex_ui_fastest_lowest_accuracy" formatted="false">"Fastest, lowest accuracy"</string>
+    <string name="waex_ui_in_use" formatted="false">"In use"</string>
+    <string name="waex_ui_may_be_too_heavy_for_this_phone" formatted="false">"May be too heavy for this phone"</string>
+    <string name="waex_ui_most_accurate_slow" formatted="false">"Most accurate, slow"</string>
+    <string name="waex_ui_on_device_models" formatted="false">"On-device models"</string>
+    <string name="waex_ui_on_device_transcription_isn_t_availabl" formatted="false">"On-device transcription isn't available on this phone"</string>
+    <string name="waex_ui_runs_on_your_phone_nothing_is_uploaded" formatted="false">"Runs on your phone, nothing is uploaded. Larger models are more accurate but slower."</string>
+    <string name="waex_ui_selected_download_it_to_start_using_it" formatted="false">"Selected: download it to start using it."</string>
+    <string name="waex_ui_suggested" formatted="false">"Suggested"</string>
+    <string name="waex_ui_tap_a_model_to_choose_it_the_suggested" formatted="false">"Tap a model to choose it. The suggested one is used until you pick another."</string>
+    <string name="waex_ui_this_phone" formatted="false">"This phone"</string>
 </resources>

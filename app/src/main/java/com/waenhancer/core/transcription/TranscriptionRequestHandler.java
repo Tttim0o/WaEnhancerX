@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.waenhancer.config.PreferenceStores;
+import com.waenhancer.core.transcription.local.LocalTranscriber;
 
 /**
  * Runs in the module process for the {@code transcribe_audio} provider call. API keys live in
@@ -36,13 +37,15 @@ public final class TranscriptionRequestHandler {
     @NonNull
     public static Bundle ready(@NonNull Context context) {
         TranscriptionClient.Config config = configFor(context);
-        boolean configured = !config.apiKey.isEmpty()
-                && (!TranscriptionClient.PROVIDER_CUSTOM.equals(config.provider) || !config.url.isEmpty());
+        boolean configured = TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)
+                ? LocalTranscriber.usableModel(context, localModel(context)) != null
+                : !config.apiKey.isEmpty()
+                        && (!TranscriptionClient.PROVIDER_CUSTOM.equals(config.provider) || !config.url.isEmpty());
         boolean enabled = readBoolean(context, "voice_transcription", true);
         boolean ready = enabled && configured;
         if (!ready) {
             TranscriptionLog.add(context, "app", "Not ready: " + (!enabled ? "transcription is off"
-                    : "provider " + config.provider + " is not set up (API key or URL missing)"));
+                    : "provider " + config.provider + " is not set up" + localStatus(context, config)));
         }
         Bundle result = new Bundle();
         result.putBoolean(RESULT_READY, ready);
@@ -61,15 +64,22 @@ public final class TranscriptionRequestHandler {
         TranscriptionClient.Config config = configFor(context);
         long started = System.currentTimeMillis();
         TranscriptionLog.add(context, "app", "Request: provider=" + config.provider
+                + (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider) ? " model=" + localModel(context) : "")
                 + " language=" + (config.language.isEmpty() ? "auto" : config.language)
                 + " audio=" + (audio == null ? 0 : audio.length / 1024) + " KB ." + extensionOf(fileName));
         try {
             String text;
-            SLOTS.acquire();
-            try {
-                text = new TranscriptionClient().transcribe(config, audio, fileName);
-            } finally {
-                SLOTS.release();
+            if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
+                // Serialized inside LocalTranscriber; it must not take a slot from network calls.
+                text = LocalTranscriber.transcribe(context, localModel(context),
+                        audio, fileName, config.language);
+            } else {
+                SLOTS.acquire();
+                try {
+                    text = new TranscriptionClient().transcribe(config, audio, fileName);
+                } finally {
+                    SLOTS.release();
+                }
             }
             result.putString(RESULT_TEXT, text);
             TranscriptionLog.add(context, "app", "Done in " + (System.currentTimeMillis() - started)
@@ -125,6 +135,15 @@ public final class TranscriptionRequestHandler {
         return ext.matches("[A-Za-z0-9]{1,5}") ? ext : "?";
     }
 
+    private static String localStatus(Context context, TranscriptionClient.Config config) {
+        if (!TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) return " (API key or URL missing)";
+        String model = localModel(context);
+        if (!com.waenhancer.core.transcription.local.WhisperNative.isSupported()) {
+            return " (" + com.waenhancer.core.transcription.local.WhisperNative.unsupportedReason() + ")";
+        }
+        return " (model " + model + " not downloaded)";
+    }
+
     /**
      * Sends one second of silence with the current settings, from the WAEX app itself.
      * Returns {@code null} when the service accepted the URL and key, otherwise a readable error.
@@ -135,7 +154,12 @@ public final class TranscriptionRequestHandler {
         TranscriptionClient.Config config = configFor(context);
         TranscriptionLog.add(context, "app", "Connection test: provider=" + config.provider);
         try {
-            new TranscriptionClient().transcribe(config, TranscriptionClient.silentWav(), "waex-test.wav");
+            if (TranscriptionClient.PROVIDER_LOCAL.equals(config.provider)) {
+                LocalTranscriber.transcribe(context, localModel(context),
+                        TranscriptionClient.silentWav(), "waex-test.wav", config.language);
+            } else {
+                new TranscriptionClient().transcribe(config, TranscriptionClient.silentWav(), "waex-test.wav");
+            }
             TranscriptionLog.add(context, "app", "Connection test passed");
             return null;
         } catch (TranscriptionClient.TranscriptionException e) {
@@ -160,6 +184,9 @@ public final class TranscriptionRequestHandler {
                 config = new TranscriptionClient.Config(provider, "",
                         firstNonEmpty(context, "assembly_key", "assemblyai_key"), "", language);
                 break;
+            case TranscriptionClient.PROVIDER_LOCAL:
+                config = new TranscriptionClient.Config(provider, "", "", "", language);
+                break;
             case TranscriptionClient.PROVIDER_CUSTOM:
                 config = new TranscriptionClient.Config(provider,
                         readString(context, "custom_transcription_url", ""),
@@ -173,7 +200,13 @@ public final class TranscriptionRequestHandler {
         return config;
     }
 
-    private static String firstNonEmpty(Context context, String key, String legacyKey) {
+    /** The chosen on-device model, or the suggested one when none was chosen. */
+    private static String localModel(Context context) {
+        return LocalTranscriber.effectiveModelId(context, readString(context, "local_model", ""),
+                readString(context, "transcription_language", ""));
+    }
+
+        private static String firstNonEmpty(Context context, String key, String legacyKey) {
         String value = readString(context, key, "");
         return value.trim().isEmpty() ? readString(context, legacyKey, "") : value;
     }
