@@ -66,6 +66,7 @@ import com.waenhancer.xposed.features.privacy.HideReceiptsHook;
 import com.waenhancer.xposed.features.privacy.LockedChatsEnhancerHook;
 import com.waenhancer.xposed.features.privacy.ScreenshotRestrictionBypassHook;
 import com.waenhancer.xposed.features.privacy.TypingPrivacyHook;
+import com.waenhancer.licensing.features.PlayIntegrityBypassHook;
 import com.waenhancer.licensing.features.AudioToVoiceStatusFeature;
 import com.waenhancer.licensing.features.BootloaderSpooferFeature;
 import com.waenhancer.licensing.features.FileSizeSpooferFeature;
@@ -184,6 +185,17 @@ public final class FeatureRegistry {
             features.add(new FeatureEntry("Bootloader Spoofing & Integrity", "BootloaderSpooferFeature", "Licensing", "ACTIVE"));
         } catch (Throwable t) {
             FeatureEntry entry = new FeatureEntry("Bootloader Spoofing & Integrity", "BootloaderSpooferFeature", "Licensing", "FAILED");
+            entry.error = t.getMessage();
+            features.add(entry);
+        }
+
+        try {
+            if (prefs.getBoolean(BootloaderSpooferFeature.ENABLED, true)) {
+                PlayIntegrityBypassHook.install(context, classLoader, prefs);
+                features.add(new FeatureEntry("Play Integrity & Roadblock Bypass", "PlayIntegrityBypassHook", "Licensing", "ACTIVE"));
+            }
+        } catch (Throwable t) {
+            FeatureEntry entry = new FeatureEntry("Play Integrity & Roadblock Bypass", "PlayIntegrityBypassHook", "Licensing", "FAILED");
             entry.error = t.getMessage();
             features.add(entry);
         }

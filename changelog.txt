@@ -16,6 +16,8 @@
   - Remove Home FAB 
   - Remove Meta AI entry points
   - Block Meta AI chat
+- Improved bootloader spoofer with support of play integrity to avoid WhatsApp Ban / Unverfied app issue (Experimental) 
+  
 
 [Fixed]
 - Send blue ticks
@@ -38,9 +40,12 @@
   - Lightweight (Pro): Hooking minimal features on Startup and more features on demand (lazy injecting) for minimum battery consumption.
   - Customized (Pro): You can customize the hooking method for each feature.
 
+[Feature: Bootloader Spoofer]
+- Play Integrity Bypass Hook was introduced to bypass the WhatsApp new aggressive device validation. But still this is not 100% due to WhatsApp frequently updates itself. For now module will work for verifications flawlessly as tested on latest beta 2.26.43.2. But if you still face issue, then you need to pass the device integrity check via PlayIntegrityFix or TeeSimulator or any other available methods. 
+
 
 [Notes]
-![Upcoming WhatsApp floating bottom bar](https://raw.githubusercontent.com/WaEnhancerX/WaEnhancerX/main/samples/upcoming-whatsapp-floating-bar.jpeg)
+![Upcoming WhatsApp floating bottom bar](https://raw.githubusercontent.com/WaEnhancerX/WaEnhancerX/main/samples/upcoming-floating-bar.jpeg)
 
 - Floating bar new features are inspired from WhatsApp's soon upcoming update of Floating bottom bar design.
 - You can enjoy the same experience before WhatsApp even launches in beta. 
