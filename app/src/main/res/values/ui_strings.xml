@@ -628,6 +628,8 @@
     <string name="waex_ui_root_installation_failed_1_s">"Root installation failed: %1$s"</string>
     <string name="waex_ui_root_lets_waenhancerx_verify_the_modul" formatted="false">"Root lets WAEnhancerX verify the module scope and supported runtime environment. Non-root injection methods such as LSPatch and Shizuku-based alternatives are not supported."</string>
     <string name="waex_ui_rsa_attestation_chain" formatted="false">"RSA Attestation Chain"</string>
+    <string name="waex_ui_ec_only_keybox" formatted="false">"EC-only keybox"</string>
+    <string name="waex_ui_rsa_not_applicable" formatted="false">"RSA not applicable"</string>
     <string name="waex_ui_rule_scope" formatted="false">"RULE SCOPE"</string>
     <string name="waex_ui_rules_apply_at_all_times" formatted="false">"Rules apply at all times"</string>
     <string name="waex_ui_run_an_eligible_update_check_when_waen" formatted="false">"Run an eligible update check when WaEnhancerX opens"</string>

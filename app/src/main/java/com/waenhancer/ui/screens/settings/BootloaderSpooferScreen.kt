@@ -417,17 +417,29 @@ private fun VerificationSheet(
                         )
                     )
 
-                    AuditCard(
-                        UiText.get(R.string.waex_ui_rsa_attestation_chain, "RSA Attestation Chain"),
-                        report.rsaScore,
-                        20,
-                        listOf(
-                            UiText.get(R.string.waex_ui_certificates_parsed, "Certificates parsed") to report.rsaPresent,
-                            UiText.get(R.string.waex_ui_trust_chain_verified, "Trust chain verified") to report.rsaChainValid,
-                            UiText.get(R.string.waex_ui_private_key_matches, "Private key matches") to report.rsaKeyMatches,
-                            UiText.get(R.string.waex_ui_certificate_is_current, "Certificate is current") to !report.rsaExpired
+                    if (report.rsaNotInKeybox) {
+                        AuditCard(
+                            UiText.get(R.string.waex_ui_rsa_attestation_chain, "RSA Attestation Chain"),
+                            report.rsaScore,
+                            20,
+                            listOf(
+                                UiText.get(R.string.waex_ui_ec_only_keybox, "EC-only keybox") to true,
+                                UiText.get(R.string.waex_ui_rsa_not_applicable, "RSA not applicable") to true
+                            )
                         )
-                    )
+                    } else {
+                        AuditCard(
+                            UiText.get(R.string.waex_ui_rsa_attestation_chain, "RSA Attestation Chain"),
+                            report.rsaScore,
+                            20,
+                            listOf(
+                                UiText.get(R.string.waex_ui_certificates_parsed, "Certificates parsed") to report.rsaPresent,
+                                UiText.get(R.string.waex_ui_trust_chain_verified, "Trust chain verified") to report.rsaChainValid,
+                                UiText.get(R.string.waex_ui_private_key_matches, "Private key matches") to report.rsaKeyMatches,
+                                UiText.get(R.string.waex_ui_certificate_is_current, "Certificate is current") to !report.rsaExpired
+                            )
+                        )
+                    }
 
                     AuditCard(
                         UiText.get(R.string.waex_ui_integrity_estimate, "Integrity Estimate"),
