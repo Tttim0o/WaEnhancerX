@@ -58,6 +58,15 @@ public final class TranscriptionLog {
         }
     }
 
+    /** Removes only the lines the predicate matches, e.g. one side's lines. */
+    public static void clearMatching(@NonNull Context context, @NonNull java.util.function.Predicate<String> remove) {
+        synchronized (LOCK) {
+            Deque<String> lines = load(context);
+            lines.removeIf(remove);
+            save(context, lines);
+        }
+    }
+
     private static Deque<String> load(Context context) {
         if (sLines != null) return sLines;
         sLines = new ArrayDeque<>();

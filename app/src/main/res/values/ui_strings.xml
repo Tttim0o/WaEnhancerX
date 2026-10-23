@@ -1093,4 +1093,6 @@
     <string name="waex_ui_hma_reason_preset">Hidden by HMA \"xposed\" preset</string>
     <string name="waex_ui_deleted_a_status">" deleted a status"</string>
     <string name="waex_ui_restarting_whatsapp_short">Restarting WhatsApp…</string>
+    <string name="waex_ui_call_recording_log_6a2d8e23" formatted="false">"Call recording log"</string>
+    <string name="waex_ui_steps_and_errors_only_phone_numbers_an_4569c3c3" formatted="false">"Steps and errors only. Phone numbers and audio are never logged."</string>
 </resources>
