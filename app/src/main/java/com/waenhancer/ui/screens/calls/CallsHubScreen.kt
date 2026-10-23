@@ -135,6 +135,8 @@ fun CallsHubScreen() {
 
     // Call Recording State
     var callRecordingEnabled by remember { mutableStateOf(prefManager.getBoolean("call_recording_enabled", false)) }
+    var callRecordingAutoStart by remember { mutableStateOf(prefManager.getBoolean("call_recording_auto_start", true)) }
+    var callRecordingButton by remember { mutableStateOf(prefManager.getBoolean("call_recording_button", true)) }
     var preferCallAudio by remember { mutableStateOf(prefManager.getBoolean("call_recording_use_root", false)) }
     var audioFormat by remember { mutableStateOf(prefManager.getString("call_recording_format", "m4a") ?: "m4a") }
 
@@ -642,6 +644,68 @@ fun CallsHubScreen() {
                                                 prefManager.putBoolean("call_recording_enabled", it)
                                             }
                                         )
+                                    }
+                                    if (callRecordingEnabled) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = UiText.get(R.string.waex_ui_start_recording_automatically_c9b44375, "Start recording automatically"),
+                                                    style = typography.bodyMd,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = colors.onSurface
+                                                )
+                                                Text(
+                                                    text = UiText.get(R.string.waex_ui_off_record_only_when_you_tap_the_butto_5fb773b5, "Off: record only when you tap the button on the call screen."),
+                                                    style = typography.bodyMd,
+                                                    color = colors.onSurfaceVariant,
+                                                    fontSize = 12.sp
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            StitchSwitch(
+                                                checked = callRecordingAutoStart,
+                                                onCheckedChange = {
+                                                    callRecordingAutoStart = it
+                                                    prefManager.putBoolean("call_recording_auto_start", it)
+                                                }
+                                            )
+                                        }
+                                    }
+                                    if (callRecordingEnabled) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = UiText.get(R.string.waex_ui_record_button_during_calls_168e1ecf, "Record button during calls"),
+                                                    style = typography.bodyMd,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = colors.onSurface
+                                                )
+                                                Text(
+                                                    text = UiText.get(R.string.waex_ui_shows_a_small_record_stop_button_on_th_bba9146f, "Shows a small record / stop button on the call screen."),
+                                                    style = typography.bodyMd,
+                                                    color = colors.onSurfaceVariant,
+                                                    fontSize = 12.sp
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            StitchSwitch(
+                                                checked = callRecordingButton,
+                                                onCheckedChange = {
+                                                    callRecordingButton = it
+                                                    prefManager.putBoolean("call_recording_button", it)
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

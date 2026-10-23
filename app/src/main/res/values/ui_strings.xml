@@ -547,6 +547,7 @@
     <string name="waex_ui_note_resizing_view_elements_dynamicall_95d239ba" formatted="false">"Note: Resizing view elements dynamically requires extra layout rendering. This may cause screens containing these elements to load with a minor delay."</string>
     <string name="waex_ui_off_ca7981b4" formatted="false">"Off"</string>
     <string name="waex_ui_off_each_new_voice_note_sent_or_receiv_efafc048" formatted="false">"Off: each new voice note, sent or received, gets a notification with a Transcribe button."</string>
+    <string name="waex_ui_off_record_only_when_you_tap_the_butto_5fb773b5" formatted="false">"Off: record only when you tap the button on the call screen."</string>
     <string name="waex_ui_on_device_models_2c7e25e0" formatted="false">"On-device models"</string>
     <string name="waex_ui_on_device_transcription_isn_t_availabl_678d16ae" formatted="false">"On-device transcription isn't available on this phone"</string>
     <string name="waex_ui_online_presence_indicators_05934fbe" formatted="false">"Online Presence Indicators"</string>
@@ -609,6 +610,7 @@
     <string name="waex_ui_rec_a29ea413" formatted="false">"Rec"</string>
     <string name="waex_ui_receive_detailed_notification_with_cal_e55e211d" formatted="false">"Receive detailed notification with caller IP, location, device &amp; version after calls end"</string>
     <string name="waex_ui_recommended_baa505ce" formatted="false">"RECOMMENDED"</string>
+    <string name="waex_ui_record_button_during_calls_168e1ecf" formatted="false">"Record button during calls"</string>
     <string name="waex_ui_record_whatsapp_calls_edeb6ac1" formatted="false">"Record WhatsApp Calls"</string>
     <string name="waex_ui_recording_configuration_40230390" formatted="false">"RECORDING CONFIGURATION"</string>
     <string name="waex_ui_recording_deleted_ded881bb" formatted="false">"Recording deleted"</string>
@@ -709,6 +711,7 @@
     <string name="waex_ui_show_it_again_on_the_next_check_40bbb328" formatted="false">"Show it again on the next check"</string>
     <string name="waex_ui_show_restart_sheet_after_changes_7fd4dac3" formatted="false">"Show restart sheet after changes"</string>
     <string name="waex_ui_show_the_injecting_hooks_notification_3b01d0c9" formatted="false">"Show the injecting hooks notification when WhatsApp opens"</string>
+    <string name="waex_ui_shows_a_small_record_stop_button_on_th_bba9146f" formatted="false">"Shows a small record / stop button on the call screen."</string>
     <string name="waex_ui_shows_next_to_the_time_of_voice_notes_1a90c809" formatted="false">"Shows 📝 next to the time of voice notes in chats. Tap it to read the transcript."</string>
     <string name="waex_ui_silent_root_install_6fff1c8e" formatted="false">"Silent Root Install"</string>
     <string name="waex_ui_simulates_caller_not_reachable_fd5240bd" formatted="false">"Simulates caller not reachable"</string>
@@ -721,6 +724,7 @@
     <string name="waex_ui_standard_mic_84f47136" formatted="false">"Standard Mic"</string>
     <string name="waex_ui_star_waenhancerx_on_github_and_your_pr_9240b818" formatted="false">"Star WaEnhancerX on GitHub and your profile can join this supporters list. It’s free, takes only a moment, and helps more people discover the project. New stars may take a little while to appear."</string>
     <string name="waex_ui_start_hour_ab66a6d4" formatted="false">"Start Hour"</string>
+    <string name="waex_ui_start_recording_automatically_c9b44375" formatted="false">"Start recording automatically"</string>
     <string name="waex_ui_status_920e413c" formatted="false">"Status"</string>
     <string name="waex_ui_status_download_bbc8b7f1" formatted="false">"Status Download"</string>
     <string name="waex_ui_status_forward_efd1de1c" formatted="false">"Status Forward"</string>
