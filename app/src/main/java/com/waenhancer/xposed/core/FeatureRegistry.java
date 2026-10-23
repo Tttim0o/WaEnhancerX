@@ -21,6 +21,7 @@ import com.waenhancer.xposed.features.conversation.StickerConfirmHook;
 import com.waenhancer.xposed.features.customization.ChannelRecommendationsFilterHook;
 import com.waenhancer.xposed.features.customization.ChatFilterDisplayHook;
 import com.waenhancer.xposed.features.customization.CustomDpiHook;
+import com.waenhancer.xposed.features.customization.RotationLockHook;
 import com.waenhancer.xposed.features.customization.CustomTimeHook;
 import com.waenhancer.xposed.features.customization.CssThemeHook;
 import com.waenhancer.xposed.features.customization.FilterItemsHook;
@@ -229,6 +230,7 @@ public final class FeatureRegistry {
         addFeature(ChannelRecommendationsFilterHook.class, "Customization", () -> new ChannelRecommendationsFilterHook(context, classLoader, prefs));
         addFeature(ChatFilterDisplayHook.class, "Customization", () -> new ChatFilterDisplayHook(context, classLoader, prefs));
         addFeature(CustomDpiHook.class, "Customization", () -> new CustomDpiHook(context, classLoader, prefs));
+        addFeature(RotationLockHook.class, "Customization", () -> new RotationLockHook(context, classLoader, prefs));
         addFeature(CustomTimeHook.class, "Customization", () -> new CustomTimeHook(context, classLoader, prefs));
         addFeature(CssThemeHook.class, "Customization", () -> new CssThemeHook(context, classLoader, prefs));
         addFeature(HideHomeTabsHook.class, "Customization", () -> new HideHomeTabsHook(context, classLoader, prefs));
