@@ -121,6 +121,55 @@ public final class TranscriptionClient {
     }
 
     /**
+     * Model ids an OpenAI-compatible server offers ({@code GET <base>/models}), sorted, with
+     * speech-to-text models first. Accepts OpenAI's {@code {"data":[{"id":…}]}} and the
+     * {@code {"models":[{"name"|"id":…}]}} or plain-array forms other servers use.
+     */
+    public List<String> listModels(String url, String apiKey) throws TranscriptionException, IOException {
+        String endpoint = resolveModelsEndpoint(url);
+        Map<String, String> headers = new LinkedHashMap<>();
+        if (apiKey != null && !apiKey.trim().isEmpty()) headers.put("Authorization", "Bearer " + apiKey.trim());
+        Response response = transport.send("GET", endpoint, headers, null);
+        Object json = parseJsonOrNull(response.body);
+        if (response.code == 404 || response.code == 405) {
+            throw new TranscriptionException("This server does not list its models; type the model name");
+        }
+        if (response.code / 100 != 2) throw new TranscriptionException(describeError(response, json));
+        Object list = json;
+        if (json instanceof Map) {
+            list = ((Map<?, ?>) json).get("data");
+            if (list == null) list = ((Map<?, ?>) json).get("models");
+        }
+        if (!(list instanceof List)) throw new TranscriptionException("Unexpected model list from server");
+        java.util.TreeSet<String> ids = new java.util.TreeSet<>();
+        for (Object item : (List<?>) list) {
+            Object id = item instanceof String ? item : null;
+            if (item instanceof Map) {
+                id = ((Map<?, ?>) item).get("id");
+                if (!(id instanceof String)) id = ((Map<?, ?>) item).get("name");
+            }
+            if (id instanceof String && !((String) id).trim().isEmpty() && ((String) id).length() <= 200) {
+                ids.add(((String) id).trim());
+            }
+        }
+        List<String> sorted = new java.util.ArrayList<>(ids);
+        sorted.sort((a, b) -> Boolean.compare(!isSpeechModel(a), !isSpeechModel(b)));
+        return sorted;
+    }
+
+    static boolean isSpeechModel(String id) {
+        String lower = id.toLowerCase(Locale.ROOT);
+        return lower.contains("whisper") || lower.contains("transcri") || lower.contains("stt")
+                || lower.contains("parakeet") || lower.contains("speech") || lower.contains("voxtral");
+    }
+
+    /** {@code <base>/models} from either a base URL or a full transcriptions endpoint. */
+    static String resolveModelsEndpoint(String url) throws TranscriptionException {
+        String endpoint = resolveOpenAiEndpoint(url);
+        return endpoint.substring(0, endpoint.length() - "/audio/transcriptions".length()) + "/models";
+    }
+
+    /**
      * Accepts either a base URL ({@code https://host/v1}) or the full endpoint
      * ({@code https://host/v1/audio/transcriptions}).
      */
@@ -320,7 +369,7 @@ public final class TranscriptionClient {
         return value instanceof String ? (String) value : null;
     }
 
-    static String jsonQuote(String value) {
+    public static String jsonQuote(String value) {
         StringBuilder out = new StringBuilder(value.length() + 2).append('"');
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);

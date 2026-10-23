@@ -63,6 +63,7 @@
     <string name="waex_ui_allow_version_downgrades_cb84c618" formatted="false">"Allow Version Downgrades"</string>
     <string name="waex_ui_always_active_cbdb4cc2" formatted="false">"Always Active"</string>
     <string name="waex_ui_always_typing_b7568ffa" formatted="false">"Always Typing"</string>
+    <string name="waex_ui_an_openai_compatible_api_v1_audio_tran_e7da51e8" formatted="false">"An OpenAI-compatible API (/v1/audio/transcriptions) that other apps can use with your downloaded models."</string>
     <string name="waex_ui_android_device_9ea4780b" formatted="false">"Android Device"</string>
     <string name="waex_ui_animated_emojis_cf3b4565" formatted="false">"Animated Emojis"</string>
     <string name="waex_ui_anti_disappearing_messages_f4d02052" formatted="false">"Anti-Disappearing Messages"</string>
@@ -71,7 +72,9 @@
     <string name="waex_ui_anti_revoke_e16be3ed" formatted="false">"Anti-Revoke"</string>
     <string name="waex_ui_anti_revoke_status_8c7b6e5c" formatted="false">"Anti-Revoke Status"</string>
     <string name="waex_ui_anti_view_once_73413cd8" formatted="false">"Anti View Once"</string>
+    <string name="waex_ui_anyone_on_your_network_with_the_key_ca_0c2be7d8" formatted="false">"Anyone on your network with the key can use it."</string>
     <string name="waex_ui_api_1_s_7ed74ebc">"API %1$s"</string>
+    <string name="waex_ui_api_key_16f0ee47" formatted="false">"API key"</string>
     <string name="waex_ui_apk_does_not_match_selected_version_1_2285cdd0">"APK does not match selected version %1$s"</string>
     <string name="waex_ui_app_logo_c1fa6ccf" formatted="false">"App Logo"</string>
     <string name="waex_ui_appearance_3907fa7f" formatted="false">"Appearance"</string>
@@ -309,6 +312,8 @@
     <string name="waex_ui_event_message_received_29191586" formatted="false">"Event: Message Received"</string>
     <string name="waex_ui_every_eligible_app_open_dadc9b2a" formatted="false">"Every eligible app open"</string>
     <string name="waex_ui_everyone_no_block_f8505494" formatted="false">"Everyone (No Block)"</string>
+    <string name="waex_ui_example_d029f87e" formatted="false">"Example"</string>
+    <string name="waex_ui_exempts_waex_from_battery_optimization_b08b6c27" formatted="false">"Exempts WAEX from battery optimization so Android doesn't stop the server."</string>
     <string name="waex_ui_exit_waenhancerx_7cb55953" formatted="false">"Exit WaEnhancerX"</string>
     <string name="waex_ui_expand_07548c2c" formatted="false">"Expand"</string>
     <string name="waex_ui_expand_1_s_e144bd52">"Expand %1$s"</string>
@@ -329,6 +334,7 @@
     <string name="waex_ui_features_5697d03d" formatted="false">"Features"</string>
     <string name="waex_ui_filter_items_954cac3d" formatted="false">"Filter Items"</string>
     <string name="waex_ui_filter_view_id_1867e726" formatted="false">"Filter View ID"</string>
+    <string name="waex_ui_find_models_1e2793bd" formatted="false">"Find models"</string>
     <string name="waex_ui_force_waex_hooks_to_run_on_any_version_ffdfb190" formatted="false">"Force WAEX hooks to run on any version without checking (Advanced)"</string>
     <string name="waex_ui_framework_package_2cd0a851" formatted="false">"Framework package"</string>
     <string name="waex_ui_framework_version_b4522d19" formatted="false">"Framework version"</string>
@@ -434,7 +440,9 @@
     <string name="waex_ui_is_online_e0992fa5" formatted="false">" is online"</string>
     <string name="waex_ui_join_our_supporters_and_get_your_githu_3a43f85e" formatted="false">"Join our supporters and get your GitHub profile featured in this list."</string>
     <string name="waex_ui_join_the_supporters_list_b169de4a" formatted="false">"Join the supporters list"</string>
+    <string name="waex_ui_keep_alive_with_root_99ecef34" formatted="false">"Keep alive with root"</string>
     <string name="waex_ui_keep_deleted_messages_visible_7d6b1de5" formatted="false">"Keep deleted messages visible"</string>
+    <string name="waex_ui_keep_running_when_waex_doesn_t_use_on_d63280ba" formatted="false">"Keep running when WAEX doesn't use on-device models"</string>
     <string name="waex_ui_kernel_8a716159" formatted="false">"Kernel"</string>
     <string name="waex_ui_keybox_file_is_too_large_cf788fae" formatted="false">"Keybox file is too large"</string>
     <string name="waex_ui_keybox_setup_required_f83e4b34" formatted="false">"Keybox setup required"</string>
@@ -456,6 +464,7 @@
     <string name="waex_ui_lines_deleted_0bfbeabe" formatted="false">"Lines Deleted"</string>
     <string name="waex_ui_linked_devices_34c09c50" formatted="false">"LINKED DEVICES"</string>
     <string name="waex_ui_live_preview_d61b13d1" formatted="false">"Live Preview"</string>
+    <string name="waex_ui_local_network_4fda695d" formatted="false">"Local network"</string>
     <string name="waex_ui_location_ip_2730d766" formatted="false">"Location / IP"</string>
     <string name="waex_ui_lock_your_online_timestamp_03f3f564" formatted="false">"Lock your online timestamp"</string>
     <string name="waex_ui_locked_chats_unavailable_in_this_whats_05439a78" formatted="false">"Locked chats unavailable in this WhatsApp build"</string>
@@ -500,6 +509,7 @@
     <string name="waex_ui_my_status_43503c17" formatted="false">"My Status"</string>
     <string name="waex_ui_name_sender_name_number_sender_jid_pho_ee23ebc4" formatted="false">"%name (Sender Name)\n%number (Sender JID / Phone)\n%message (Text Content)"</string>
     <string name="waex_ui_needs_attention_e0004b39" formatted="false">"NEEDS ATTENTION"</string>
+    <string name="waex_ui_new_key_eda5496b" formatted="false">"New key"</string>
     <string name="waex_ui_new_voice_note_833475b4" formatted="false">"New voice note"</string>
     <string name="waex_ui_no_1ea442a1" formatted="false">"No"</string>
     <string name="waex_ui_no_active_hooks_reported_by_whatsapp_p_50b24a7f" formatted="false">"No active hooks reported by WhatsApp process.\nEnsure WhatsApp is running."</string>
@@ -533,7 +543,9 @@
     <string name="waex_ui_not_installed_on_this_device_6aac8f5e" formatted="false">"Not installed on this device"</string>
     <string name="waex_ui_not_reported_adadface" formatted="false">"Not reported"</string>
     <string name="waex_ui_not_reported_yet_355b4779" formatted="false">"Not reported yet"</string>
+    <string name="waex_ui_not_running_waex_isn_t_using_on_device_3cb964cd" formatted="false">"Not running: WAEX isn't using on-device models."</string>
     <string name="waex_ui_note_resizing_view_elements_dynamicall_95d239ba" formatted="false">"Note: Resizing view elements dynamically requires extra layout rendering. This may cause screens containing these elements to load with a minor delay."</string>
+    <string name="waex_ui_off_ca7981b4" formatted="false">"Off"</string>
     <string name="waex_ui_off_each_new_voice_note_sent_or_receiv_efafc048" formatted="false">"Off: each new voice note, sent or received, gets a notification with a Transcribe button."</string>
     <string name="waex_ui_on_device_models_2c7e25e0" formatted="false">"On-device models"</string>
     <string name="waex_ui_on_device_transcription_isn_t_availabl_678d16ae" formatted="false">"On-device transcription isn't available on this phone"</string>
@@ -571,6 +583,7 @@
     <string name="waex_ui_please_enter_your_license_key_49b0976f" formatted="false">"Please enter your license key."</string>
     <string name="waex_ui_please_wait_until_the_status_finishes_0ef2b7ff" formatted="false">"Please wait until the status finishes downloading, then try again"</string>
     <string name="waex_ui_popular_reactions_c2b82def" formatted="false">"Popular Reactions"</string>
+    <string name="waex_ui_port_72e9a59f" formatted="false">"Port"</string>
     <string name="waex_ui_post_notifications_515765d2" formatted="false">"Post Notifications"</string>
     <string name="waex_ui_preferences_refresh_immediately_restar_e3de7bee" formatted="false">"Preferences refresh immediately; restarting WhatsApp re-injects hooks that only load at startup"</string>
     <string name="waex_ui_presence_toasts_ee8f508c" formatted="false">"Presence Toasts"</string>
@@ -650,6 +663,7 @@
     <string name="waex_ui_rule_scope_010c9afb" formatted="false">"RULE SCOPE"</string>
     <string name="waex_ui_rules_apply_at_all_times_5fbfcc41" formatted="false">"Rules apply at all times"</string>
     <string name="waex_ui_run_an_eligible_update_check_when_waen_57552a51" formatted="false">"Run an eligible update check when WaEnhancerX opens"</string>
+    <string name="waex_ui_running_f4ccae29" formatted="false">"Running"</string>
     <string name="waex_ui_runs_on_your_phone_nothing_is_uploaded_086e584c" formatted="false">"Runs on your phone, nothing is uploaded. Larger models are more accurate but slower."</string>
     <string name="waex_ui_runtime_api_captured_2625bdc2" formatted="false">"Runtime API captured"</string>
     <string name="waex_ui_saturation_993f024b" formatted="false">"Saturation"</string>
@@ -664,6 +678,7 @@
     <string name="waex_ui_search_icon_edfdb08d" formatted="false">"Search icon"</string>
     <string name="waex_ui_search_injected_hooks_classes_6ad2a50f" formatted="false">"Search injected hooks &amp; classes..."</string>
     <string name="waex_ui_search_supporters_d4975694" formatted="false">"Search supporters"</string>
+    <string name="waex_ui_searching_c31723ab" formatted="false">"Searching…"</string>
     <string name="waex_ui_section_1_s_ab7f31a7">"Section: %1$s"</string>
     <string name="waex_ui_seen_8894cf30" formatted="false">"Seen"</string>
     <string name="waex_ui_select_accent_color_ba07cfa2" formatted="false">"Select Accent Color"</string>
@@ -685,6 +700,7 @@
     <string name="waex_ui_settings_enforcement_4ea541a3" formatted="false">"SETTINGS &amp; ENFORCEMENT"</string>
     <string name="waex_ui_setup_progress_c4b08e4f" formatted="false">"Setup Progress"</string>
     <string name="waex_ui_share_call_recording_692216ae" formatted="false">"Share call recording"</string>
+    <string name="waex_ui_share_on_device_models_with_other_apps_a9ce83a3" formatted="false">"Share on-device models with other apps (experimental)"</string>
     <string name="waex_ui_share_selected_e3040dd9" formatted="false">"Share selected"</string>
     <string name="waex_ui_shield_heart_4bd16fe2" formatted="false">"Shield Heart"</string>
     <string name="waex_ui_show_0df6f1ca" formatted="false">"Show"</string>
@@ -714,6 +730,7 @@
     <string name="waex_ui_steps_and_errors_only_transcripts_and_3b357802" formatted="false">"Steps and errors only. Transcripts and message text are never logged."</string>
     <string name="waex_ui_stickers_dbf9cbbe" formatted="false">"Stickers"</string>
     <string name="waex_ui_stop_cae7d57b" formatted="false">"Stop"</string>
+    <string name="waex_ui_stopped_1a4f630a" formatted="false">"Stopped"</string>
     <string name="waex_ui_storage_access_a334c4ca" formatted="false">"Storage Access"</string>
     <string name="waex_ui_stored_privately_on_this_device_8914dd99" formatted="false">"Stored privately on this device"</string>
     <string name="waex_ui_strong_integrity_supported_5590a4ba" formatted="false">"Strong integrity supported"</string>
@@ -746,6 +763,7 @@
     <string name="waex_ui_this_behavior_requires_pro_license_225df57d" formatted="false">"This behavior requires Pro license."</string>
     <string name="waex_ui_this_check_runs_locally_using_the_syst_53890e09" formatted="false">"This check runs locally using the system identity command. No root details or command output are uploaded."</string>
     <string name="waex_ui_this_device_7a0686d7" formatted="false">"This Device"</string>
+    <string name="waex_ui_this_device_only_636615ff" formatted="false">"This device only"</string>
     <string name="waex_ui_this_is_a_local_configuration_audit_no_9ae8e494" formatted="false">"This is a local configuration audit, not a live Google Play Integrity verdict."</string>
     <string name="waex_ui_this_message_was_sent_via_a_linked_dev_7be749b8" formatted="false">"This message was sent via a Linked Device (Desktop/Phone)"</string>
     <string name="waex_ui_this_phone_154bf57e" formatted="false">"This phone"</string>
