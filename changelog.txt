@@ -1,4 +1,5 @@
 [Added]
+- Time Format (12/24 hours) for timestamp
 - Send seen to specific status (Experimental)
 - Added module settings for Hooking method (Lightweight, Balanced, Maximum Capability, Customized)
 
