@@ -50,7 +50,8 @@ public class ChatListCustomizationsHook extends BaseFeature {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
                     if (param.args != null && param.args.length > 0
-                            && HOST_PREFERENCE.equals(param.args[0])) {
+                            && HOST_PREFERENCE.equals(param.args[0])
+                            && shouldDisableHostConfiguration()) {
                         param.setResult(false);
                     }
                 }
@@ -67,7 +68,7 @@ public class ChatListCustomizationsHook extends BaseFeature {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) {
                     View view = (View) param.thisObject;
-                    if (isAssistantView(view)) removeView(view);
+                    if (shouldRemoveView(view)) removeView(view);
                 }
             });
         } catch (Throwable error) {
@@ -82,7 +83,7 @@ public class ChatListCustomizationsHook extends BaseFeature {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) {
                     Activity activity = (Activity) param.thisObject;
-                    if (isAssistantConversation(activity.getIntent())) {
+                    if (shouldBlockAssistantChat() && isAssistantConversation(activity.getIntent())) {
                         activity.finish();
                         return;
                     }
@@ -98,6 +99,7 @@ public class ChatListCustomizationsHook extends BaseFeature {
                         protected void afterHookedMethod(MethodHookParam param) {
                             if (param.args != null && param.args.length == 1
                                     && param.args[0] instanceof Intent
+                                    && shouldBlockAssistantChat()
                                     && isAssistantConversation((Intent) param.args[0])) {
                                 ((Activity) param.thisObject).finish();
                             }
@@ -120,12 +122,12 @@ public class ChatListCustomizationsHook extends BaseFeature {
         return normalized.contains("1313555") || normalized.contains("meta_ai");
     }
 
-    private static void removeAssistantViews(View root) {
+    private void removeAssistantViews(View root) {
         ArrayDeque<View> pending = new ArrayDeque<>();
         pending.add(root);
         while (!pending.isEmpty()) {
             View view = pending.removeFirst();
-            if (isAssistantView(view)) {
+            if (shouldRemoveView(view)) {
                 removeView(view);
                 continue;
             }
@@ -135,6 +137,23 @@ public class ChatListCustomizationsHook extends BaseFeature {
                     pending.addLast(group.getChildAt(index));
                 }
             }
+        }
+    }
+
+    private boolean shouldRemoveView(View view) {
+        boolean fab = isAssistantFab(view);
+        return (shouldRemoveHomeFab() && fab)
+                || (shouldRemoveEntryPoints() && !fab && isAssistantView(view));
+    }
+
+    private static boolean isAssistantFab(View view) {
+        if (view == null || view.getId() == View.NO_ID) return false;
+        try {
+            String entry = view.getResources().getResourceEntryName(view.getId());
+            return "fab_second".equals(entry) || "meta_ai_fab".equals(entry)
+                    || "meta_ai_button".equals(entry);
+        } catch (Resources.NotFoundException ignored) {
+            return false;
         }
     }
 
@@ -222,6 +241,22 @@ public class ChatListCustomizationsHook extends BaseFeature {
 
     private boolean isMetaAiDisabled() {
         return isEnabled("metaai", false);
+    }
+
+    private boolean shouldRemoveHomeFab() {
+        return prefs.getBoolean("metaai_remove_home_fab", true);
+    }
+
+    private boolean shouldRemoveEntryPoints() {
+        return prefs.getBoolean("metaai_remove_entry_points", true);
+    }
+
+    private boolean shouldBlockAssistantChat() {
+        return prefs.getBoolean("metaai_block_chat", true);
+    }
+
+    private boolean shouldDisableHostConfiguration() {
+        return shouldRemoveEntryPoints() && shouldBlockAssistantChat();
     }
 
     private boolean isOnlineDotEnabled() {

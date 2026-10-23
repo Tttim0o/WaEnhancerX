@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="feat_metaai_title">Hapus Meta AI</string>
-    <string name="feat_metaai_desc">Nonaktifkan Meta AI dan hapus tombol, titik masuk, serta akses langsung ke percakapannya.</string>
+    <string name="feat_metaai_desc">Pilih bagian dan titik akses Meta AI yang ingin dihapus.</string>
 </resources>

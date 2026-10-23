@@ -99,6 +99,15 @@ fun StylesSettingsScreen() {
     }
 
     val preferenceManager = LocalWaexPreferenceManager.current
+    var removeMetaAiHomeFab by remember {
+        mutableStateOf(preferenceManager.getBoolean("metaai_remove_home_fab", true))
+    }
+    var removeMetaAiEntryPoints by remember {
+        mutableStateOf(preferenceManager.getBoolean("metaai_remove_entry_points", true))
+    }
+    var blockMetaAiChat by remember {
+        mutableStateOf(preferenceManager.getBoolean("metaai_block_chat", true))
+    }
     val stylesKeys = remember {
         listOf(
             "bubble_colors", "custom_theme", "custom_time_format", "custom_toolbar",
@@ -407,6 +416,35 @@ fun StylesSettingsScreen() {
                                     )
                                 }
                             }
+                            if (item.key == "metaai" && settingsState[item.key] == true) {
+                                MetaAiRemovalSwitch(
+                                    title = stringResource(R.string.meta_ai_remove_home_fab),
+                                    checked = removeMetaAiHomeFab,
+                                    onCheckedChange = { enabled ->
+                                        if (preferenceManager.putBooleans(mapOf("metaai_remove_home_fab" to enabled))) {
+                                            removeMetaAiHomeFab = enabled
+                                        }
+                                    }
+                                )
+                                MetaAiRemovalSwitch(
+                                    title = stringResource(R.string.meta_ai_remove_entry_points),
+                                    checked = removeMetaAiEntryPoints,
+                                    onCheckedChange = { enabled ->
+                                        if (preferenceManager.putBooleans(mapOf("metaai_remove_entry_points" to enabled))) {
+                                            removeMetaAiEntryPoints = enabled
+                                        }
+                                    }
+                                )
+                                MetaAiRemovalSwitch(
+                                    title = stringResource(R.string.meta_ai_block_chat),
+                                    checked = blockMetaAiChat,
+                                    onCheckedChange = { enabled ->
+                                        if (preferenceManager.putBooleans(mapOf("metaai_block_chat" to enabled))) {
+                                            blockMetaAiChat = enabled
+                                        }
+                                    }
+                                )
+                            }
                             if (item.key == "custom_time_format") {
                                 HorizontalDivider(
                                     thickness = 1.dp,
@@ -471,6 +509,31 @@ fun StylesSettingsScreen() {
         )
     }
 
+}
+
+@Composable
+private fun MetaAiRemovalSwitch(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(start = 32.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            style = typography.bodyMd,
+            color = colors.onSurface
+        )
+        StitchSwitch(checked = checked, onCheckedChange = onCheckedChange)
+    }
 }
 
 @Composable

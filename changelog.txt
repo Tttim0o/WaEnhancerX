@@ -11,6 +11,10 @@
 - Enhanced Download Status with optional "Save Duplicates" confirmation
 - Improved Floating bottom navigation customization
 - Hooks injection Optimized
+- Flexible removal of Meta AI
+  - Remove Home FAB 
+  - Remove Meta AI entry points
+  - Block Meta AI chat
 
 [Fixed]
 - Send blue ticks

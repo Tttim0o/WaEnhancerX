@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="feat_metaai_title">Eliminar Meta AI</string>
-    <string name="feat_metaai_desc">Desactiva Meta AI y elimina sus botones, accesos y el acceso directo a su conversación.</string>
+    <string name="feat_metaai_desc">Elige qué superficies y puntos de acceso de Meta AI quieres eliminar.</string>
 </resources>

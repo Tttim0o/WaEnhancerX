@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="feat_metaai_title">Meta AI हटाएँ</string>
-    <string name="feat_metaai_desc">Meta AI को अक्षम करें और उसके बटन, प्रवेश बिंदु तथा सीधे चैट एक्सेस को हटाएँ।</string>
+    <string name="feat_metaai_desc">चुनें कि Meta AI के कौन-से भाग और एक्सेस पॉइंट हटाने हैं।</string>
 </resources>

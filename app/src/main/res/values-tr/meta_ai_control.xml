@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="feat_metaai_title">Meta AI’ı kaldır</string>
-    <string name="feat_metaai_desc">Meta AI’ı devre dışı bırakır; düğmelerini, giriş noktalarını ve doğrudan sohbet erişimini kaldırır.</string>
+    <string name="feat_metaai_desc">Kaldırmak istediğiniz Meta AI yüzeylerini ve erişim noktalarını seçin.</string>
 </resources>

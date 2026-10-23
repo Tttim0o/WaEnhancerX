@@ -281,7 +281,7 @@
     <string name="feat_pro_features_unlock_title">Upravljaj premium funkcije</string>
     <string name="feat_pro_features_unlock_desc">Dinamično zaklepanje/odklepanje premium funkcij</string>
     <string name="feat_metaai_title">Odstrani Meta AI</string>
-    <string name="feat_metaai_desc">Onemogoči Meta AI ter odstrani njegove gumbe, vstopne točke in neposreden dostop do pogovora.</string>
+    <string name="feat_metaai_desc">Izberi površine in dostopne točke Meta AI, ki jih želiš odstraniti.</string>
     <string name="sec_chat_group_utilities">Orodja za klepet in skupine</string>
     <string name="sec_conversation_list_activity_presence">Dejavnost na seznamu klepetov in prisotnost</string>
     <string name="sec_visual_styles">Vizualni slogi</string>
