@@ -53,6 +53,7 @@ import com.waenhancer.utils.InjectedHookItem
 import com.waenhancer.utils.WhatsAppPackageDetector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.waenhancer.utils.InternalLabels
 
 @Composable
 fun InjectedHooksScreen(
@@ -89,8 +90,8 @@ fun InjectedHooksScreen(
             val matchesCategory = (selectedCategory == "All" || hook.category.equals(selectedCategory, ignoreCase = true))
             val matchesSearch = searchQuery.isBlank() ||
                     hook.name.contains(searchQuery, ignoreCase = true) ||
-                    com.waenhancer.utils.InternalLabels.text(hook.name).contains(searchQuery, ignoreCase = true) ||
-                    com.waenhancer.utils.InternalLabels.text(hook.category).contains(searchQuery, ignoreCase = true) ||
+                    InternalLabels.text(hook.name).contains(searchQuery, ignoreCase = true) ||
+                    InternalLabels.text(hook.category).contains(searchQuery, ignoreCase = true) ||
                     hook.className.contains(searchQuery, ignoreCase = true) ||
                     hook.category.contains(searchQuery, ignoreCase = true)
             matchesCategory && matchesSearch
@@ -271,7 +272,7 @@ fun InjectedHooksScreen(
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = com.waenhancer.utils.InternalLabels.text(category),
+                                text = InternalLabels.text(category),
                                 style = typography.labelSm,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 color = if (isSelected) colors.onPrimary else colors.onSurface,

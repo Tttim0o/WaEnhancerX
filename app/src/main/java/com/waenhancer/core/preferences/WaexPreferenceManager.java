@@ -10,6 +10,11 @@ import com.waenhancer.config.PreferenceStores;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Singleton
 public final class WaexPreferenceManager {
@@ -65,13 +70,13 @@ public final class WaexPreferenceManager {
      * injected processes once. Reject invalid/private keys before any mutation.
      * A false result means the caller must not optimistically update the UI.
      */
-    public boolean putBooleans(java.util.Map<String, Boolean> values) {
+    public boolean putBooleans(Map<String, Boolean> values) {
         if (values == null) return false;
         try {
             // Snapshot once: validation and commit must see the same set of keys.
-            java.util.Map<String, Boolean> batch = new java.util.LinkedHashMap<>(values);
+            Map<String, Boolean> batch = new LinkedHashMap<>(values);
             if (batch.isEmpty()) return false;
-            for (java.util.Map.Entry<String, Boolean> change : batch.entrySet()) {
+            for (Map.Entry<String, Boolean> change : batch.entrySet()) {
                 String key = change.getKey();
                 if (key == null || key.isEmpty() || change.getValue() == null) return false;
                 PreferenceSchema.Entry definition = PreferenceSchema.entry(key);
@@ -79,7 +84,7 @@ public final class WaexPreferenceManager {
                         || definition.store != PreferenceSchema.Store.PUBLIC)) return false;
             }
             SharedPreferences.Editor editor = PreferenceStores.publicStore(context).edit();
-            for (java.util.Map.Entry<String, Boolean> change : batch.entrySet()) {
+            for (Map.Entry<String, Boolean> change : batch.entrySet()) {
                 editor.putBoolean(change.getKey(), change.getValue());
             }
             if (!editor.commit()) return false;
@@ -129,10 +134,10 @@ public final class WaexPreferenceManager {
     }
 
     /** Commit a defensive snapshot of a public STRING_SET, notifying only on success. */
-    public boolean putPublicStringSet(String key, java.util.Set<String> value) {
+    public boolean putPublicStringSet(String key, Set<String> value) {
         if (value == null || !isPublicType(key, PreferenceSchema.Type.STRING_SET)) return false;
         try {
-            java.util.Set<String> snapshot = new java.util.LinkedHashSet<>();
+            Set<String> snapshot = new LinkedHashSet<>();
             for (Object element : value) {
                 if (!(element instanceof String)) return false;
                 snapshot.add((String) element);
@@ -153,17 +158,17 @@ public final class WaexPreferenceManager {
         return entry != null && entry.type == type && entry.store == PreferenceSchema.Store.PUBLIC;
     }
 
-    public java.util.Set<String> getStringSet(String key, java.util.Set<String> defaultValue) {
+    public Set<String> getStringSet(String key, Set<String> defaultValue) {
         try {
-            java.util.Set<String> value = getStore(key).getStringSet(key, defaultValue);
-            return value == null ? defaultValue : new java.util.LinkedHashSet<>(value);
+            Set<String> value = getStore(key).getStringSet(key, defaultValue);
+            return value == null ? defaultValue : new LinkedHashSet<>(value);
         } catch (ClassCastException ignored) {
             return defaultValue;
         }
     }
 
-    public void putStringSet(String key, java.util.Set<String> value) {
-        getStore(key).edit().putStringSet(key, new java.util.LinkedHashSet<>(value)).commit();
+    public void putStringSet(String key, Set<String> value) {
+        getStore(key).edit().putStringSet(key, new LinkedHashSet<>(value)).commit();
         if (isPublicStore(key)) {
             notifyChange();
         }
@@ -198,19 +203,19 @@ public final class WaexPreferenceManager {
         }
     }
 
-    public java.util.Map<String, ?> getAll() {
+    public Map<String, ?> getAll() {
         return PreferenceStores.publicStore(context).getAll();
     }
 
     public int exportSettings(Uri destination) throws Exception {
         OutputStream output = context.getContentResolver().openOutputStream(destination, "wt");
-        if (output == null) throw new java.io.IOException("Could not open backup destination");
+        if (output == null) throw new IOException("Could not open backup destination");
         return SettingsBackupCodec.INSTANCE.encode(context, output);
     }
 
     public int importSettings(Uri source) throws Exception {
         InputStream input = context.getContentResolver().openInputStream(source);
-        if (input == null) throw new java.io.IOException("Could not open backup file");
+        if (input == null) throw new IOException("Could not open backup file");
         int count = SettingsBackupCodec.INSTANCE.decode(context, input);
         notifyChange();
         return count;

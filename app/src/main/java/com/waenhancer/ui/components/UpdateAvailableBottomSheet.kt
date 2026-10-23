@@ -53,6 +53,7 @@ import com.waenhancer.update.ChangelogParser
 import com.waenhancer.update.ChangelogSection
 import com.waenhancer.update.WaexRelease
 import androidx.compose.foundation.BorderStroke
+import com.waenhancer.utils.InternalLabels
 
 /**
  * Modern In-App Update Modal Bottom Sheet for WaEnhancerX.
@@ -243,7 +244,7 @@ private fun NativeChangelogSectionRow(
                 .padding(vertical = 10.dp)
         ) {
             Text(
-                text = com.waenhancer.utils.InternalLabels.text(section.title),
+                text = InternalLabels.text(section.title),
                 style = typography.titleMd,
                 fontWeight = FontWeight.Bold,
                 color = colors.onSurface,

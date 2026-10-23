@@ -109,6 +109,7 @@ import kotlin.random.Random
 import android.content.Context
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import java.text.DateFormat
 
 private const val PROJECT_URL = "https://github.com/WaEnhancerX/WaEnhancerX"
 private const val STARGAZERS_DATA_URL = "https://waex.mubashar.dev/api/stargazers"
@@ -1170,7 +1171,7 @@ private fun formatUpdatedAt(timestamp: String): String {
             timeZone = TimeZone.getTimeZone("UTC")
         }
         val cleanTimestamp = timestamp.replace(Regex("\\.\\d+Z$|Z$"), "")
-        val formatter = java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT, UiText.displayLocale())
+        val formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, UiText.displayLocale())
         formatter.format(parser.parse(cleanTimestamp) ?: Date())
     }.getOrDefault(timestamp)
 }

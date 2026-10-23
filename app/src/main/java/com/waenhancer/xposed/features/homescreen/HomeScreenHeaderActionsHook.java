@@ -39,6 +39,8 @@ import org.luckypray.dexkit.query.FindClass;
 import org.luckypray.dexkit.query.enums.StringMatchType;
 import org.luckypray.dexkit.query.matchers.ClassMatcher;
 import org.luckypray.dexkit.result.ClassData;
+import com.waenhancer.xposed.utils.WhatsAppProcessRestarter;
+import java.util.Locale;
 
 /**
  * Home Screen Header Actions Hook:
@@ -308,7 +310,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         ViewParent parent = view.getParent();
         for (int depth = 0; parent instanceof View && depth < 5; depth++) {
             View parentView = (View) parent;
-            String className = parentView.getClass().getSimpleName().toLowerCase(java.util.Locale.ROOT);
+            String className = parentView.getClass().getSimpleName().toLowerCase(Locale.ROOT);
             if (className.contains("toolbar") || className.contains("actionbar")
                     || className.contains("appbar")) {
                 toolbarAncestor = true;
@@ -340,7 +342,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         if (id == View.NO_ID) return "no-id";
         try {
             return view.getResources().getResourceEntryName(id)
-                    .toLowerCase(java.util.Locale.ROOT);
+                    .toLowerCase(Locale.ROOT);
         } catch (Throwable ignored) {
             return "unknown";
         }
@@ -630,7 +632,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
                     /* onRestart   */ () -> forceRestartWhatsApp(activity),
                     /* onSettings  */ () -> {
                         try {
-                            android.content.Intent intent =
+                            Intent intent =
                                     activity.getPackageManager().getLaunchIntentForPackage("com.waenhancer");
                             if (intent != null) activity.startActivity(intent);
                         } catch (Throwable ignored) {}
@@ -673,7 +675,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
             if (activityObj instanceof Activity) {
                 Activity activity = (Activity) activityObj;
                 try {
-                    android.content.Intent intent =
+                    Intent intent =
                             activity.getPackageManager().getLaunchIntentForPackage("com.waenhancer");
                     if (intent != null) activity.startActivity(intent);
                 } catch (Throwable ignored) {}
@@ -699,7 +701,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
             forceRestartWhatsApp(activity);
         } else if (itemId == MENU_ID_SETTINGS) {
             try {
-                android.content.Intent intent =
+                Intent intent =
                         activity.getPackageManager().getLaunchIntentForPackage("com.waenhancer");
                 if (intent != null) activity.startActivity(intent);
             } catch (Throwable ignored) {}
@@ -767,7 +769,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
                 UiText.get(R.string.waex_ui_restarting_whatsapp_short, "Restarting WhatsApp…"),
                 Toast.LENGTH_SHORT).show();
         activity.getWindow().getDecorView().postDelayed(
-                () -> com.waenhancer.xposed.utils.WhatsAppProcessRestarter.restart(activity),
+                () -> WhatsAppProcessRestarter.restart(activity),
                 350L);
     }
 

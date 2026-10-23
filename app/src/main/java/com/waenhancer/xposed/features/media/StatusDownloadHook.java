@@ -58,6 +58,12 @@ import org.luckypray.dexkit.query.matchers.MethodMatcher;
 import org.luckypray.dexkit.result.ClassData;
 import org.luckypray.dexkit.result.MethodDataList;
 import org.luckypray.dexkit.result.UsingFieldData;
+import android.os.Build;
+import android.util.Log;
+import java.lang.reflect.Proxy;
+import org.luckypray.dexkit.DexKitBridge;
+import org.luckypray.dexkit.result.FieldData;
+import org.luckypray.dexkit.result.MethodData;
 
 /**
  * Status Downloader Hook:
@@ -187,7 +193,7 @@ public class StatusDownloadHook extends BaseFeature {
                 }
             }
         } catch (Throwable t) {
-            XposedBridge.log(TAG + " Error setting up status playback hook: " + android.util.Log.getStackTraceString(t));
+            XposedBridge.log(TAG + " Error setting up status playback hook: " + Log.getStackTraceString(t));
         }
     }
 
@@ -550,7 +556,7 @@ public class StatusDownloadHook extends BaseFeature {
                 );
             }
             if (pageChangeListenerClass != null) {
-                Object listenerProxy = java.lang.reflect.Proxy.newProxyInstance(
+                Object listenerProxy = Proxy.newProxyInstance(
                         pager.getClass().getClassLoader(),
                         new Class<?>[]{pageChangeListenerClass},
                         (proxy, method, args) -> {
@@ -691,7 +697,7 @@ public class StatusDownloadHook extends BaseFeature {
         target.setAlpha(source.getAlpha());
         Drawable background = copyDrawable(source.getBackground());
         if (background != null) target.setBackground(background);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Drawable foreground = copyDrawable(source.getForeground());
             if (foreground != null) target.setForeground(foreground);
         }
@@ -905,7 +911,7 @@ public class StatusDownloadHook extends BaseFeature {
     }
 
     private Field findCurrentStatusIndexField(
-            org.luckypray.dexkit.DexKitBridge bridge,
+            DexKitBridge bridge,
             Class<?> statusBaseFragmentClass
     ) {
         if (bridge == null) return null;
@@ -913,9 +919,9 @@ public class StatusDownloadHook extends BaseFeature {
             MethodDataList methods = bridge.findMethod(FindMethod.create()
                     .matcher(MethodMatcher.create()
                             .usingStrings("playbackFragment/setPageActive no-messages ")));
-            for (org.luckypray.dexkit.result.MethodData method : methods) {
+            for (MethodData method : methods) {
                 for (UsingFieldData use : method.getUsingFields()) {
-                    org.luckypray.dexkit.result.FieldData fieldData = use.getField();
+                    FieldData fieldData = use.getField();
                     if (!"int".equals(fieldData.getTypeName())) continue;
                     Field field = fieldData.getFieldInstance(classLoader);
                     if (statusBaseFragmentClass == null

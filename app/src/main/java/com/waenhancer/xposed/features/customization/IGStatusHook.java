@@ -38,6 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import androidx.fragment.app.Fragment;
 
 public class IGStatusHook extends BaseFeature implements ScreenScopedFeature {
 
@@ -110,8 +111,8 @@ public class IGStatusHook extends BaseFeature implements ScreenScopedFeature {
                         }
                         if (listChild == null) return;
 
-                        Activity activity = fragment instanceof androidx.fragment.app.Fragment
-                                ? ((androidx.fragment.app.Fragment) fragment).getActivity()
+                        Activity activity = fragment instanceof Fragment
+                                ? ((Fragment) fragment).getActivity()
                                 : null;
                         if (activity == null && listChild.getContext() instanceof Activity) {
                             activity = (Activity) listChild.getContext();

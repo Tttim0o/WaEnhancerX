@@ -16,6 +16,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import org.luckypray.dexkit.query.FindClass;
+import org.luckypray.dexkit.query.matchers.ClassMatcher;
+import org.luckypray.dexkit.result.ClassData;
 
 /**
  * Chat Limits Bypass Hook:
@@ -160,7 +167,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
                             Set<Object> originalKeys = originalMap.keySet();
                             Class<?> currentClass = hostInstance.getClass();
                             while (currentClass != null && currentClass != Object.class) {
-                                for (java.lang.reflect.Field field : currentClass.getDeclaredFields()) {
+                                for (Field field : currentClass.getDeclaredFields()) {
                                     if (Set.class.isAssignableFrom(field.getType())) {
                                         try {
                                             field.setAccessible(true);
@@ -271,7 +278,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
 
     private void hookCollectionConstructors() {
         try {
-            java.lang.reflect.Constructor<?> setConstructor = java.util.LinkedHashSet.class.getConstructor(int.class);
+            Constructor<?> setConstructor = LinkedHashSet.class.getConstructor(int.class);
             XposedBridge.hookMethod(setConstructor, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
@@ -291,7 +298,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
         }
 
         try {
-            java.lang.reflect.Constructor<?> listConstructor = java.util.ArrayList.class.getConstructor(int.class);
+            Constructor<?> listConstructor = ArrayList.class.getConstructor(int.class);
             XposedBridge.hookMethod(listConstructor, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
@@ -330,9 +337,9 @@ public class ChatLimitsBypassHook extends BaseFeature {
                     classLoader,
                     "waex_multi_selection_limit_info_class",
                     (bridge, loader) -> {
-                        org.luckypray.dexkit.result.ClassData cd = bridge.findClass(
-                                org.luckypray.dexkit.query.FindClass.create().matcher(
-                                        org.luckypray.dexkit.query.matchers.ClassMatcher.create()
+                        ClassData cd = bridge.findClass(
+                                FindClass.create().matcher(
+                                        ClassMatcher.create()
                                                 .addUsingString("MultiSelectionLimitInfo")
                                 )
                         ).firstOrNull();
@@ -341,7 +348,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             );
 
             if (multiSelectionLimitInfoClass != null) {
-                for (java.lang.reflect.Constructor<?> constructor : multiSelectionLimitInfoClass.getDeclaredConstructors()) {
+                for (Constructor<?> constructor : multiSelectionLimitInfoClass.getDeclaredConstructors()) {
                     XposedBridge.hookMethod(constructor, new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) {

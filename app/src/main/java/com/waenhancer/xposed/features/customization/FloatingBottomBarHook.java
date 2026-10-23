@@ -1469,7 +1469,7 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
                     Drawable background = view.getBackground();
                     if (background != null) background.mutate().setTint(color);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        view.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+                        view.setBackgroundTintList(ColorStateList.valueOf(color));
                     }
                     view.invalidate();
                     return;

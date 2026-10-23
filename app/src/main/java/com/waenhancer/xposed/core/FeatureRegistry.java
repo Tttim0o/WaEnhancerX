@@ -82,6 +82,7 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Iterator;
 
 /**
  * Orchestrates and registers all modular hooks in WAEX and reports injected status.
@@ -167,13 +168,11 @@ public final class FeatureRegistry {
         final boolean isProActive = prefs.getBoolean("waex_pro_active", false);
         String storedHookingMode = prefs.getString(HookingModePolicy.KEY, HookingModePolicy.BALANCED);
         this.hookingMode = HookingModePolicy.normalize(storedHookingMode, isProActive);
-        XposedBridge.log("[WAEX][HookingMode] stored=" + storedHookingMode
-                + " effective=" + this.hookingMode + " pro=" + isProActive);
         if (HookingModePolicy.CUSTOMIZED.equals(this.hookingMode)) {
             try {
                 JSONObject custom = new JSONObject(prefs.getString(
                         HookingModePolicy.CUSTOMIZATIONS_KEY, "{}"));
-                java.util.Iterator<String> keys = custom.keys();
+                Iterator<String> keys = custom.keys();
                 while (keys.hasNext()) {
                     String key = keys.next();
                     customizedInstallations.put(key, custom.optString(key, ""));
@@ -479,14 +478,6 @@ public final class FeatureRegistry {
             entry.error = t.getMessage();
             features.add(entry);
         }
-        int startupCount = 0;
-        int lazyCount = 0;
-        for (FeatureEntry entry : features) {
-            if (entry.factory == null || entry.installation == Installation.STARTUP) startupCount++;
-            else lazyCount++;
-        }
-        XposedBridge.log("[WAEX][HookingMode] plan mode=" + hookingMode
-                + " startup=" + startupCount + " lazy=" + lazyCount);
     }
 
     private void registerFeature(Class<? extends BaseFeature> type, String category,
@@ -606,9 +597,6 @@ public final class FeatureRegistry {
                 entry.feature.endHookTracking();
             }
             entry.status = "ACTIVE";
-            if (entry.installation != Installation.STARTUP) {
-                XposedBridge.log("[WAEX][LazyHooks] " + entry.className + " ACTIVE");
-            }
         } catch (Throwable t) {
             if (entry.feature != null) entry.feature.unhookAll();
             entry.feature = null;
@@ -639,7 +627,6 @@ public final class FeatureRegistry {
                 entry.installationStarted.set(false);
                 entry.status = isEntryEnabled(entry) ? "WAITING" : "DISABLED";
                 entry.error = null;
-                XposedBridge.log("[WAEX][LazyHooks] " + entry.className + " " + entry.status);
             } catch (Throwable error) {
                 XposedBridge.log("[WAEX] Lazy dispose failed for " + entry.className + ": "
                         + error.getClass().getSimpleName());

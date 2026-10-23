@@ -18,6 +18,7 @@ import com.waenhancer.config.PreferenceStores
 import com.waenhancer.xposed.utils.ModuleStatus
 import org.json.JSONArray
 import java.io.File
+import android.os.SystemClock
 
 data class InjectedHookItem(
     val name: String,
@@ -272,7 +273,7 @@ object WhatsAppPackageDetector {
                     recordedBoot = recordedBoot,
                     currentBoot = currentBoot,
                     reportedPid = reportedPid,
-                    runningPids = runtimeSnapshot?.pidsFor(pkg, android.os.SystemClock.elapsedRealtime()),
+                    runningPids = runtimeSnapshot?.pidsFor(pkg, SystemClock.elapsedRealtime()),
                     lastActiveTime = lastActiveTime,
                     now = System.currentTimeMillis()
                 )

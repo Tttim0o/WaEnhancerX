@@ -36,6 +36,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 
 /**
  * Presence & Activity Toasts Hook:
@@ -142,10 +144,10 @@ public class PresenceToastsHook extends BaseFeature {
         if (method == null || !Handler.class.isAssignableFrom(method.getDeclaringClass())) return false;
         int flags = method.getModifiers();
         Class<?>[] parameters = method.getParameterTypes();
-        return java.lang.reflect.Modifier.isPublic(flags)
-                && !java.lang.reflect.Modifier.isStatic(flags)
-                && !java.lang.reflect.Modifier.isAbstract(flags)
-                && !java.lang.reflect.Modifier.isNative(flags)
+        return Modifier.isPublic(flags)
+                && !Modifier.isStatic(flags)
+                && !Modifier.isAbstract(flags)
+                && !Modifier.isNative(flags)
                 && !method.isBridge() && !method.isSynthetic()
                 && "handleMessage".equals(method.getName()) && method.getReturnType() == void.class
                 && parameters.length == 1 && parameters[0] == Message.class;
@@ -309,7 +311,7 @@ public class PresenceToastsHook extends BaseFeature {
     }
 
     private static final ToastThrottle TOAST_THROTTLE = new ToastThrottle(1500L, 2048);
-    private static final java.util.concurrent.atomic.AtomicInteger PRESENCE_DIAGNOSTICS = new java.util.concurrent.atomic.AtomicInteger();
+    private static final AtomicInteger PRESENCE_DIAGNOSTICS = new AtomicInteger();
 
     private boolean isReceiptToastEnabled(ReceiptObservationPolicy.Kind kind) {
         return kind == ReceiptObservationPolicy.Kind.STATUS ? isStatusViewedToastEnabled() : isMessageViewedToastEnabled();
@@ -374,7 +376,7 @@ public class PresenceToastsHook extends BaseFeature {
         showToastSafely(message, () -> true);
     }
 
-    private void showToastSafely(String message, java.util.function.BooleanSupplier stillValid) {
+    private void showToastSafely(String message, BooleanSupplier stillValid) {
         mainHandler.post(() -> {
             try {
                 // A queued name lookup must not announce an already invalidated transition.

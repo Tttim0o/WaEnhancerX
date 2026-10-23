@@ -23,6 +23,7 @@ import android.app.Activity
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.compose.material3.Shapes
 
 val LocalThemeMode = staticCompositionLocalOf { "System" }
 val LocalThemeModeUpdater = staticCompositionLocalOf<(String) -> Unit> { {} }
@@ -210,7 +211,7 @@ fun WaexTheme(
         MaterialTheme(
             colorScheme = m3ColorScheme,
             typography = MaterialTypography,
-            shapes = androidx.compose.material3.Shapes(
+            shapes = Shapes(
                 extraSmall = radius.smShape,
                 small = radius.defaultShape,
                 medium = radius.mdShape,

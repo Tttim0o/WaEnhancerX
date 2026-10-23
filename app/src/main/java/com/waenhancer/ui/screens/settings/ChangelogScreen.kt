@@ -78,6 +78,8 @@ import java.util.Locale
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import com.waenhancer.update.normalizeVersion
+import com.waenhancer.utils.InternalLabels
+import java.text.DateFormat
 
 @Composable
 fun ChangelogScreen() {
@@ -334,7 +336,7 @@ private fun ChangelogSectionRow(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(com.waenhancer.utils.InternalLabels.text(section.title), style = typography.titleMd, fontWeight = FontWeight.Bold, color = colors.onSurface)
+            Text(InternalLabels.text(section.title), style = typography.titleMd, fontWeight = FontWeight.Bold, color = colors.onSurface)
             Spacer(Modifier.width(6.dp))
             Text(
                 "(${section.items.size})",
@@ -345,7 +347,7 @@ private fun ChangelogSectionRow(
             )
             Icon(
                 WaexIcons.ChevronRight,
-                contentDescription = if (expanded) UiText.get(R.string.waex_ui_collapse_1_s, "Collapse %1\$s", com.waenhancer.utils.InternalLabels.text(section.title)) else UiText.get(R.string.waex_ui_expand_1_s, "Expand %1\$s", com.waenhancer.utils.InternalLabels.text(section.title)),
+                contentDescription = if (expanded) UiText.get(R.string.waex_ui_collapse_1_s, "Collapse %1\$s", InternalLabels.text(section.title)) else UiText.get(R.string.waex_ui_expand_1_s, "Expand %1\$s", InternalLabels.text(section.title)),
                 tint = colors.onSurfaceVariant,
                 modifier = Modifier.rotate(rotation)
             )
@@ -405,7 +407,7 @@ internal fun MarkdownText(
 
 internal fun formatReleaseDate(value: String): String = try {
     val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-    java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, UiText.displayLocale()).format(input.parse(value)!!)
+    DateFormat.getDateInstance(DateFormat.MEDIUM, UiText.displayLocale()).format(input.parse(value)!!)
 } catch (_: Exception) { value.substringBefore('T') }
 
 internal fun openUrl(context: Context, url: String) {

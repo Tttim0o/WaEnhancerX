@@ -52,6 +52,7 @@ import com.waenhancer.ui.components.rememberRuntimeObservationClock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.BorderStroke
+import com.waenhancer.utils.InternalLabels
 
 @Composable
 fun SystemHealthScreen() {
@@ -134,7 +135,7 @@ fun SystemHealthScreen() {
                 DiagnosticCard(UiText.get(R.string.waex_ui_module_framework, "Module & Framework"), listOf(
                     UiText.get(R.string.waex_ui_module_status, "Module status") to if (data.moduleActive) UiText.get(R.string.diag_status_active, "Active") else UiText.get(R.string.diag_status_inactive, "Inactive"),
                     UiText.get(R.string.waex_ui_module_version, "Module version") to "${data.moduleVersion} (${data.moduleVersionCode})",
-                    UiText.get(R.string.waex_ui_xposed_framework, "Xposed framework") to com.waenhancer.utils.InternalLabels.text(data.framework.name),
+                    UiText.get(R.string.waex_ui_xposed_framework, "Xposed framework") to InternalLabels.text(data.framework.name),
                     UiText.get(R.string.waex_ui_framework_package, "Framework package") to (data.framework.packageName ?: UiText.get(R.string.waex_ui_not_available_label, "Not available")),
                     UiText.get(R.string.waex_ui_framework_version, "Framework version") to (data.framework.version ?: UiText.get(R.string.waex_ui_not_available_label, "Not available")),
                     UiText.get(R.string.waex_ui_xposed_api, "Xposed API") to (data.framework.api?.toString() ?: UiText.get(R.string.waex_ui_not_reported_yet, "Not reported yet")),
@@ -146,19 +147,19 @@ fun SystemHealthScreen() {
                     UiText.get(R.string.waex_ui_device, "Device") to data.device,
                     UiText.get(R.string.waex_ui_supported_abis, "Supported ABIs") to data.abis,
                     UiText.get(R.string.waex_ui_kernel, "Kernel") to data.kernel,
-                    "SELinux" to com.waenhancer.utils.InternalLabels.text(data.selinux)
+                    "SELinux" to InternalLabels.text(data.selinux)
                 ), colors.primary)
 
                 DiagnosticCard(
                     UiText.get(R.string.waex_ui_hook_runtime, "Hook Runtime"),
                     buildList {
-                        add(UiText.get(R.string.waex_ui_reported_hooked_targets, "Reported hooked targets") to com.waenhancer.utils.InternalLabels.text(data.hookedTargets))
+                        add(UiText.get(R.string.waex_ui_reported_hooked_targets, "Reported hooked targets") to InternalLabels.text(data.hookedTargets))
                         add(UiText.get(R.string.waex_ui_manager_process_hooked, "Manager process hooked") to if (data.moduleActive) UiText.get(R.string.waex_ui_yes, "Yes") else UiText.get(R.string.waex_ui_no, "No"))
                         add(UiText.get(R.string.waex_ui_runtime_api_captured, "Runtime API captured") to if (data.framework.api != null) UiText.get(R.string.waex_ui_yes, "Yes") else UiText.get(R.string.waex_ui_no, "No"))
                         targetApps.forEach { app ->
-                            add(UiText.get(R.string.waex_ui_1_s_hooks, "%1\$s hooks", app.appName) to com.waenhancer.utils.InternalLabels.text(app.injectionEvidence.label))
-                            add(UiText.get(R.string.waex_ui_1_s_preference_bridge, "%1\$s preference bridge", app.appName) to com.waenhancer.utils.InternalLabels.text(TargetRuntimePresentation.bridge(app)))
-                            add(UiText.get(R.string.waex_ui_1_s_initialization, "%1\$s initialization", app.appName) to com.waenhancer.utils.InternalLabels.text(TargetRuntimePresentation.initialization(app)))
+                            add(UiText.get(R.string.waex_ui_1_s_hooks, "%1\$s hooks", app.appName) to InternalLabels.text(app.injectionEvidence.label))
+                            add(UiText.get(R.string.waex_ui_1_s_preference_bridge, "%1\$s preference bridge", app.appName) to InternalLabels.text(TargetRuntimePresentation.bridge(app)))
+                            add(UiText.get(R.string.waex_ui_1_s_initialization, "%1\$s initialization", app.appName) to InternalLabels.text(TargetRuntimePresentation.initialization(app)))
                             app.initializationError?.takeIf { it.isNotBlank() }?.let {
                                 add(UiText.get(R.string.waex_ui_1_s_last_error, "%1\$s last error", app.appName) to it)
                             }

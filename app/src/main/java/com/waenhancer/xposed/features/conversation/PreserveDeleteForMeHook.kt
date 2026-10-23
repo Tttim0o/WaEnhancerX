@@ -16,6 +16,8 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.query.matchers.MethodMatcher
 import java.io.File
 import java.lang.reflect.Method
+import java.lang.reflect.Field
+import org.luckypray.dexkit.DexKitBridge
 
 /**
  * Feature: Preserve "Delete For Me" Messages.
@@ -380,7 +382,7 @@ class PreserveDeleteForMeHook(
      * message-key helper string -> dialog builder(Set) -> positive listener -> Runnable -> run().
      */
     private fun resolveCurrentDeleteForMeRunnable(
-        bridge: org.luckypray.dexkit.DexKitBridge,
+        bridge: DexKitBridge,
         loader: ClassLoader
     ): Method? {
         val deleteDialogAnchors = bridge.findMethod(
@@ -537,7 +539,7 @@ class PreserveDeleteForMeHook(
         }
     }
 
-    private fun allInstanceFields(type: Class<*>): Sequence<java.lang.reflect.Field> = sequence {
+    private fun allInstanceFields(type: Class<*>): Sequence<Field> = sequence {
         var current: Class<*>? = type
         while (current != null && current != Any::class.java) {
             yieldAll(current.declaredFields.asSequence())

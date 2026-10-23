@@ -9,6 +9,8 @@ import com.waenhancer.xposed.core.VersionGuard;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import com.waenhancer.xposed.core.RestartPromptController;
+import com.waenhancer.xposed.features.updates.WhatsAppUpdateSheet;
 
 /**
  * Tracks current top-level Activity and Conversation Activity in WhatsApp.
@@ -88,10 +90,10 @@ public final class ActivityTracker implements Application.ActivityLifecycleCallb
             VersionGuard.onTargetActivityResumed(activity);
         } catch (Throwable ignored) {}
         try {
-            com.waenhancer.xposed.features.updates.WhatsAppUpdateSheet.onTargetActivityResumed(activity);
+            WhatsAppUpdateSheet.onTargetActivityResumed(activity);
         } catch (Throwable ignored) {}
         try {
-            com.waenhancer.xposed.core.RestartPromptController.onTargetActivityResumed(activity);
+            RestartPromptController.onTargetActivityResumed(activity);
         } catch (Throwable ignored) {}
         for (ActivityListener listener : sListeners) {
             try {
@@ -103,7 +105,7 @@ public final class ActivityTracker implements Application.ActivityLifecycleCallb
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
         try {
-            com.waenhancer.xposed.core.RestartPromptController.onTargetActivityPaused(activity);
+            RestartPromptController.onTargetActivityPaused(activity);
         } catch (Throwable ignored) {}
     }
 

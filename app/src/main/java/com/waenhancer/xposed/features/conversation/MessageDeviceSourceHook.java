@@ -45,6 +45,8 @@ import java.util.regex.Pattern;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import org.luckypray.dexkit.query.FindClass;
+import org.luckypray.dexkit.query.matchers.ClassMatcher;
 
 /**
  * Message Device Source Feature for WhatsApp.
@@ -239,8 +241,8 @@ public class MessageDeviceSourceHook extends BaseFeature {
                         classLoader,
                         "waex_device_jid_class",
                         (bridge, loader) -> {
-                            var data = bridge.findClass(org.luckypray.dexkit.query.FindClass.create()
-                                    .matcher(org.luckypray.dexkit.query.matchers.ClassMatcher.create()
+                            var data = bridge.findClass(FindClass.create()
+                                    .matcher(ClassMatcher.create()
                                             .className("jid.DeviceJid", StringMatchType.EndsWith)))
                                     .firstOrNull();
                             return data != null ? data.getInstance(loader) : null;
@@ -292,7 +294,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
             try {
                 Method method = current.getDeclaredMethod(
                         "getView", int.class, View.class, ViewGroup.class);
-                if (!java.lang.reflect.Modifier.isAbstract(method.getModifiers())) {
+                if (!Modifier.isAbstract(method.getModifiers())) {
                     method.setAccessible(true);
                     return method;
                 }

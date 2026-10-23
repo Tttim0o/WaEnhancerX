@@ -69,6 +69,7 @@ import com.waenhancer.ui.navigation.LocalIsPro
 import com.waenhancer.ui.navigation.LocalOnActivatePro
 import com.waenhancer.ui.components.WaexProChip
 import kotlin.math.roundToInt
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -529,9 +530,9 @@ private fun InterfaceSizePreference(
                         fontWeight = if (size == selectedSize) FontWeight.SemiBold else FontWeight.Normal,
                         modifier = Modifier.weight(1f),
                         textAlign = when (size) {
-                            InterfaceSize.COMPACT -> androidx.compose.ui.text.style.TextAlign.Start
-                            InterfaceSize.LARGE -> androidx.compose.ui.text.style.TextAlign.End
-                            else -> androidx.compose.ui.text.style.TextAlign.Center
+                            InterfaceSize.COMPACT -> TextAlign.Start
+                            InterfaceSize.LARGE -> TextAlign.End
+                            else -> TextAlign.Center
                         },
                         maxLines = 1
                     )

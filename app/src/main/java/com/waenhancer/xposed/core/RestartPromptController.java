@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.ref.WeakReference;
+import com.waenhancer.utils.PreferenceLabels;
 
 /** Shows a WhatsApp-styled restart request after settings change in the manager app. */
 public final class RestartPromptController {
@@ -122,7 +123,7 @@ public final class RestartPromptController {
         for (String change : changes) {
             // Resolve catalog titles first and generate a readable label for subordinate or
             // legacy preference keys. Catalog-only features must not leak raw keys to the UI.
-            sorted.add(com.waenhancer.utils.PreferenceLabels.text(change));
+            sorted.add(PreferenceLabels.text(change));
         }
         sorted.sort(String.CASE_INSENSITIVE_ORDER);
         StringBuilder message = new StringBuilder(UiText.get(R.string.waex_ui_restart_whatsapp_to_apply, "Restart WhatsApp to apply:\n\n"));

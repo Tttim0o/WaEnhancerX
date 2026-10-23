@@ -61,6 +61,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.waenhancer.xposed.features.automation.PresenceToastsHook;
+import java.lang.reflect.Constructor;
+import java.util.IdentityHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Anti-Revoke & Deleted Indicator Engine for Messages and Statuses.
@@ -625,12 +630,12 @@ public class AntiRevokeHook extends BaseFeature {
     }
 
     private void showDeletedMessageToast(@Nullable String senderJid) {
-        com.waenhancer.xposed.features.automation.PresenceToastsHook.showDeletedMessageToast(
+        PresenceToastsHook.showDeletedMessageToast(
                 context, prefs, senderJid, uiHandler);
     }
 
     private void showDeletedStatusToast(@Nullable String senderJid) {
-        com.waenhancer.xposed.features.automation.PresenceToastsHook.showDeletedStatusToast(
+        PresenceToastsHook.showDeletedStatusToast(
                 context, prefs, senderJid, uiHandler);
     }
 
@@ -688,9 +693,9 @@ public class AntiRevokeHook extends BaseFeature {
     /** Finds the sender/remote JID carried by an FMessage or status key. */
     @Nullable
     private String extractSenderJid(@Nullable Object value) {
-        java.util.LinkedHashSet<String> candidates = new java.util.LinkedHashSet<>();
+        LinkedHashSet<String> candidates = new LinkedHashSet<>();
         collectJids(value, 4,
-                java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>()),
+                Collections.newSetFromMap(new IdentityHashMap<>()),
                 candidates);
         for (String jid : candidates) {
             if (jid.contains("@s.whatsapp.net") || jid.endsWith("@lid")) return jid;
@@ -705,7 +710,7 @@ public class AntiRevokeHook extends BaseFeature {
                              @NonNull Set<String> output) {
         if (value == null || depth < 0 || !seen.add(value)) return;
         try {
-            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(
+            Matcher matcher = Pattern.compile(
                     "[+0-9A-Za-z._:-]+@(?:s\\.whatsapp\\.net|lid|g\\.us|broadcast)")
                     .matcher(value.toString());
             while (matcher.find()) output.add(matcher.group());
@@ -1162,7 +1167,7 @@ public class AntiRevokeHook extends BaseFeature {
                         String sqlLower = sql.toLowerCase();
                         if (!sqlLower.contains("status")) return;
 
-                        android.database.Cursor cursor = (android.database.Cursor) param.getResult();
+                        Cursor cursor = (Cursor) param.getResult();
                         if (cursor == null || cursor.getCount() == 0) return;
 
                         // Try to find a key_id column without moving the cursor
@@ -1289,7 +1294,7 @@ public class AntiRevokeHook extends BaseFeature {
                                 receiver = statusToMessageMapper;
                                 if (receiver == null) {
                                     try {
-                                        java.lang.reflect.Constructor<?> constructor =
+                                        Constructor<?> constructor =
                                                 statusToMessageMethod.getDeclaringClass().getDeclaredConstructor();
                                         constructor.setAccessible(true);
                                         receiver = constructor.newInstance();
@@ -1669,7 +1674,7 @@ public class AntiRevokeHook extends BaseFeature {
     @Nullable
     private String extractKeyIdFromBundle(Object bundle) {
         try {
-            java.util.Set<?> keys = (java.util.Set<?>) bundle.getClass().getMethod("keySet").invoke(bundle);
+            Set<?> keys = (Set<?>) bundle.getClass().getMethod("keySet").invoke(bundle);
             if (keys == null) return null;
             Method getString = bundle.getClass().getMethod("getString", String.class);
             for (Object key : keys) {

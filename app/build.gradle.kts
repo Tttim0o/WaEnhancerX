@@ -3,6 +3,8 @@ import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.MessageDigest
 
+import com.android.build.gradle.api.ApkVariantOutput
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -128,7 +130,7 @@ android {
     applicationVariants.all {
         val variant = this
         variant.outputs.forEach {
-            val output = it as? com.android.build.gradle.api.ApkVariantOutput
+            val output = it as? ApkVariantOutput
             if (output != null) {
                 val suffix = if (variant.buildType.name == "debug") "_debug" else "_release"
                 output.outputFileName = "WaEnhancerX-v${variant.versionName}${suffix}.apk"

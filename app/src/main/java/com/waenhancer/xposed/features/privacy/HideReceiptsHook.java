@@ -30,6 +30,8 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import com.waenhancer.xposed.features.customization.PropsOverrideHook;
+import java.lang.reflect.Modifier;
 
 /**
  * Privacy Receipts Hook:
@@ -64,7 +66,7 @@ public class HideReceiptsHook extends BaseFeature {
 
     @Override
     public void hook() throws Throwable {
-        com.waenhancer.xposed.features.customization.PropsOverrideHook.BOOLEANS.put(19148, false); // Route IQ through receiptMethod
+        PropsOverrideHook.BOOLEANS.put(19148, false); // Route IQ through receiptMethod
         initProtocolTreeReflection();
         initFMessageReflection();
         hookPlaintextMessageCapture();
@@ -147,7 +149,7 @@ public class HideReceiptsHook extends BaseFeature {
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
                     context, classLoader, "waex_fmessage_class",
                     (bridge, loader) -> {
-                        org.luckypray.dexkit.result.MethodData data = bridge.findMethod(
+                        MethodData data = bridge.findMethod(
                                 FindMethod.create().matcher(MethodMatcher.create()
                                         .addUsingString("FMessage/getSenderUserJid/key.id",
                                                 StringMatchType.Contains)))
@@ -614,7 +616,7 @@ public class HideReceiptsHook extends BaseFeature {
             for (Class<?> type = keyObj.getClass(); type != null && type != Object.class;
                  type = type.getSuperclass()) {
                 for (Field field : type.getDeclaredFields()) {
-                    if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                    if (Modifier.isStatic(field.getModifiers())) continue;
                     field.setAccessible(true);
                     if (field.getType() == String.class) {
                         String value = (String) field.get(keyObj);
@@ -658,7 +660,7 @@ public class HideReceiptsHook extends BaseFeature {
         for (Class<?> type = message.getClass(); type != null && type != Object.class;
              type = type.getSuperclass()) {
             for (Field field : type.getDeclaredFields()) {
-                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())
+                if (Modifier.isStatic(field.getModifiers())
                         || field.getType().isPrimitive()) continue;
                 try {
                     field.setAccessible(true);
@@ -682,7 +684,7 @@ public class HideReceiptsHook extends BaseFeature {
         for (Class<?> type = candidate.getClass(); type != null && type != Object.class;
              type = type.getSuperclass()) {
             for (Field field : type.getDeclaredFields()) {
-                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                if (Modifier.isStatic(field.getModifiers())) continue;
                 try {
                     field.setAccessible(true);
                     if (field.getType() == String.class) {
@@ -756,7 +758,7 @@ public class HideReceiptsHook extends BaseFeature {
         for (Class<?> type = candidateClass; type != null && type != Object.class;
              type = type.getSuperclass()) {
             for (Field field : type.getDeclaredFields()) {
-                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())
+                if (Modifier.isStatic(field.getModifiers())
                         || field.getType().isPrimitive()) continue;
                 try {
                     field.setAccessible(true);
@@ -1053,7 +1055,7 @@ public class HideReceiptsHook extends BaseFeature {
                 protected void beforeHookedMethod(MethodHookParam param) {
                     if (!PlayedReceiptDispatchPolicy.isDispatchCall(
                             dispatch, param.method, param.thisObject, param.args)) return;
-                    java.util.Set<?> messages = (java.util.Set<?>) param.args[0];
+                    Set<?> messages = (Set<?>) param.args[0];
                     // Retain existing played-batch privacy semantics. Media-kind classification
                     // and mixed-batch granularity require an independently verified contract.
                     if (!messages.isEmpty()

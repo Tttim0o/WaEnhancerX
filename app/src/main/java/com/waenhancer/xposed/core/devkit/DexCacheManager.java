@@ -110,7 +110,6 @@ public final class DexCacheManager {
                 mMemoryCache.clear();
                 mFailedKeys.clear();
                 mInvalidations.incrementAndGet();
-                XposedBridge.log("[WAEX][DexCache] invalidated schema/host/module descriptors");
             }
         } catch (Throwable error) {
             XposedBridge.log("[WAEX][DexCache] version validation failed: "
@@ -211,7 +210,6 @@ public final class DexCacheManager {
                 }
 
                 mMisses.incrementAndGet();
-                long started = SystemClock.elapsedRealtime();
                 try {
                     T value = resolver.resolve();
                     if (value != null) {
@@ -219,8 +217,6 @@ public final class DexCacheManager {
                         mMemoryCache.put(typedKey, value);
                         mFailedKeys.clearFailure(negativeKind, typedKey);
                         mResolutions.incrementAndGet();
-                        XposedBridge.log("[WAEX][DexCache] resolved " + typedKey + " in "
-                                + Math.max(0L, SystemClock.elapsedRealtime() - started) + "ms");
                         return value;
                     }
                 } catch (Throwable error) {

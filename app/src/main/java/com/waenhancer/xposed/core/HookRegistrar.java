@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 
 /** Routes Xposed registrations through their owning feature so lazy hooks can be released. */
 public final class HookRegistrar {
@@ -62,71 +64,71 @@ public final class HookRegistrar {
 
     public static final class Bridge {
         public XC_MethodHook.Unhook hookMethod(Member method, XC_MethodHook callback) {
-            return retain(de.robv.android.xposed.XposedBridge.hookMethod(method, callback));
+            return retain(XposedBridge.hookMethod(method, callback));
         }
 
         public Set<XC_MethodHook.Unhook> hookAllMethods(Class<?> hookClass, String methodName,
                                                         XC_MethodHook callback) {
-            return retain(de.robv.android.xposed.XposedBridge.hookAllMethods(hookClass, methodName, callback));
+            return retain(XposedBridge.hookAllMethods(hookClass, methodName, callback));
         }
 
         public Set<XC_MethodHook.Unhook> hookAllConstructors(Class<?> hookClass,
                                                              XC_MethodHook callback) {
-            return retain(de.robv.android.xposed.XposedBridge.hookAllConstructors(hookClass, callback));
+            return retain(XposedBridge.hookAllConstructors(hookClass, callback));
         }
 
-        public void log(String text) { de.robv.android.xposed.XposedBridge.log(text); }
-        public void log(Throwable error) { de.robv.android.xposed.XposedBridge.log(error); }
+        public void log(String text) { XposedBridge.log(text); }
+        public void log(Throwable error) { XposedBridge.log(error); }
     }
 
     public static final class Helpers {
         public XC_MethodHook.Unhook findAndHookMethod(Class<?> clazz, String methodName,
                                                       Object... parameterTypesAndCallback) {
-            return retain(de.robv.android.xposed.XposedHelpers.findAndHookMethod(
+            return retain(XposedHelpers.findAndHookMethod(
                     clazz, methodName, parameterTypesAndCallback));
         }
 
         public XC_MethodHook.Unhook findAndHookMethod(String className, ClassLoader classLoader,
                                                       String methodName, Object... parameterTypesAndCallback) {
-            return retain(de.robv.android.xposed.XposedHelpers.findAndHookMethod(
+            return retain(XposedHelpers.findAndHookMethod(
                     className, classLoader, methodName, parameterTypesAndCallback));
         }
 
         public Class<?> findClass(String className, ClassLoader classLoader) {
-            return de.robv.android.xposed.XposedHelpers.findClass(className, classLoader);
+            return XposedHelpers.findClass(className, classLoader);
         }
         public Class<?> findClassIfExists(String className, ClassLoader classLoader) {
-            return de.robv.android.xposed.XposedHelpers.findClassIfExists(className, classLoader);
+            return XposedHelpers.findClassIfExists(className, classLoader);
         }
         public Field findField(Class<?> clazz, String fieldName) {
-            return de.robv.android.xposed.XposedHelpers.findField(clazz, fieldName);
+            return XposedHelpers.findField(clazz, fieldName);
         }
         public Field findFieldIfExists(Class<?> clazz, String fieldName) {
-            return de.robv.android.xposed.XposedHelpers.findFieldIfExists(clazz, fieldName);
+            return XposedHelpers.findFieldIfExists(clazz, fieldName);
         }
         public Method findMethodBestMatch(Class<?> clazz, String methodName, Object... args) {
-            return de.robv.android.xposed.XposedHelpers.findMethodBestMatch(clazz, methodName, args);
+            return XposedHelpers.findMethodBestMatch(clazz, methodName, args);
         }
         public Method findMethodExact(Class<?> clazz, String methodName, Object... parameterTypes) {
-            return de.robv.android.xposed.XposedHelpers.findMethodExact(clazz, methodName, parameterTypes);
+            return XposedHelpers.findMethodExact(clazz, methodName, parameterTypes);
         }
         public Method findMethodExactIfExists(Class<?> clazz, String methodName, Object... parameterTypes) {
-            return de.robv.android.xposed.XposedHelpers.findMethodExactIfExists(clazz, methodName, parameterTypes);
+            return XposedHelpers.findMethodExactIfExists(clazz, methodName, parameterTypes);
         }
         public Object callMethod(Object obj, String methodName, Object... args) {
-            return de.robv.android.xposed.XposedHelpers.callMethod(obj, methodName, args);
+            return XposedHelpers.callMethod(obj, methodName, args);
         }
         public Object getObjectField(Object obj, String fieldName) {
-            return de.robv.android.xposed.XposedHelpers.getObjectField(obj, fieldName);
+            return XposedHelpers.getObjectField(obj, fieldName);
         }
         public Object getAdditionalInstanceField(Object obj, String key) {
-            return de.robv.android.xposed.XposedHelpers.getAdditionalInstanceField(obj, key);
+            return XposedHelpers.getAdditionalInstanceField(obj, key);
         }
         public Object setAdditionalInstanceField(Object obj, String key, Object value) {
-            return de.robv.android.xposed.XposedHelpers.setAdditionalInstanceField(obj, key, value);
+            return XposedHelpers.setAdditionalInstanceField(obj, key, value);
         }
         public Object removeAdditionalInstanceField(Object obj, String key) {
-            return de.robv.android.xposed.XposedHelpers.removeAdditionalInstanceField(obj, key);
+            return XposedHelpers.removeAdditionalInstanceField(obj, key);
         }
     }
 }

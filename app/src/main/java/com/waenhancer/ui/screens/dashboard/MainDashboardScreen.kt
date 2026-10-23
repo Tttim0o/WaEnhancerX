@@ -348,7 +348,7 @@ fun MainDashboardScreen(
                                 TargetRuntimePresentation.Severity.REVIEW -> colors.error
                                 TargetRuntimePresentation.Severity.UNKNOWN -> colors.onSurfaceVariant
                             }
-                            val statusText = com.waenhancer.utils.InternalLabels.text(status.text)
+                            val statusText = InternalLabels.text(status.text)
                             val statusTextColor = statusDotColor
 
                             Surface(
@@ -889,7 +889,7 @@ private fun TargetCompatibilityBottomSheet(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = com.waenhancer.utils.InternalLabels.text(targetSummary.text),
+                            text = InternalLabels.text(targetSummary.text),
                             style = typography.labelLg,
                             fontWeight = FontWeight.Bold,
                             color = colors.onSurface
@@ -1039,12 +1039,12 @@ private fun TargetCompatibilityBottomSheet(
                                     UiText.get(R.string.waex_l10n_detail_active,
                                         "Injected & active (%1\$d/%2\$d hooks active)", activeCount, app.injectedHooks.size)
                                 }
-                                isAppReady -> com.waenhancer.utils.InternalLabels.text("Injected • Initialization reported complete")
-                                !app.isHooked -> com.waenhancer.utils.InternalLabels.text(app.injectionEvidence.label)
+                                isAppReady -> InternalLabels.text("Injected • Initialization reported complete")
+                                !app.isHooked -> InternalLabels.text(app.injectionEvidence.label)
                                 app.runtimeStatus != "READY" -> UiText.get(R.string.waex_l10n_detail_init,
-                                    "Injected • Initialization: %1\$s", com.waenhancer.utils.InternalLabels.text(TargetRuntimePresentation.initialization(app)))
+                                    "Injected • Initialization: %1\$s", InternalLabels.text(TargetRuntimePresentation.initialization(app)))
                                 else -> UiText.get(R.string.waex_l10n_detail_bridge,
-                                    "Injected • Bridge: %1\$s", com.waenhancer.utils.InternalLabels.text(TargetRuntimePresentation.bridge(app)))
+                                    "Injected • Bridge: %1\$s", InternalLabels.text(TargetRuntimePresentation.bridge(app)))
                             }
 
                             Text(
@@ -1482,13 +1482,13 @@ private fun DashboardDiagnosticsCard(
             HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.65f))
             DashboardDiagnosticRow(
                 label = stringResource(R.string.diag_label_framework),
-                value = diagnostics?.framework?.name?.let { com.waenhancer.utils.InternalLabels.text(it) } ?: stringResource(R.string.diag_framework_detecting),
+                value = diagnostics?.framework?.name?.let { InternalLabels.text(it) } ?: stringResource(R.string.diag_framework_detecting),
                 healthy = diagnostics?.let { it.moduleActive && it.framework.name != "Not detected" }
             )
             HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.65f))
             DashboardDiagnosticRow(
                 label = stringResource(R.string.diag_label_compatibility),
-                value = com.waenhancer.utils.InternalLabels.text(targetSummary.text),
+                value = InternalLabels.text(targetSummary.text),
                 healthy = targetSummary.healthy,
                 isLoading = false,
                 onClick = onOpenTargetCompatibility
@@ -1524,7 +1524,7 @@ private fun DashboardDiagnosticsCard(
                 )
                 DiagnosticMetric(
                     label = stringResource(R.string.diag_label_selinux),
-                    value = diagnostics?.selinux?.let { com.waenhancer.utils.InternalLabels.text(it) } ?: "—",
+                    value = diagnostics?.selinux?.let { InternalLabels.text(it) } ?: "—",
                     modifier = Modifier.weight(1f)
                 )
                 DiagnosticMetric(
@@ -1810,7 +1810,7 @@ fun InjectedHookRow(hook: InjectedHookItem) {
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = com.waenhancer.utils.InternalLabels.text(hook.name),
+                        text = InternalLabels.text(hook.name),
                         style = typography.bodyMd,
                         fontWeight = FontWeight.SemiBold,
                         color = colors.onSurface,
@@ -1826,7 +1826,7 @@ fun InjectedHookRow(hook: InjectedHookItem) {
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = com.waenhancer.utils.InternalLabels.text(hook.category),
+                            text = InternalLabels.text(hook.category),
                             style = typography.labelSm,
                             fontSize = 10.sp,
                             color = colors.onSurfaceVariant
@@ -1864,7 +1864,7 @@ fun InjectedHookRow(hook: InjectedHookItem) {
                 text = when (status) {
                     "ACTIVE" -> UiText.get(R.string.diag_status_active, "Active")
                     "FAILED" -> UiText.get(R.string.waex_ui_failed_label, "Failed")
-                    else -> com.waenhancer.utils.InternalLabels.text(status)
+                    else -> InternalLabels.text(status)
                 },
                 style = typography.labelSm,
                 fontWeight = FontWeight.Medium,

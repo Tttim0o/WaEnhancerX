@@ -37,6 +37,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import android.graphics.drawable.Drawable;
+import java.lang.reflect.Array;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 
 /**
  * Blue on Reply Hook:
@@ -323,7 +327,7 @@ public class BlueOnReplyHook extends BaseFeature {
     }
 
     public static boolean sendCapturedStatusReceipt(Object statusItem) {
-        String id = findStatusId(statusItem, new java.util.IdentityHashMap<>(), 0);
+        String id = findStatusId(statusItem, new IdentityHashMap<>(), 0);
         ReadJobRecipe recipe;
         synchronized (PENDING_STATUS_RECEIPTS) {
             // Never substitute the most recently captured receipt when the active playback
@@ -339,7 +343,7 @@ public class BlueOnReplyHook extends BaseFeature {
             synchronized (PENDING_STATUS_RECEIPTS) {
                 // A host status receipt can cover several message IDs. Remove every alias
                 // for the exact recipe so delivered entries cannot block later statuses.
-                java.util.Iterator<Map.Entry<String, ReadJobRecipe>> iterator =
+                Iterator<Map.Entry<String, ReadJobRecipe>> iterator =
                         PENDING_STATUS_RECEIPTS.entrySet().iterator();
                 while (iterator.hasNext()) {
                     if (iterator.next().getValue() == recipe) iterator.remove();
@@ -355,20 +359,20 @@ public class BlueOnReplyHook extends BaseFeature {
 
     /** True only when this item exposes an exact receipt ID that was suppressed earlier. */
     public static boolean hasCapturedStatusReceipt(Object statusItem) {
-        return findStatusId(statusItem, new java.util.IdentityHashMap<>(), 0) != null;
+        return findStatusId(statusItem, new IdentityHashMap<>(), 0) != null;
     }
 
     private static Object[] copyArguments(Object[] source) { Object[] copy = Arrays.copyOf(source, source.length); for (int i=0;i<copy.length;i++) if(copy[i] instanceof String[]) copy[i]=((String[])copy[i]).clone(); return copy; }
-    private static String findStatusId(Object value, java.util.IdentityHashMap<Object, Boolean> seen, int depth) {
+    private static String findStatusId(Object value, IdentityHashMap<Object, Boolean> seen, int depth) {
         // The current status item is wrapped differently between playback pages. Traverse
         // its small object graph deeply enough to reach the MessageKey, but accept an ID
         // only when it exactly matches a receipt WhatsApp itself already suppressed.
         if (value == null || depth > 12 || seen.put(value, Boolean.TRUE) != null) return null;
         if (value instanceof String) { synchronized (PENDING_STATUS_RECEIPTS) { return PENDING_STATUS_RECEIPTS.containsKey(value) ? (String)value : null; } }
         if (value.getClass().isArray()) {
-            int length = java.lang.reflect.Array.getLength(value);
+            int length = Array.getLength(value);
             for (int i = 0; i < length; i++) {
-                String found = findStatusId(java.lang.reflect.Array.get(value, i), seen, depth + 1);
+                String found = findStatusId(Array.get(value, i), seen, depth + 1);
                 if (found != null) return found;
             }
             return null;
@@ -557,7 +561,7 @@ public class BlueOnReplyHook extends BaseFeature {
         if (menu.findItem(MENU_SEND_BLUE_TICK) != null) return;
 
         MenuItem item = menu.add(Menu.NONE, MENU_SEND_BLUE_TICK, Menu.NONE, UiText.get(R.string.waex_ui_send_blue_tick, "Send blue tick"));
-        android.graphics.drawable.Drawable icon = MenuIconLoader.load(context, "ic_waex_mark_read");
+        Drawable icon = MenuIconLoader.load(context, "ic_waex_mark_read");
         if (icon == null) {
             int iconId = context.getResources().getIdentifier(
                     "ic_notif_mark_read", "drawable", "com.whatsapp");

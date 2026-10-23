@@ -32,6 +32,10 @@ import java.util.WeakHashMap;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import android.app.Activity;
+import com.waenhancer.xposed.utils.ActivityTracker;
+import java.util.Locale;
+import java.util.Map;
 
 /** Adds a dedicated Groups home tab and filters the Chats/Groups fragment data sets. */
 public final class SeparateGroupsHook extends BaseFeature {
@@ -45,7 +49,7 @@ public final class SeparateGroupsHook extends BaseFeature {
     /** Returns the active conversation pager tab, or -1 while a non-conversation tab is resumed. */
     public static int getResumedConversationTab() {
         synchronized (fragmentTabs) {
-            for (java.util.Map.Entry<Object, Integer> entry : fragmentTabs.entrySet()) {
+            for (Map.Entry<Object, Integer> entry : fragmentTabs.entrySet()) {
                 Object fragment = entry.getKey();
                 if (fragment instanceof Fragment && ((Fragment) fragment).isResumed()) {
                     return entry.getValue();
@@ -86,9 +90,9 @@ public final class SeparateGroupsHook extends BaseFeature {
     }
 
     private void refreshCurrentHomeActivity() {
-        android.app.Activity activity = com.waenhancer.xposed.utils.ActivityTracker.getCurrentActivity();
+        Activity activity = ActivityTracker.getCurrentActivity();
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
-        String name = activity.getClass().getName().toLowerCase(java.util.Locale.ROOT);
+        String name = activity.getClass().getName().toLowerCase(Locale.ROOT);
         if (!name.contains("home") && !name.contains("main")) return;
         activity.runOnUiThread(() -> {
             if (!activity.isFinishing() && !activity.isDestroyed()) {

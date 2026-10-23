@@ -18,6 +18,7 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import org.json.JSONArray
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.Collections
 
 /**
  * Filter Items By ID Hook:
@@ -165,7 +166,7 @@ class FilterItemsHook(
                 if (id > 0) next[id] = item
             }
         }
-        targetMap = java.util.Collections.unmodifiableMap(next)
+        targetMap = Collections.unmodifiableMap(next)
         mainHandler.post {
             ActivityTracker.getCurrentActivity()?.let(::applyFiltersToActivity)
         }

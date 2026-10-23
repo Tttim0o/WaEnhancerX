@@ -32,6 +32,7 @@ import android.widget.TextView;
 import androidx.core.widget.NestedScrollView;
 import com.waenhancer.config.DndPreferencePolicy;
 import de.robv.android.xposed.XposedBridge;
+import android.view.Window;
 
 /**
  * Native WhatsApp WDS-style quick-action sheet for WAEX Separate menu mode.
@@ -312,7 +313,7 @@ final class WaexQuickActionsSheet {
 
         dialog.setContentView(container);
 
-        android.view.Window window = dialog.getWindow();
+        Window window = dialog.getWindow();
         if (window != null) {
             window.setGravity(Gravity.BOTTOM);
             window.getDecorView().setPadding(0, 0, 0, 0);

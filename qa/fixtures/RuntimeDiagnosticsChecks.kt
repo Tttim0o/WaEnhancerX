@@ -1,5 +1,9 @@
 package com.waenhancer.utils
 
+import android.content.pm.PackageManager
+import android.app.Activity
+import de.robv.android.xposed.XposedBridge
+
 import android.content.*
 import android.content.res.Resources
 import android.os.SystemClock
@@ -57,7 +61,7 @@ fun main(args:Array<String>){
     ck("foreign owner uses static module rules",UniversalVersionValidator.evaluate(module(rules,"com.whatsapp:array/universal_supported_versions"),"2.26.40.76",prefs),D.BUILTIN_RULE)
     ck("foreign array name uses static module rules",UniversalVersionValidator.evaluate(module(rules,"com.waenhancer:array/another_array"),"2.26.40.76",prefs),D.BUILTIN_RULE)
     ck("own numeric fallback verified by full name",UniversalVersionValidator.evaluate(module(rules,"com.waenhancer:array/universal_supported_versions",emptyMap()),"2.26.40.76",prefs),D.BUILTIN_RULE)
-    for(failure in listOf(SecurityException("blocked"),android.content.pm.PackageManager.NameNotFoundException(),NoClassDefFoundError("unavailable"))){
+    for(failure in listOf(SecurityException("blocked"),PackageManager.NameNotFoundException(),NoClassDefFoundError("unavailable"))){
         val inaccessible=Context("com.whatsapp",hidden.resources,mod).apply{contextFailure=failure}
         ck("resource access failure uses static module rules ${failure.javaClass.simpleName}",UniversalVersionValidator.evaluate(inaccessible,"2.26.40.76",prefs),D.BUILTIN_RULE)
     }
@@ -90,12 +94,12 @@ fun main(args:Array<String>){
     val unavailablePrefs=Prefs().apply{fail=true}
     ck("guard pauses on unreadable settings",VersionGuard.verifyAndGuard(hidden,loader,unavailablePrefs),false)
     ck("guard forwards unavailable decision",VersionGuard.runtimeStatus(),"COMPATIBILITY_UNAVAILABLE")
-    VersionGuard.onTargetActivityResumed(android.app.Activity())
+    VersionGuard.onTargetActivityResumed(Activity())
     ck("settings access error notice",WaexBottomSheet.lastMessage.contains("compatibility settings"),true)
     ck("dialog shown once",WaexBottomSheet.shows,1)
-    VersionGuard.onTargetActivityResumed(android.app.Activity());ck("no duplicate dialog",WaexBottomSheet.shows,1)
+    VersionGuard.onTargetActivityResumed(Activity());ck("no duplicate dialog",WaexBottomSheet.shows,1)
     ck("guard recovery after fresh verification",VersionGuard.verifyAndGuard(host,loader,prefs),true)
-    VersionGuard.onTargetActivityResumed(android.app.Activity());ck("successful guard clears pending warning",WaexBottomSheet.shows,1)
+    VersionGuard.onTargetActivityResumed(Activity());ck("successful guard clears pending warning",WaexBottomSheet.shows,1)
     host.packageManager.version="9.99.1"
     ck("guard truly unsupported",VersionGuard.verifyAndGuard(host,loader,prefs),false)
     ck("precise unsupported status",VersionGuard.runtimeStatus(),"UNSUPPORTED_VERSION")
@@ -106,10 +110,10 @@ fun main(args:Array<String>){
     ck("settings failure pauses",VersionGuard.verifyAndGuard(host,loader,Prefs().apply{fail=true}),false)
     ck("failure notice reason",VersionGuard.noticeMessage("v",D.PREFERENCES_UNAVAILABLE).contains("compatibility settings"),true)
     ck("no missing-resource mislabel",VersionGuard.noticeMessage("2.26.40.76",D.RULES_UNAVAILABLE).contains("not match"),false)
-    ck("guard logs exclude raw preferences",de.robv.android.xposed.XposedBridge.logs.any{it.contains("private value")},false)
+    ck("guard logs exclude raw preferences",XposedBridge.logs.any{it.contains("private value")},false)
     VersionGuard.verifyAndGuard(hidden,loader,unavailablePrefs)
-    WaexBottomSheet.fail=true;VersionGuard.onTargetActivityResumed(android.app.Activity())
-    WaexBottomSheet.fail=false;VersionGuard.onTargetActivityResumed(android.app.Activity())
+    WaexBottomSheet.fail=true;VersionGuard.onTargetActivityResumed(Activity())
+    WaexBottomSheet.fail=false;VersionGuard.onTargetActivityResumed(Activity())
     ck("warning can recover after failed show",WaexBottomSheet.shows,2)
     fun evidence(pids:Set<Int>?=setOf(123),t:Long=10000,now:Long=20000,boot:Int=7,recorded:Int=7,pid:Int=123,active:Boolean=true)=classifyInjection(active,recorded,boot,pid,pids,t,now)
     ck("current",evidence(),InjectionEvidence.CURRENT)
@@ -213,7 +217,7 @@ fun main(args:Array<String>){
     ck("custom allowance card is not verified",TargetRuntimePresentation.card(app,true,D.CUSTOM_RULE).severity,S.REVIEW)
     ck("custom allowance summary not verified",sum(listOf(app),D.CUSTOM_RULE).healthy,false)
     ck("other negative boot value is unknown",classifyInjection(true,-2,-2,42,setOf(42),1000,1001),InjectionEvidence.BOOT_UNKNOWN)
-    val delayed=android.app.Activity();delayed.defer=true
+    val delayed=Activity();delayed.defer=true
     prefs.values.clear();prefs.fail=false;host.packageManager.fail=false;host.packageManager.version="99.99.99.99"
     ck("queue scenario paused",VersionGuard.verifyAndGuard(host,host.javaClass.classLoader,prefs),false)
     VersionGuard.onTargetActivityResumed(delayed)

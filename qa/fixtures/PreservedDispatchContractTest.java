@@ -1,5 +1,7 @@
 package com.waenhancer.audit;
 
+import java.util.Arrays;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -195,7 +197,7 @@ public class PreservedDispatchContractTest {
     }
 
     private Method resultMethod() {
-        Method method = java.util.Arrays.stream(PreservedMessageStore.class.getDeclaredMethods())
+        Method method = Arrays.stream(PreservedMessageStore.class.getDeclaredMethods())
                 .filter(candidate -> candidate.getName().equals("tryInsertPreservedMessage")).findFirst().orElse(null);
         assertNotNull("A Boolean result API must coexist with the legacy void method", method);
         assertEquals(boolean.class, method.getReturnType());
@@ -337,7 +339,7 @@ public class PreservedDispatchContractTest {
     @Test public void concurrentCapturesCannotUseAStaleTimestampToBypassTheWarningLimit() throws Exception {
         registerProvider();
         abortInsert();
-        Field field = java.util.Arrays.stream(PreserveDeleteForMeHook.class.getDeclaredFields())
+        Field field = Arrays.stream(PreserveDeleteForMeHook.class.getDeclaredFields())
                 .filter(candidate -> candidate.getName().equals("preservationWarningLock"))
                 .findFirst().orElse(null);
         assertNotNull("Process-wide warnings must share one monitor", field);
@@ -356,7 +358,7 @@ public class PreservedDispatchContractTest {
                 boolean blockedAtWarning = false;
                 while (worker.isAlive() && System.nanoTime() < deadline) {
                     blockedAtWarning = worker.getState() == Thread.State.BLOCKED
-                            && java.util.Arrays.stream(worker.getStackTrace()).anyMatch(frame ->
+                            && Arrays.stream(worker.getStackTrace()).anyMatch(frame ->
                             frame.getClassName().equals(PreserveDeleteForMeHook.class.getName())
                                     && frame.getMethodName().equals("warnPreservationUnconfirmed"));
                     if (blockedAtWarning) break;

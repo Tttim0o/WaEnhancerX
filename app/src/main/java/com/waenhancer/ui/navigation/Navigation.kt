@@ -119,6 +119,7 @@ import com.waenhancer.ui.screens.settings.FloatingBottomBarCustomizerScreen
 import com.waenhancer.ui.screens.settings.StylesSettingsScreen
 import com.waenhancer.update.UpdateCheckCoordinator
 import com.waenhancer.utils.ContactNameResolver
+import org.json.JSONObject
 
 class WaexNavController(initialScreen: Screen = Screen.MainDashboard) {
 
@@ -810,7 +811,7 @@ fun MainContainerScreen() {
                                         val idx = contactPrivacyList.indexOfFirst { it.id == updated.id }
                                         if (idx >= 0) contactPrivacyList[idx] = updated
                                         try {
-                                            val json = org.json.JSONObject().apply {
+                                            val json = JSONObject().apply {
                                                 put("name", updated.name)
                                                 put("HideSeen", updated.hideSeen)
                                                 put("HideTyping", updated.hideTyping)
@@ -856,7 +857,7 @@ fun MainContainerScreen() {
                                 val idx = contactPrivacyList.indexOfFirst { it.id == updated.id }
                                 if (idx >= 0) contactPrivacyList[idx] = updated
                                 try {
-                                    val json = org.json.JSONObject().apply {
+                                    val json = JSONObject().apply {
                                         put("name", updated.name)
                                         put("HideSeen", updated.hideSeen)
                                         put("HideTyping", updated.hideTyping)
@@ -1082,7 +1083,7 @@ fun loadContactPrivacyList(context: Context, preferenceManager: WaexPreferenceMa
             if (number.isEmpty() || number == "custom" || number == "call" || number == "global" || !seen.add(number)) continue
 
             try {
-                val json = org.json.JSONObject(value)
+                val json = JSONObject(value)
                 val isGroup = raw.contains("@g.us") || number.contains("-")
                 val isLid = number.length >= 14 && !isGroup
                 val jid = if (raw.contains("@")) raw else if (isGroup) "$number@g.us" else if (isLid) "$number@lid" else "$number@s.whatsapp.net"

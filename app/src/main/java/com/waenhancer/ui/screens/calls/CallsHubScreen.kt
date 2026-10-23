@@ -228,7 +228,7 @@ fun CallsHubScreen() {
         }
 
         foundFiles.sortByDescending { it.lastModified() }
-        val dateFormat = java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT, UiText.displayLocale())
+        val dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, UiText.displayLocale())
 
         for (file in foundFiles) {
             val sizeKb = file.length() / 1024
