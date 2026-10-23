@@ -3,6 +3,10 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(waexwhisper C CXX)
 
+# Inference speed depends entirely on compiler optimisation, so whisper.cpp is always built
+# as Release, also inside debug APKs (an -O0 build ran 19x slower than real time).
+set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
+
 include(FetchContent)
 FetchContent_Declare(
     whisper

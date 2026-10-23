@@ -86,7 +86,8 @@ public final class LocalTranscriber {
                 if (!wasLoaded || System.currentTimeMillis() - loadStart > 50) {
                     TranscriptionLog.add(context, "app", "Loaded model " + model.id + " in "
                             + (System.currentTimeMillis() - loadStart) + " ms (CPU backend "
-                            + WhisperNative.backendName() + ", " + threads() + " threads)");
+                            + WhisperNative.backendName() + ", " + threads() + " threads; "
+                            + WhisperNative.cpuSummary() + ")");
                 }
                 long runStart = System.currentTimeMillis();
                 byte[] text = WhisperNative.transcribe(handle, samples, language, threads());
