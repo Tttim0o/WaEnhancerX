@@ -61,6 +61,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
                     classLoader,
                     "waex_pinned_in_chat_limit_getter_v2",
                     (bridge, loader) -> {
+                        // Strategy A: WA Business uses full log string with class/method path.
                         MethodData pinSelectedCaller = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingString(
@@ -74,13 +75,63 @@ public class ChatLimitsBypassHook extends BaseFeature {
                             return structuralMatch;
                         }
 
+                        // Strategy B: Regular WA may use a shorter log string without the class prefix.
+                        MethodData pinSelectedCallerShort = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("pinSelectedJids max=", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        Method structuralMatchShort = findSelfTypedStaticIntInvoke(pinSelectedCallerShort, loader);
+                        if (structuralMatchShort != null) {
+                            return structuralMatchShort;
+                        }
+
+                        // Strategy C: Look for any method that logs about pinning and calls a static int getter.
+                        MethodData pinCallerAny = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("pinSelectedJids", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        Method structuralMatchAny = findSelfTypedStaticIntInvoke(pinCallerAny, loader);
+                        if (structuralMatchAny != null) {
+                            return structuralMatchAny;
+                        }
+
+                        // Strategy D (legacy WA Business fallback): R.string resource ID 3732.
                         MethodData legacy = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingNumber(3732)
                                         .returnType(int.class)
                                 )
                         ).firstOrNull();
-                        return legacy != null ? legacy.getMethodInstance(loader) : null;
+                        if (legacy != null) return legacy.getMethodInstance(loader);
+
+                        // Strategy E: Search for a no-arg static int method whose name contains
+                        // "max" or "limit" invoked from a method that contains "pinned" string.
+                        MethodData pinnedStringCaller = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("pinned", StringMatchType.Contains)
+                                        .returnType(void.class)
+                                )
+                        ).firstOrNull();
+                        if (pinnedStringCaller != null) {
+                            for (MethodData invoked : pinnedStringCaller.getInvokes()) {
+                                if (!invoked.isMethod()) continue;
+                                try {
+                                    Method candidate = invoked.getMethodInstance(loader);
+                                    if (candidate.getReturnType() == int.class
+                                            && Modifier.isStatic(candidate.getModifiers())
+                                            && candidate.getParameterTypes().length == 0) {
+                                        String methodName = candidate.getName().toLowerCase();
+                                        if (methodName.contains("max") || methodName.contains("limit")) {
+                                            return candidate;
+                                        }
+                                    }
+                                } catch (Throwable ignored) {}
+                            }
+                        }
+
+                        return null;
                     }
             );
 
@@ -101,12 +152,21 @@ public class ChatLimitsBypassHook extends BaseFeature {
                     classLoader,
                     "waex_chat_settings_set_pin",
                     (bridge, loader) -> {
+                        // Primary (WA Business has the full qualified log string).
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingString("ChatSettingsStore/setPin", StringMatchType.Contains)
                                 )
                         ).firstOrNull();
-                        return md != null ? md.getMethodInstance(loader) : null;
+                        if (md != null) return md.getMethodInstance(loader);
+
+                        // Fallback: Regular WA uses "setPin" without the class prefix in its log tag.
+                        MethodData fallback = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("setPin", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        return fallback != null ? fallback.getMethodInstance(loader) : null;
                     }
             );
 
@@ -127,12 +187,21 @@ public class ChatLimitsBypassHook extends BaseFeature {
                     classLoader,
                     "waex_pinned_hash_set_getter",
                     (bridge, loader) -> {
+                        // Primary: WA Business uses both strings together.
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingString("getPinnedJids/QUERY_CHAT_SETTINGS", StringMatchType.Contains)
                                 )
                         ).firstOrNull();
-                        return md != null ? md.getMethodInstance(loader) : null;
+                        if (md != null) return md.getMethodInstance(loader);
+
+                        // Fallback: Regular WA may only log "getPinnedJids" without the query suffix.
+                        MethodData fallback = bridge.findMethod(FindMethod.create()
+                                .matcher(MethodMatcher.create()
+                                        .addUsingString("getPinnedJids", StringMatchType.Contains)
+                                )
+                        ).firstOrNull();
+                        return fallback != null ? fallback.getMethodInstance(loader) : null;
                     }
             );
 
