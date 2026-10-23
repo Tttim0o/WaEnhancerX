@@ -215,7 +215,7 @@ fun main(args:Array<String>){
     ck("probe expiring during collection rejected",XposedRuntimeInspector.inspect(listOf("com.whatsapp")),null)
     SystemClock.time=1000;Root.advance=0
     ck("custom allowance card is not verified",TargetRuntimePresentation.card(app,true,D.CUSTOM_RULE).severity,S.REVIEW)
-    ck("custom allowance summary not verified",sum(listOf(app),D.CUSTOM_RULE).healthy,false)
+    ck("custom allowance summary not verified",sum(listOf(app),D.CUSTOM_RULE).healthy,null)
     ck("other negative boot value is unknown",classifyInjection(true,-2,-2,42,setOf(42),1000,1001),InjectionEvidence.BOOT_UNKNOWN)
     val delayed=Activity();delayed.defer=true
     prefs.values.clear();prefs.fail=false;host.packageManager.fail=false;host.packageManager.version="99.99.99.99"
