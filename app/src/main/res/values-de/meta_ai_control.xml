@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="feat_metaai_title">Meta AI-Button ausblenden</string>
-    <string name="feat_metaai_desc">Den Meta AI-Button im Chats-Bildschirm ausblenden.</string>
+    <string name="feat_metaai_title">Meta AI entfernen</string>
+    <string name="feat_metaai_desc">Deaktiviert Meta AI und entfernt Schaltflächen, Einstiegspunkte und direkten Chat-Zugriff.</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="feat_metaai_title">Скрыть кнопку Meta AI</string>
-    <string name="feat_metaai_desc">Скрыть кнопку Meta AI на экране чатов.</string>
+    <string name="feat_metaai_title">Удалить Meta AI</string>
+    <string name="feat_metaai_desc">Отключает Meta AI и удаляет кнопки, точки входа и прямой доступ к чату.</string>
 </resources>

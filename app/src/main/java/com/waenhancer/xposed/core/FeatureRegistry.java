@@ -564,6 +564,12 @@ public final class FeatureRegistry {
         boolean newSettingsEnabled = prefs.getBoolean("novaconfig", false);
         PropsOverrideHook.setBooleanOverride(14862, newSettingsEnabled, true);
         PropsOverrideHook.setIntegerOverride(18564, newSettingsEnabled, 2);
+        boolean metaAiDisabled = prefs.getBoolean("metaai", false);
+        PropsOverrideHook.setIntegerOverride(15535, metaAiDisabled, 0);
+        PropsOverrideHook.setBooleanOverride(8025, metaAiDisabled, false);
+        PropsOverrideHook.setBooleanOverride(6251, metaAiDisabled, false);
+        PropsOverrideHook.setBooleanOverride(8026, metaAiDisabled, false);
+        PropsOverrideHook.setBooleanOverride(14886, metaAiDisabled, false);
         for (FeatureEntry entry : features) {
             if (entry.policy == null || entry.policy.preHook == null || !isEntryEnabled(entry)) continue;
             try {

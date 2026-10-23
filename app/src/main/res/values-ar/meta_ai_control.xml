@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="feat_metaai_title">إخفاء زر Meta AI</string>
-    <string name="feat_metaai_desc">إخفاء زر Meta AI من شاشة الدردشات.</string>
+    <string name="feat_metaai_title">إزالة Meta AI</string>
+    <string name="feat_metaai_desc">تعطيل Meta AI وإزالة أزراره ونقاط الدخول والوصول المباشر إلى محادثته.</string>
 </resources>

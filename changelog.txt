@@ -15,6 +15,7 @@
 [Fixed]
 - Send blue ticks
 - Blue ticks on reply
+- Remove Meta AI
 
 
 [Feature: Floating bottom bar]

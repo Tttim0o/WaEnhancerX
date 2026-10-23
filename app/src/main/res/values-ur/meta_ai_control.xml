@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="feat_metaai_title">Meta AI بٹن چھپائیں</string>
-    <string name="feat_metaai_desc">چیٹس اسکرین پر موجود Meta AI بٹن کو چھپائیں۔</string>
+    <string name="feat_metaai_title">Meta AI ہٹائیں</string>
+    <string name="feat_metaai_desc">Meta AI کو غیر فعال کریں اور اس کے بٹن، داخلی راستے اور براہ راست گفتگو تک رسائی ہٹائیں۔</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="feat_metaai_title">Hide Meta AI button</string>
-    <string name="feat_metaai_desc">Hide the Meta AI button on the Chats screen.</string>
+    <string name="feat_metaai_title">Remove Meta AI</string>
+    <string name="feat_metaai_desc">Disable Meta AI and remove its buttons, entry points, and direct conversation access.</string>
 </resources>
