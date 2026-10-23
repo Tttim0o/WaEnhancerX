@@ -51,7 +51,8 @@ public final class VoiceNoteRowTranscriptHook extends BaseFeature {
     private static final String TAG = "[WAEX][VoiceRowTranscript]";
     static final String PREF_KEY = "voice_note_transcript_button";
 
-    private static final String FIELD_FILE = "waex_stt_file";
+    /** Set on a voice note's timestamp view; other features leave its tap to this one. */
+    public static final String FIELD_FILE = "waex_stt_file";
     private static final String FIELD_PREVIOUS_LEFT = "waex_stt_prev_left";
     private static final AtomicBoolean LOOKUP_WARNED = new AtomicBoolean(false);
 
