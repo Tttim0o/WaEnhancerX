@@ -11,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -153,6 +154,10 @@ fun AutomationTaskerScreen() {
     var assemblyKey by remember { mutableStateOf(preferenceManager.getString("assembly_key", "")) }
     var connectionStatus by remember { mutableStateOf("idle") } // "idle" | "verifying" | "ok" | "fail"
     var connectionError by remember { mutableStateOf("") }
+    var discoveringModels by remember { mutableStateOf(false) }
+    var discoveredModels by remember { mutableStateOf(emptyList<String>()) }
+    var showModelDropdown by remember { mutableStateOf(false) }
+    var discoveryError by remember { mutableStateOf("") }
     var transcriptionLanguage by remember { mutableStateOf(preferenceManager.getString("transcription_language", "")) }
     var showLanguageDropdown by remember { mutableStateOf(false) }
     val transcriptionLanguages = listOf(
@@ -700,6 +705,49 @@ fun AutomationTaskerScreen() {
                                         preferenceManager.putString("custom_transcription_model", it.trim())
                                     }
                                 )
+                                // Model discovery: GET <base>/models with the saved URL and key.
+                                Box {
+                                    TextButton(
+                                        onClick = {
+                                            discoveringModels = true
+                                            discoveryError = ""
+                                            coroutineScope.launch {
+                                                val result = withContext(Dispatchers.IO) {
+                                                    runCatching { TranscriptionRequestHandler.listCustomModels(context.applicationContext) }
+                                                }
+                                                discoveringModels = false
+                                                result.onSuccess {
+                                                    discoveredModels = it
+                                                    showModelDropdown = it.isNotEmpty()
+                                                }.onFailure { discoveryError = it.message ?: "Failed" }
+                                            }
+                                        },
+                                        enabled = !discoveringModels && customUrl.isNotBlank()
+                                    ) {
+                                        Text(
+                                            if (discoveringModels) UiText.get(R.string.waex_ui_searching_c31723ab, "Searching…")
+                                            else UiText.get(R.string.waex_ui_find_models_1e2793bd, "Find models")
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showModelDropdown,
+                                        onDismissRequest = { showModelDropdown = false }
+                                    ) {
+                                        discoveredModels.forEach { model ->
+                                            DropdownMenuItem(
+                                                text = { Text(text = model, style = typography.bodyMd) },
+                                                onClick = {
+                                                    customModel = model
+                                                    preferenceManager.putString("custom_transcription_model", model)
+                                                    showModelDropdown = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                                if (discoveryError.isNotEmpty()) {
+                                    Text(text = discoveryError, style = typography.labelSm, color = colors.error)
+                                }
                             } else {
                                 Column {
                                     Text(

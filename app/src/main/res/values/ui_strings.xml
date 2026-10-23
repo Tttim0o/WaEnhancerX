@@ -329,6 +329,7 @@
     <string name="waex_ui_features_5697d03d" formatted="false">"Features"</string>
     <string name="waex_ui_filter_items_954cac3d" formatted="false">"Filter Items"</string>
     <string name="waex_ui_filter_view_id_1867e726" formatted="false">"Filter View ID"</string>
+    <string name="waex_ui_find_models_1e2793bd" formatted="false">"Find models"</string>
     <string name="waex_ui_force_waex_hooks_to_run_on_any_version_ffdfb190" formatted="false">"Force WAEX hooks to run on any version without checking (Advanced)"</string>
     <string name="waex_ui_framework_package_2cd0a851" formatted="false">"Framework package"</string>
     <string name="waex_ui_framework_version_b4522d19" formatted="false">"Framework version"</string>
@@ -664,6 +665,7 @@
     <string name="waex_ui_search_icon_edfdb08d" formatted="false">"Search icon"</string>
     <string name="waex_ui_search_injected_hooks_classes_6ad2a50f" formatted="false">"Search injected hooks &amp; classes..."</string>
     <string name="waex_ui_search_supporters_d4975694" formatted="false">"Search supporters"</string>
+    <string name="waex_ui_searching_c31723ab" formatted="false">"Searching…"</string>
     <string name="waex_ui_section_1_s_ab7f31a7">"Section: %1$s"</string>
     <string name="waex_ui_seen_8894cf30" formatted="false">"Seen"</string>
     <string name="waex_ui_select_accent_color_ba07cfa2" formatted="false">"Select Accent Color"</string>

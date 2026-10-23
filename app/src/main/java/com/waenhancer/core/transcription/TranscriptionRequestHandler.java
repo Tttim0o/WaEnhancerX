@@ -96,6 +96,29 @@ public final class TranscriptionRequestHandler {
         return result;
     }
 
+    /**
+     * Model ids offered by the custom endpoint, for the settings screen (WAEX app only; the key
+     * never leaves this process). Throws with a readable message. Blocking.
+     */
+    @NonNull
+    public static java.util.List<String> listCustomModels(@NonNull Context context)
+            throws TranscriptionClient.TranscriptionException {
+        String url = readString(context, "custom_transcription_url", "");
+        if (url.trim().isEmpty()) throw new TranscriptionClient.TranscriptionException("Enter the endpoint URL first");
+        try {
+            java.util.List<String> models = new TranscriptionClient().listModels(url,
+                    readString(context, "custom_transcription_key", ""));
+            TranscriptionLog.add(context, "app", "Model discovery: " + models.size() + " models");
+            return models;
+        } catch (TranscriptionClient.TranscriptionException e) {
+            TranscriptionLog.add(context, "app", "Model discovery failed: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            TranscriptionLog.add(context, "app", "Model discovery failed: " + e.getClass().getName());
+            throw new TranscriptionClient.TranscriptionException("Network error (" + e.getClass().getSimpleName() + ")");
+        }
+    }
+
     /** Adds a line sent by the WhatsApp side; bounded, metadata only. */
     @NonNull
     public static Bundle log(@NonNull Context context, @NonNull Bundle extras) {
