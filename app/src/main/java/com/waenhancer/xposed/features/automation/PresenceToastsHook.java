@@ -80,7 +80,7 @@ public class PresenceToastsHook extends BaseFeature {
     private void hookIncomingPresence() {
         try {
             Method presenceMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_presence_message_handler_v4",
+                    context, classLoader, "waex_presence_message_handler_v4",
                     (bridge, loader) -> {
                         // The old available literal belongs to a multiplexed Runnable.
                         // Match the Handler envelope instead, including both event branches.

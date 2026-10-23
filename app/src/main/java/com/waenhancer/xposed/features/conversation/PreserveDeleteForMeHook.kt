@@ -345,7 +345,7 @@ class PreserveDeleteForMeHook(
             DexSearchEngine.getInstance().findMethodWithCache(
                 context,
                 classLoader,
-                "wpp_delete_for_me_method_v7",
+                "waex_delete_for_me_method_v7",
                 { bridge, loader ->
                     resolveCurrentDeleteForMeRunnable(bridge, loader) ?: bridge.findMethod(
                         FindMethod.create().matcher(

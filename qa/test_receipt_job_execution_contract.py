@@ -51,7 +51,7 @@ install = extract(text, '    private void hookSendReadReceiptJob()')
 resolve = extract(text, '    private Method resolveReadReceiptExecution(')
 assert 'getDeclaredMethods()' not in install, 'Do not blanket-hook receipt job methods'
 assert 'matches.size() != 1' in resolve, 'Ambiguous DEX matches must be rejected'
-assert 'wpp_send_read_receipt_execution_v1' in resolve
+assert 'waex_send_read_receipt_execution_v1' in resolve
 
 body = r"""
 package com.waenhancer.xposed.features.privacy;

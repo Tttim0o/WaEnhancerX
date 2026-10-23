@@ -117,7 +117,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
             Method targetMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_shared_msg_proc_plaintext",
+                    "waex_shared_msg_proc_plaintext",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create().matcher(
                                 MethodMatcher.create().addUsingString("SharedMessageProcessor/handlePlaintext", StringMatchType.Contains)
@@ -214,7 +214,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_fmessage_class",
+                    "waex_fmessage_class",
                     (bridge, loader) -> {
                         MethodData data = bridge.findMethod(FindMethod.create().matcher(
                                 MethodMatcher.create().addUsingString(
@@ -237,7 +237,7 @@ public class MessageDeviceSourceHook extends BaseFeature {
                 deviceJidClass = DexSearchEngine.getInstance().findClassWithCache(
                         context,
                         classLoader,
-                        "wpp_device_jid_class",
+                        "waex_device_jid_class",
                         (bridge, loader) -> {
                             var data = bridge.findClass(org.luckypray.dexkit.query.FindClass.create()
                                     .matcher(org.luckypray.dexkit.query.matchers.ClassMatcher.create()

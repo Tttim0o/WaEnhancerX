@@ -85,7 +85,7 @@ public class BlueOnReplyHook extends BaseFeature {
     private void initializeReadReceiptDispatcher() {
         try {
             Class<?> sendReadClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_send_read_receipt_job_class",
+                    context, classLoader, "waex_send_read_receipt_job_class",
                     (bridge, loader) -> {
                         ClassData data = bridge.findClass(FindClass.create().matcher(
                                 ClassMatcher.create().className(
@@ -101,7 +101,7 @@ public class BlueOnReplyHook extends BaseFeature {
             sendReadConstructor.setAccessible(true);
 
             Method anchor = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_wa_job_manager_start_anchor",
+                    context, classLoader, "waex_wa_job_manager_start_anchor",
                     (bridge, loader) -> {
                         MethodData data = bridge.findMethod(FindMethod.create().matcher(
                                 MethodMatcher.create().addUsingString(
@@ -149,7 +149,7 @@ public class BlueOnReplyHook extends BaseFeature {
             Method sendMessageMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_blue_on_reply_send_e2e_job",
+                    "waex_blue_on_reply_send_e2e_job",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()

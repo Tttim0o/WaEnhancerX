@@ -80,7 +80,7 @@ class TaskerIntegrationHook(
             val receiptMethod = DexSearchEngine.getInstance().findMethodWithCache(
                 context,
                 classLoader,
-                "wpp_receipt_incoming_msg_method"
+                "waex_receipt_incoming_msg_method"
             ) { bridge, loader ->
                 val results = bridge.findMethod(
                     FindMethod.create().matcher {

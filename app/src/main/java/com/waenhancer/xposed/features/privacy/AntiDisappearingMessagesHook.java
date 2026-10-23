@@ -59,7 +59,7 @@ public class AntiDisappearingMessagesHook extends BaseFeature {
         Method ephemeralInsertDbMethod = engine.findMethodWithCache(
                 context,
                 classLoader,
-                "wpp_ephemeral_insert_content_values",
+                "waex_ephemeral_insert_content_values",
                 (bridge, loader) -> {
                     MethodData md = bridge.findMethod(FindMethod.create()
                             .matcher(MethodMatcher.create()

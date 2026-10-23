@@ -57,7 +57,7 @@ class OnlinePresenceIndicatorsHook(
         if (!showDot && !showText) return
         try {
             val bindMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                context, classLoader, "wpp_conversation_row_bind_presence_v2"
+                context, classLoader, "waex_conversation_row_bind_presence_v2"
             ) { bridge, loader ->
                 bridge.findMethod(
                     FindMethod.create().matcher(
@@ -74,7 +74,7 @@ class OnlinePresenceIndicatorsHook(
             }
 
             subscriptionMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                context, classLoader, "wpp_presence_subscription_sender_v3"
+                context, classLoader, "waex_presence_subscription_sender_v3"
             ) { bridge, loader ->
                 val target = bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create().addUsingString(
                     "app/send-presence-subscription jid=", StringMatchType.Contains

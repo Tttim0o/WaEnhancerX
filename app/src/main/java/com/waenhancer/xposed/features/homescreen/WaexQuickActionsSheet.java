@@ -79,7 +79,7 @@ final class WaexQuickActionsSheet {
         float density = activity.getResources().getDisplayMetrics().density;
         int screenHeight = activity.getResources().getDisplayMetrics().heightPixels;
 
-        // ── Colors (matches AlertDialogWpp / WaexBottomSheet exact palette) ──
+        // ── Colors (matches AlertDialogWaex / WaexBottomSheet exact palette) ──
         boolean isDark = isDarkTheme(activity);
         int bgColor          = isDark ? 0xFF12181C : 0xFFFFFFFF;
         int primaryText      = isDark ? 0xFFE9EDEF : 0xFF111B21;

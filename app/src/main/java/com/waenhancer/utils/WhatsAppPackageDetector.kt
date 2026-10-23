@@ -296,7 +296,7 @@ object WhatsAppPackageDetector {
                     )
                 )
             } catch (e: PackageManager.NameNotFoundException) {
-                // Only list standard WPP / Business if uninstalled as placeholders if no apps are installed
+                // Only list standard WAEX / Business if uninstalled as placeholders if no apps are installed
                 if (pkg == "com.whatsapp" || pkg == "com.whatsapp.w4b") {
                     val name = if (pkg == "com.whatsapp") "WhatsApp" else "WhatsApp Business"
                     result.add(

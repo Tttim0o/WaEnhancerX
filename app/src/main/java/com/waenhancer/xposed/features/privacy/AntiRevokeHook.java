@@ -167,7 +167,7 @@ public class AntiRevokeHook extends BaseFeature {
         try {
             // ── Resolve FMessage class ──
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_fmessage_class",
+                    context, classLoader, "waex_fmessage_class",
                     (bridge, loader) -> {
                         MethodData data = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -185,7 +185,7 @@ public class AntiRevokeHook extends BaseFeature {
 
             // ── Resolve Key class ──
             messageKeyClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_message_key_class",
+                    context, classLoader, "waex_message_key_class",
                     (bridge, loader) -> {
                         ClassDataList list = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create().fieldCount(3)
@@ -202,7 +202,7 @@ public class AntiRevokeHook extends BaseFeature {
             }
 
             statusToMessageMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_status_to_message_mapper_v2",
+                    context, classLoader, "waex_status_to_message_mapper_v2",
                     (bridge, loader) -> {
                         Set<Method> candidates = new LinkedHashSet<>();
                         for (MethodData data : bridge.findMethod(FindMethod.create()
@@ -235,7 +235,7 @@ public class AntiRevokeHook extends BaseFeature {
     private void hookBytecodeRevocation() {
         try {
             Method revokeMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_core_msgstore_revoke",
+                    context, classLoader, "waex_core_msgstore_revoke",
                     (bridge, loader) -> {
                         String[] anchors = {
                                 "msgstore/edit/revoke",
@@ -311,7 +311,7 @@ public class AntiRevokeHook extends BaseFeature {
     private void hookStatusBytecodeRevocation() {
         try {
             statusKeyClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_status_key_class_v3",
+                    context, classLoader, "waex_status_key_class_v3",
                     (bridge, loader) -> {
                         Class<?> selected = null;
                         for (ClassData data : bridge.findClass(FindClass.create()
@@ -327,7 +327,7 @@ public class AntiRevokeHook extends BaseFeature {
                     });
 
             Method revokeStatusMethod = DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_revoke_status_manager_v3",
+                    context, classLoader, "waex_revoke_status_manager_v3",
                     (bridge, loader) -> {
                         if (statusKeyClass == null) return null;
 
@@ -959,7 +959,7 @@ public class AntiRevokeHook extends BaseFeature {
                         "com.whatsapp.status.playback.fragment.StatusPlaybackContactFragment");
             } catch (Throwable directLoadFailure) {
                 playbackFragmentClass = engine.findClassWithCache(
-                    context, classLoader, "wpp_status_playback_fragment_class_v3",
+                    context, classLoader, "waex_status_playback_fragment_class_v3",
                     (bridge, loader) -> {
                         String[] patterns = {
                                 "com.whatsapp.status.playback.fragment.StatusPlaybackContactFragment",
@@ -987,7 +987,7 @@ public class AntiRevokeHook extends BaseFeature {
             final Class<?> targetFragmentClass = playbackFragmentClass;
             Method refreshSubtitleMethod = engine.findMethodWithCache(
                     // v2 is tied to the corrected fragment resolver above.
-                    context, classLoader, "wpp_status_playback_refresh_subtitle_v2",
+                    context, classLoader, "waex_status_playback_refresh_subtitle_v2",
                     (bridge, loader) -> {
                         try {
                             MethodData refreshCurrentPage = bridge.findMethod(FindMethod.create()
@@ -1038,7 +1038,7 @@ public class AntiRevokeHook extends BaseFeature {
 
             // ── 3. Find StatusPlaybackViewClass (the view container holding date & menu) ──
             Class<?> statusPlaybackViewClass = engine.findClassWithCache(
-                    context, classLoader, "wpp_status_playback_view_class",
+                    context, classLoader, "waex_status_playback_view_class",
                     (bridge, loader) -> {
                         try {
                             int statusHeaderId = context.getResources().getIdentifier("status_header", "id", context.getPackageName());

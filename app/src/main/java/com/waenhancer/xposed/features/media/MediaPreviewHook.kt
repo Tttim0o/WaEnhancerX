@@ -99,7 +99,7 @@ class MediaPreviewHook(
 
         try {
             val videoViewContainerClass = DexSearchEngine.getInstance().findClassWithCache(
-                context, classLoader, "wpp_video_view_container"
+                context, classLoader, "waex_video_view_container"
             ) { bridge, loader ->
                 bridge.findClass(FindClass.create().matcher(ClassMatcher.create().addUsingString(
                     "frame_visibility_serial_worker", StringMatchType.Contains
@@ -112,8 +112,8 @@ class MediaPreviewHook(
                         if (param.args.size < 2) return
                         val view = param.thisObject as? View ?: return
 
-                        val invisiblePressSurfaceId = getWppId(view.context, "invisible_press_surface")
-                        val videoControlFrameViewId = getWppId(view.context, "video_control_frame_view")
+                        val invisiblePressSurfaceId = getWaexId(view.context, "invisible_press_surface")
+                        val videoControlFrameViewId = getWaexId(view.context, "video_control_frame_view")
                         var surface: ViewGroup? = if (invisiblePressSurfaceId > 0) view.findViewById(invisiblePressSurfaceId) else null
                         if (surface == null && videoControlFrameViewId > 0) {
                             surface = view.findViewById(videoControlFrameViewId)
@@ -122,13 +122,13 @@ class MediaPreviewHook(
                         if (surface != null && surface.childCount > 0) {
                             handlePressSurface(view, surface)
                         } else {
-                            val legacyStubId = getWppId(view.context, "video_control_frame_legacy_stub")
+                            val legacyStubId = getWaexId(view.context, "video_control_frame_legacy_stub")
                             if (legacyStubId > 0) {
                                 view.findViewById<ViewStub>(legacyStubId)?.setOnInflateListener { _, inflated ->
                                     handlePressSurface(view, inflated)
                                 }
                             }
-                            val viewStubId = getWppId(view.context, "video_control_frame_view_stub")
+                            val viewStubId = getWaexId(view.context, "video_control_frame_view_stub")
                             if (viewStubId > 0) {
                                 view.findViewById<ViewStub>(viewStubId)?.setOnInflateListener { _, inflated ->
                                     handlePressSurface(view, inflated)
@@ -144,10 +144,10 @@ class MediaPreviewHook(
 
         try {
             val imageViewContainerClass = DexSearchEngine.getInstance().findClassWithCache(
-                context, classLoader, "wpp_image_view_container"
+                context, classLoader, "waex_image_view_container"
             ) { bridge, loader ->
-                val hdTouchId = getWppId(context, "hd_invisible_touch")
-                val controlBtnId = getWppId(context, "control_btn")
+                val hdTouchId = getWaexId(context, "hd_invisible_touch")
+                val controlBtnId = getWaexId(context, "control_btn")
                 val classes = bridge.findClass(FindClass.create().matcher(
                     ClassMatcher.create().addMethod(
                         MethodMatcher.create()
@@ -168,8 +168,8 @@ class MediaPreviewHook(
                         if (param.args.size < 2) return
                         val view = param.thisObject as? View ?: return
 
-                        val controlFrameId = getWppId(view.context, "control_frame")
-                        val controlFrameNewId = getWppId(view.context, "control_frame_new")
+                        val controlFrameId = getWaexId(view.context, "control_frame")
+                        val controlFrameNewId = getWaexId(view.context, "control_frame_new")
                         var controlFrame: View? = if (controlFrameId > 0) view.findViewById(controlFrameId) else null
                         if (controlFrame == null && controlFrameNewId > 0) {
                             controlFrame = view.findViewById(controlFrameNewId)
@@ -178,13 +178,13 @@ class MediaPreviewHook(
                         if (controlFrame != null) {
                             handleMediaControlFrame(view, controlFrame)
                         } else {
-                            val legacyStubId = getWppId(view.context, "control_frame_legacy_stub")
+                            val legacyStubId = getWaexId(view.context, "control_frame_legacy_stub")
                             if (legacyStubId > 0) {
                                 view.findViewById<ViewStub>(legacyStubId)?.setOnInflateListener { _, inflated ->
                                     handleMediaControlFrame(view, inflated)
                                 }
                             }
-                            val viewStubId = getWppId(view.context, "control_frame_view_stub")
+                            val viewStubId = getWaexId(view.context, "control_frame_view_stub")
                             if (viewStubId > 0) {
                                 view.findViewById<ViewStub>(viewStubId)?.setOnInflateListener { _, inflated ->
                                     handleMediaControlFrame(view, inflated)
@@ -201,7 +201,7 @@ class MediaPreviewHook(
         // Secondary fallback: bubble row attachment hook
         try {
             val mediaRowClass = DexSearchEngine.getInstance().findClassWithCache(
-                context, classLoader, "wpp_media_bubble_layout_v1"
+                context, classLoader, "waex_media_bubble_layout_v1"
             ) { bridge, loader ->
                 bridge.findClass(FindClass.create().matcher(ClassMatcher.create().addUsingString(
                     "BubbleRelativeLayout/ConversationRowText", StringMatchType.Contains
@@ -244,7 +244,7 @@ class MediaPreviewHook(
 
     private fun handleMediaControlFrame(mainContainer: View, controlFrame: View) {
         val context = mainContainer.context
-        val mediaContainerId = getWppId(context, "media_container")
+        val mediaContainerId = getWaexId(context, "media_container")
         val mediaContainer = if (mediaContainerId > 0) mainContainer.findViewById<ViewGroup>(mediaContainerId) else null
         if (mediaContainer == null) return
 
@@ -280,7 +280,7 @@ class MediaPreviewHook(
     private fun installAffordanceFallback(root: ViewGroup) {
         if (root.getTag(TAG_INSTALLED) == true) return
         val control = CONTROL_IDS.asSequence().mapNotNull { name ->
-            val id = getWppId(root.context, name)
+            val id = getWaexId(root.context, name)
             if (id > 0) root.findViewById<View>(id) else null
         }.firstOrNull { it.visibility == View.VISIBLE } ?: return
 
@@ -1490,7 +1490,7 @@ class MediaPreviewHook(
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     }
 
-    private fun getWppId(context: Context, name: String): Int {
+    private fun getWaexId(context: Context, name: String): Int {
         return context.resources.getIdentifier(name, "id", context.packageName)
     }
 
@@ -1503,7 +1503,7 @@ class MediaPreviewHook(
     companion object {
         private const val TAG_INSTALLED = 0x7f0f7b20
         private const val BUTTON_TAG = "waex_media_preview"
-        private const val MEDIA_PREVIEW_WRAPPER_TAG = "wpp_media_preview_wrapper"
+        private const val MEDIA_PREVIEW_WRAPPER_TAG = "waex_media_preview_wrapper"
         private val KEY_ID_REGEX = Regex("(?:messageId|messageID|keyId|id)=([A-Za-z0-9_-]{6,})")
 
         private val CONTROL_IDS = listOf(

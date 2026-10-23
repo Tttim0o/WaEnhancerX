@@ -83,7 +83,7 @@ public class DoubleTapReactionHook extends BaseFeature {
         try {
             // 1. Resolve FMessage Class
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_fmessage_core",
+                    context, classLoader, "waex_fmessage_core",
                     (bridge, loader) -> {
                         MethodData data = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -96,7 +96,7 @@ public class DoubleTapReactionHook extends BaseFeature {
             // 2. Resolve ActionUser Class & Sender Method
             if (fMessageClass != null) {
                 actionUserClass = DexSearchEngine.getInstance().findClassWithCache(
-                        context, classLoader, "wpp_action_user_class",
+                        context, classLoader, "waex_action_user_class",
                         (bridge, loader) -> {
                             MethodData data = bridge.findMethod(FindMethod.create()
                                     .matcher(MethodMatcher.create()

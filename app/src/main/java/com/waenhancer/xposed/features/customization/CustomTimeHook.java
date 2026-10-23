@@ -57,7 +57,7 @@ public class CustomTimeHook extends BaseFeature {
 
         try {
             Method timeMethod = engine.findMethodWithCache(
-                    context, classLoader, "wpp_time_to_seconds_method",
+                    context, classLoader, "waex_time_to_seconds_method",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()

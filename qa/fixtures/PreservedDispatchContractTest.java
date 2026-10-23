@@ -213,7 +213,7 @@ public class PreservedDispatchContractTest {
 
     private XC_MethodHook.MethodHookParam beginRun(FixtureRunnable owner) throws Throwable {
         Method run = FixtureRunnable.class.getDeclaredMethod("run");
-        DexCacheManager.getInstance(context).getMethod(getClass().getClassLoader(), "wpp_delete_for_me_method_v7", () -> run);
+        DexCacheManager.getInstance(context).getMethod(getClass().getClassLoader(), "waex_delete_for_me_method_v7", () -> run);
         hook.hook(); return XposedBridge.fireBefore(run, owner, new Object[0]);
     }
 
@@ -235,7 +235,7 @@ public class PreservedDispatchContractTest {
 
     private XC_MethodHook.MethodHookParam beginDirectDelete() throws Throwable {
         Method method = DirectDelete.class.getDeclaredMethod("deleteSelected",int.class);
-        DexCacheManager.getInstance(context).getMethod(getClass().getClassLoader(), "wpp_delete_for_me_method_v7", () -> method);
+        DexCacheManager.getInstance(context).getMethod(getClass().getClassLoader(), "waex_delete_for_me_method_v7", () -> method);
         hook.hook(); return XposedBridge.fireBefore(method,new DirectDelete(),new Object[]{1});
     }
 

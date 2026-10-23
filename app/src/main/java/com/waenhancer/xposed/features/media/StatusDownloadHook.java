@@ -1131,7 +1131,7 @@ public class StatusDownloadHook extends BaseFeature {
     private Class<?> resolveStatusPlaybackContactFragmentClass() {
         try {
             return DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_status_playback_contact_fragment",
+                    context, classLoader, "waex_status_playback_contact_fragment",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()
@@ -1147,7 +1147,7 @@ public class StatusDownloadHook extends BaseFeature {
     private Class<?> resolveStatusPlaybackBaseFragmentClass() {
         try {
             return DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_status_playback_base_fragment",
+                    context, classLoader, "waex_status_playback_base_fragment",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()

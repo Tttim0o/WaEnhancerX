@@ -200,7 +200,7 @@ public class DownloadViewOnceHook extends BaseFeature {
     private Class<?> resolveViewOnceViewerActivityClass() {
         try {
             Class<?> cls = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_view_once_viewer_activity",
+                    context, classLoader, "waex_view_once_viewer_activity",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()

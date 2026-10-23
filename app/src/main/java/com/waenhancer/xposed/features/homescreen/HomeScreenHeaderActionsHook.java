@@ -349,7 +349,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
     private Class<?> resolveHomeActivityClass() {
         try {
             Class<?> cls = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_home_activity_class",
+                    context, classLoader, "waex_home_activity_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()

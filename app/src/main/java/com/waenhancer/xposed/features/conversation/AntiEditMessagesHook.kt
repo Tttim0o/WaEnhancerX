@@ -143,7 +143,7 @@ class AntiEditMessagesHook(
             DexSearchEngine.getInstance().findMethodWithCache(
                 context,
                 classLoader,
-                "wpp_anti_edit_method_v14",
+                "waex_anti_edit_method_v14",
                 { bridge, loader ->
                     val data = bridge.findMethod(
                         FindMethod.create().matcher(
@@ -173,7 +173,7 @@ class AntiEditMessagesHook(
             DexSearchEngine.getInstance().findMethodWithCache(
                 context,
                 classLoader,
-                "wpp_original_key_for_edited_message_v1",
+                "waex_original_key_for_edited_message_v1",
                 { bridge, loader ->
                     bridge.findMethod(
                         FindMethod.create().matcher(

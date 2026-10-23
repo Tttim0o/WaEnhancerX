@@ -81,7 +81,7 @@ public class HideReceiptsHook extends BaseFeature {
             protocolTreeNodeClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_protocol_tree_node_class",
+                    "waex_protocol_tree_node_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create().usingStrings("ProtocolTreeNode/getAttributeJid"))
@@ -93,7 +93,7 @@ public class HideReceiptsHook extends BaseFeature {
             keyValueClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_key_value_class",
+                    "waex_key_value_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create().usingStrings("KeyValue{key="))
@@ -145,7 +145,7 @@ public class HideReceiptsHook extends BaseFeature {
     private void initFMessageReflection() {
         try {
             fMessageClass = DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_fmessage_class",
+                    context, classLoader, "waex_fmessage_class",
                     (bridge, loader) -> {
                         org.luckypray.dexkit.result.MethodData data = bridge.findMethod(
                                 FindMethod.create().matcher(MethodMatcher.create()
@@ -203,7 +203,7 @@ public class HideReceiptsHook extends BaseFeature {
             Method readReceiptMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_read_receipt_incoming_message",
+                    "waex_read_receipt_incoming_message",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -267,7 +267,7 @@ public class HideReceiptsHook extends BaseFeature {
                 sendJobClass = DexSearchEngine.getInstance().findClassWithCache(
                         context,
                         classLoader,
-                        "wpp_send_read_receipt_job_class",
+                        "waex_send_read_receipt_job_class",
                         (bridge, loader) -> {
                             ClassData cd = bridge.findClass(FindClass.create()
                                     .matcher(ClassMatcher.create().className("SendReadReceiptJob", StringMatchType.EndsWith))
@@ -369,7 +369,7 @@ public class HideReceiptsHook extends BaseFeature {
 
     private Method resolveReadReceiptExecution(final Class<?> jobClass) {
         Method method = DexSearchEngine.getInstance().findMethodWithCache(
-                context, classLoader, "wpp_send_read_receipt_execution_v1",
+                context, classLoader, "waex_send_read_receipt_execution_v1",
                 (bridge, loader) -> {
                     ClassData jobData = bridge.getClassData(jobClass);
                     if (jobData == null) return null;
@@ -381,7 +381,8 @@ public class HideReceiptsHook extends BaseFeature {
                                 .matcher(MethodMatcher.create()
                                         .addUsingString("receipt", StringMatchType.Equals)));
                     }
-                    return matches.isEmpty() ? null : matches.get(0).getMethodInstance(loader);
+                    if (matches.size() != 1) return null;
+                    return matches.get(0).getMethodInstance(loader);
                 });
         return method;
     }
@@ -433,7 +434,7 @@ public class HideReceiptsHook extends BaseFeature {
             Method receiptMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_receipt_node_generator",
+                    "waex_receipt_node_generator",
                     (bridge, loader) -> {
                         ClassData classDeviceJid = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create().className("jid.DeviceJid", StringMatchType.EndsWith))).firstOrNull();
@@ -522,7 +523,7 @@ public class HideReceiptsHook extends BaseFeature {
                 Method deliveryMethod = DexSearchEngine.getInstance().findMethodWithCache(
                         context,
                         classLoader,
-                        "wpp_delivery_anchor_" + anchor.replace('/', '_'),
+                        "waex_delivery_anchor_" + anchor.replace('/', '_'),
                         (bridge, loader) -> {
                             MethodData md = bridge.findMethod(FindMethod.create()
                                     .matcher(MethodMatcher.create().addUsingString(anchor, StringMatchType.Contains))
@@ -562,7 +563,7 @@ public class HideReceiptsHook extends BaseFeature {
             Method dispatchMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_on_dispatch_message_419",
+                    "waex_on_dispatch_message_419",
                     (bridge, loader) -> {
                         MethodDataList methods = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -1068,7 +1069,7 @@ public class HideReceiptsHook extends BaseFeature {
 
     private Method resolvePlayedReceiptDispatch() {
         Method method = DexSearchEngine.getInstance().findMethodWithCache(
-                context, classLoader, "wpp_played_batch_dispatch_v1",
+                context, classLoader, "waex_played_batch_dispatch_v1",
                 (bridge, loader) -> {
                     // sendClearDirty identifies a multi-purpose dispatcher, not a played method.
                     // Require the actual constructor call edge observed for the receipt job.

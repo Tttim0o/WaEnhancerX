@@ -36,8 +36,8 @@ public final class PropsOverrideHook extends BaseFeature {
 
     @Override
     public void hook() {
-        Method booleanGetter = findFallbackGetter("wpp_props_boolean_method", "Unknown BooleanField");
-        Method integerGetter = findFallbackGetter("wpp_props_integer_method", "Unknown IntField");
+        Method booleanGetter = findFallbackGetter("waex_props_boolean_method", "Unknown BooleanField");
+        Method integerGetter = findFallbackGetter("waex_props_integer_method", "Unknown IntField");
         Method resolver = findCentralResolver(booleanGetter);
         if (resolver != null) {
             hookPropertyMethod(resolver);

@@ -52,7 +52,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method chatPinLimitMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_pinned_in_chat_limit_getter_v2",
+                    "waex_pinned_in_chat_limit_getter_v2",
                     (bridge, loader) -> {
                         MethodData pinSelectedCaller = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -92,7 +92,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method setPinMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_chat_settings_set_pin",
+                    "waex_chat_settings_set_pin",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -118,7 +118,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method pinnedHashSetMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_pinned_hash_set_getter",
+                    "waex_pinned_hash_set_getter",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -185,7 +185,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method pinFilterMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_pinned_selection_filter",
+                    "waex_pinned_selection_filter",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -328,7 +328,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Class<?> multiSelectionLimitInfoClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_multi_selection_limit_info_class",
+                    "waex_multi_selection_limit_info_class",
                     (bridge, loader) -> {
                         org.luckypray.dexkit.result.ClassData cd = bridge.findClass(
                                 org.luckypray.dexkit.query.FindClass.create().matcher(
@@ -368,7 +368,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method forwardLimitMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_forward_limit_getter",
+                    "waex_forward_limit_getter",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -399,7 +399,7 @@ public class ChatLimitsBypassHook extends BaseFeature {
             Method revokeWindowMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_revoke_time_window_check",
+                    "waex_revoke_time_window_check",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()

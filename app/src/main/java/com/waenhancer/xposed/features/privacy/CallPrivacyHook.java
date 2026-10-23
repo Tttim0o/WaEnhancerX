@@ -143,7 +143,7 @@ public class CallPrivacyHook extends BaseFeature {
             Method onCallReceivedMethod = DexSearchEngine.getInstance().findMethodWithCache(
                     context,
                     classLoader,
-                    "wpp_voip_on_call_state_changed",
+                    "waex_voip_on_call_state_changed",
                     (bridge, loader) -> {
                         MethodData md = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
@@ -449,9 +449,9 @@ public class CallPrivacyHook extends BaseFeature {
             sb.append(UiText.get(R.string.waex_ui_platform, "Platform: ")).append(platform).append("\n");
         }
 
-        String wppVersion = (String) getObjectFieldSafe(wamCall, "callPeerAppVersion");
-        if (!TextUtils.isEmpty(wppVersion)) {
-            sb.append(UiText.get(R.string.waex_ui_whatsapp_version, "WhatsApp Version: ")).append(wppVersion).append("\n");
+        String waexVersion = (String) getObjectFieldSafe(wamCall, "callPeerAppVersion");
+        if (!TextUtils.isEmpty(waexVersion)) {
+            sb.append(UiText.get(R.string.waex_ui_whatsapp_version, "WhatsApp Version: ")).append(waexVersion).append("\n");
         }
 
         String callSummary = sb.toString().trim();

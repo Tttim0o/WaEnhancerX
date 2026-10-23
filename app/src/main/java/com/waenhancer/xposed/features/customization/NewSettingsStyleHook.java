@@ -96,7 +96,7 @@ public class NewSettingsStyleHook extends BaseFeature {
     private Class<?> resolveHomeActivityClass() {
         try {
             return DexSearchEngine.getInstance().findClassWithCache(
-                    context, classLoader, "wpp_home_activity_class",
+                    context, classLoader, "waex_home_activity_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create()

@@ -59,7 +59,7 @@ public final class StatusStyleHookChecks {
         PropsOverrideHook.BOOLEANS.clear(); PropsOverrideHook.INTEGERS.clear();
         PropsOverrideHook.FLOATS.clear(); PropsOverrideHook.STRINGS.clear();
         XposedBridge.hooks.clear(); DexSearchEngine.methods.clear();
-        DexSearchEngine.methods.put("wpp_status_style_method", styleMethod());
+        DexSearchEngine.methods.put("waex_status_style_method", styleMethod());
     }
     private static XC_MethodHook.MethodHookParam after(Method method, Object result,
                                                        Throwable error, Object... arguments) throws Throwable {
@@ -104,7 +104,7 @@ public final class StatusStyleHookChecks {
                 "status callback retains absent result");
 
         reset(); Method wrong = HostStatus.class.getDeclaredMethod("incompatible", boolean.class);
-        DexSearchEngine.methods.put("wpp_status_style_method", wrong);
+        DexSearchEngine.methods.put("waex_status_style_method", wrong);
         new StatusStyleHook(CONTEXT, LOADER, prefs).hook();
         if (XposedBridge.hooks.containsKey(wrong))
             check("host-value".equals(after(wrong, "host-value", null, false).getResult()),
@@ -112,9 +112,9 @@ public final class StatusStyleHookChecks {
         else check(true, "incompatible cached method not installed");
 
         reset();
-        DexSearchEngine.methods.put("wpp_props_boolean_method", HostProps.class.getDeclaredMethod(
+        DexSearchEngine.methods.put("waex_props_boolean_method", HostProps.class.getDeclaredMethod(
                 "booleanGetter", Object.class, HostProps.class, Boolean.class, int.class));
-        DexSearchEngine.methods.put("wpp_props_integer_method", HostProps.class.getDeclaredMethod(
+        DexSearchEngine.methods.put("waex_props_integer_method", HostProps.class.getDeclaredMethod(
                 "integerGetter", Object.class, HostProps.class, Integer.class, int.class));
         new PropsOverrideHook(CONTEXT, LOADER, prefs).hook();
         Method central = HostProps.class.getDeclaredMethod("central", Object.class, HostProps.class,
@@ -140,9 +140,9 @@ public final class StatusStyleHookChecks {
         new NewSettingsStyleHook(CONTEXT, LOADER, settings).hook();
         check(!PropsOverrideHook.BOOLEANS.containsKey(14862) && !PropsOverrideHook.INTEGERS.containsKey(18564),
                 "disabled settings preference retains original properties");
-        DexSearchEngine.methods.put("wpp_props_boolean_method", HostProps.class.getDeclaredMethod(
+        DexSearchEngine.methods.put("waex_props_boolean_method", HostProps.class.getDeclaredMethod(
                 "booleanGetter", Object.class, HostProps.class, Boolean.class, int.class));
-        DexSearchEngine.methods.put("wpp_props_integer_method", HostProps.class.getDeclaredMethod(
+        DexSearchEngine.methods.put("waex_props_integer_method", HostProps.class.getDeclaredMethod(
                 "integerGetter", Object.class, HostProps.class, Integer.class, int.class));
         new PropsOverrideHook(CONTEXT, LOADER, settings).hook();
         settings.values.put("novaconfig", true);

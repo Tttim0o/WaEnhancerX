@@ -38,7 +38,7 @@ public class ChatListCustomizationsHook extends BaseFeature {
             Class<?> metaAiFabClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_meta_ai_fab_class",
+                    "waex_meta_ai_fab_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create().className("MetaAi", StringMatchType.Contains))
@@ -68,7 +68,7 @@ public class ChatListCustomizationsHook extends BaseFeature {
             Class<?> conversationsRowClass = DexSearchEngine.getInstance().findClassWithCache(
                     context,
                     classLoader,
-                    "wpp_conversations_row_class",
+                    "waex_conversations_row_class",
                     (bridge, loader) -> {
                         ClassData cd = bridge.findClass(FindClass.create()
                                 .matcher(ClassMatcher.create().className("ConversationsRow", StringMatchType.EndsWith))

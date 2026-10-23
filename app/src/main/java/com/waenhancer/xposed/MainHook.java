@@ -32,7 +32,7 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     public static final String RESTART_PERMISSION = "com.waenhancer.permission.RESTART_TARGET";
 
     public static final String PACKAGE_MANAGER = "com.waenhancer";
-    public static final String PACKAGE_WPP = "com.whatsapp";
+    public static final String PACKAGE_WHATSAPP = "com.whatsapp";
     public static final String PACKAGE_BUSINESS = "com.whatsapp.w4b";
 
     private static XSharedPreferences sPrefs;

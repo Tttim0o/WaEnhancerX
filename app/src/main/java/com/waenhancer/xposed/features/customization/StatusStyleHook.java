@@ -106,7 +106,7 @@ public final class StatusStyleHook extends BaseFeature {
     private Method resolveStatusStyleMethod() {
         try {
             return DexSearchEngine.getInstance().findMethodWithCache(
-                    context, classLoader, "wpp_status_style_method", (bridge, loader) -> {
+                    context, classLoader, "waex_status_style_method", (bridge, loader) -> {
                         MethodData methodData = bridge.findMethod(FindMethod.create()
                                 .matcher(MethodMatcher.create()
                                         .addUsingNumber(PROP_STATUS_STYLE_A)
