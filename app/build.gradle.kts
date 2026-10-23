@@ -91,6 +91,7 @@ android {
             // AGP deliberately disables R8 obfuscation for debuggable variants.
             isMinifyEnabled = true
             isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("releaseConfig")
         }
         release {
