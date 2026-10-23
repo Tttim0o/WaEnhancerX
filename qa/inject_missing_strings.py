@@ -15,6 +15,7 @@ import html
 import json
 from pathlib import Path
 import re
+import shutil
 import time
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -24,6 +25,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "app/src/main/res"
 ENDPOINT = "https://translate.googleapis.com/translate_a/single"
+PROVIDER = "google"
 LOCALES = {
     "values-ar": "ar",
     "values-b+es+419": "es",
@@ -120,6 +122,16 @@ def restore(value: str, saved: list[str]) -> str:
 
 
 def request_translation(text: str, language: str) -> str:
+    if PROVIDER == "microsoft":
+        try:
+            import translators as translation_clients
+        except ImportError as error:
+            raise RuntimeError("Microsoft mode requires the temporary 'translators' package") from error
+        microsoft_language = {"zh-CN": "zh-Hans"}.get(language, language)
+        return translation_clients.translate_text(
+            text, translator="bing", from_language="en", to_language=microsoft_language,
+            timeout=60, sleep_seconds=0.5, http_client="httpx",
+        )
     payload = urlencode({"client": "gtx", "sl": "en", "tl": language,
                          "dt": "t", "q": text}).encode()
     request = Request(ENDPOINT, data=payload, headers={"User-Agent": "WAEX-localization/1.0"})
@@ -143,7 +155,8 @@ def translate_many(values: list[str], language: str) -> list[str]:
         while offset + len(batch) < len(values):
             value, saved = protect(values[offset + len(batch)])
             added = len(value) + 28
-            if batch and size + added > 3500:
+            limit = 900 if PROVIDER == "microsoft" else 3500
+            if batch and size + added > limit:
                 break
             batch.append(value)
             protected.append(saved)
@@ -155,9 +168,9 @@ def translate_many(values: list[str], language: str) -> list[str]:
             joined_parts.append(value)
         joined = "\n".join(joined_parts)
         result = request_translation(joined, language)
-        parts = re.split(r"\n?__\s*WAEXSPLIT\s*\d{4}\s*__\n?", result)
+        parts = re.split(r"\n?__\s*WAEXSPLIT\s*\d+\s*__\n?", result)
         if len(parts) != len(batch):
-            raise ValueError(f"batch boundary mismatch: expected {len(batch)}, got {len(parts)}")
+            raise ValueError(f"batch boundary mismatch: expected {len(batch)}, got {len(parts)}: {result!r}")
         translated.extend(restore(part.strip(), saved) for part, saved in zip(parts, protected))
         offset += len(batch)
         time.sleep(1.5)
@@ -229,9 +242,9 @@ def slots(text: str) -> Counter[str]:
     return Counter(token.replace(r"\$", "$") for token in FORMAT.findall(text) if token != "%%")
 
 
-def validate() -> None:
+def validate(folder_names=None) -> None:
     base = resources(RES / "values")
-    for folder_name in LOCALES:
+    for folder_name in folder_names or LOCALES:
         target = resources(RES / folder_name)
         missing = set(base) - set(target)
         if missing:
@@ -244,25 +257,45 @@ def validate() -> None:
             if len(source_values) != len(target_values):
                 raise ValueError(f"plural count mismatch: {folder_name}/{key[1]}")
             for source, translated in zip(source_values, target_values):
-                if not translated.strip() or slots(source) != slots(translated):
+                check_slots = node.attrib.get("formatted") != "false"
+                if not translated.strip() or (check_slots and slots(source) != slots(translated)):
                     raise ValueError(f"invalid translation: {folder_name}/{key[1]}")
 
 
+def sync_spanish() -> None:
+    """Keep the repository's canonical es/es-419 exact-value contract."""
+    source = RES / "values-es"
+    target = RES / "values-b+es+419"
+    for path in source.glob("*.xml"):
+        if any(node.tag in RESOURCE_TAGS for node in ET.parse(path).getroot()):
+            shutil.copyfile(path, target / path.name)
+
+
 def main() -> None:
+    global PROVIDER
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--validate", action="store_true", help="only validate existing resources")
+    parser.add_argument("--provider", choices=("google", "microsoft"), default="google")
+    parser.add_argument("--locale", action="append", choices=tuple(LOCALES),
+                        help="process only this values-* folder (repeatable)")
+    parser.add_argument("--sync-spanish", action="store_true",
+                        help="copy canonical values-es language resources to es-419")
     args = parser.parse_args()
+    PROVIDER = args.provider
+    selected = {name: LOCALES[name] for name in args.locale} if args.locale else LOCALES
     total = 0
-    for folder_name in LOCALES:
+    if args.sync_spanish:
+        sync_spanish()
+    for folder_name in selected:
         removed = remove_generated_duplicates(RES / folder_name)
         if removed:
             print(f"  {folder_name}: removed {removed} duplicate resources")
     if not args.validate:
-        for folder_name, language in LOCALES.items():
+        for folder_name, language in selected.items():
             total += fill_locale(folder_name, language)
-    validate()
+    validate(selected)
     print(f"PASS: all {len(resources(RES / 'values'))} string/plural resources are present in "
-          f"{len(LOCALES)} locales; added {total}")
+          f"{len(selected)} locales; added {total}")
 
 
 if __name__ == "__main__":

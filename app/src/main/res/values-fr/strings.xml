@@ -386,13 +386,13 @@
     <string name="feat_status_style_title">Style des statuts et stories</string>
     <string name="feat_status_style_desc">Personnalisez la disposition des statuts et stories WhatsApp avec des variantes natives</string>
     <string name="sending_read_blue_tick">Envoi de la coche bleue de lecture…</string>
-    <string name="diag_target_sheet_custom_rule_warning">Toutes les applications sont injectées et actives. Une règle de version personnalisée est en vigueur ; la compatibilité avec cette version n&#39;a pas été officiellement vérifiée.</string>
-    <string name="feat_bypass_screenshot_restriction_title">Autoriser les captures d&#39;écran</string>
-    <string name="feat_bypass_screenshot_restriction_desc">Autoriser les captures d&#39;écran et l&#39;enregistrement d&#39;écran dans toute l&#39;application WhatsApp</string>
-    <string name="timestamp_time_format_title">Format de l&#39;heure</string>
+    <string name="diag_target_sheet_custom_rule_warning">Toutes les applications sont injectées et actives. Une règle de version personnalisée est en vigueur ; la compatibilité avec cette version n\'a pas été officiellement vérifiée.</string>
+    <string name="feat_bypass_screenshot_restriction_title">Autoriser les captures d\'écran</string>
+    <string name="feat_bypass_screenshot_restriction_desc">Autoriser les captures d\'écran et l\'enregistrement d\'écran dans toute l\'application WhatsApp</string>
+    <string name="timestamp_time_format_title">Format de l\'heure</string>
     <string name="timestamp_time_format_12_hour">Horloge 12 heures (3:45:30 PM)</string>
     <string name="timestamp_time_format_24_hour">Horloge 24 heures (15:45:30)</string>
-    <string name="waex_ui_selected_icon_color">Couleur de l&#39;icône sélectionnée</string>
-    <string name="waex_ui_unselected_icon_color">Couleur de l&#39;icône non sélectionnée</string>
-    <string name="waex_ui_using_app_default_color">Utilisation de la couleur par défaut de l&#39;application</string>
+    <string name="waex_ui_selected_icon_color">Couleur de l\'icône sélectionnée</string>
+    <string name="waex_ui_unselected_icon_color">Couleur de l\'icône non sélectionnée</string>
+    <string name="waex_ui_using_app_default_color">Utilisation de la couleur par défaut de l\'application</string>
 </resources>
