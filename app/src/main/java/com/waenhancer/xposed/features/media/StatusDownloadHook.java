@@ -79,9 +79,9 @@ public class StatusDownloadHook extends BaseFeature {
     private volatile Object latestStatusFragment;
     private final Set<View> watchedStatusRoots = Collections.newSetFromMap(new WeakHashMap<>());
     private final Set<View> watchedStatusPagers = Collections.newSetFromMap(new WeakHashMap<>());
-    // A reply bar may survive a page swipe. Keep the status item that was current when
-    // that specific control was last refreshed, rather than resolving an old fragment
-    // only after the user taps it.
+    // A reply bar may survive forward and backward page changes without another layout
+    // callback. Keep its live playback source, not the status that happened to be active
+    // during the last refresh, and resolve the item only when the user taps the control.
     private final Map<View, Object> statusSeenBindings =
             Collections.synchronizedMap(new WeakHashMap<>());
 
@@ -447,24 +447,20 @@ public class StatusDownloadHook extends BaseFeature {
     /** Updates an existing button for every visible status page, including reused reply bars. */
     private void bindStatusSeenControl(View control, Object sourceObject) {
         Object fragment = latestStatusFragment != null ? latestStatusFragment : sourceObject;
-        Object currentStatus = resolveCurrentStatusItem(fragment);
         synchronized (statusSeenBindings) {
-            if (currentStatus == null) statusSeenBindings.remove(control);
-            else statusSeenBindings.put(control, currentStatus);
+            if (fragment == null) statusSeenBindings.remove(control);
+            else statusSeenBindings.put(control, fragment);
         }
     }
 
     private void sendBoundStatusSeenReceipt(View control, Context statusContext) {
-        Object statusItem;
+        Object playbackSource;
         synchronized (statusSeenBindings) {
-            statusItem = statusSeenBindings.get(control);
+            playbackSource = statusSeenBindings.get(control);
         }
-        boolean sent = BlueOnReplyHook.sendCapturedStatusReceipt(statusItem);
-        if (sent) {
-            synchronized (statusSeenBindings) {
-                statusSeenBindings.remove(control);
-            }
-        }
+        Object statusItem = resolveCurrentStatusItem(playbackSource);
+        boolean sent = BlueOnReplyHook.hasCapturedStatusReceipt(statusItem)
+                && BlueOnReplyHook.sendCapturedStatusReceipt(statusItem);
         showToast(statusContext, sent
                 ? UiText.get(R.string.waex_ui_blue_tick_sent, "Seen sent")
                 : UiText.get(R.string.waex_ui_no_hidden_read_receipt_to_send, "No hidden read receipt to send"));

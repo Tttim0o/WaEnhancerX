@@ -58,7 +58,6 @@ public class BlueOnReplyHook extends BaseFeature {
     // Status player wrappers do not always retain the MessageKey. Keep the most recently
     // suppressed host job as the playback-order fallback; the host creates it for the
     // status that is being opened.
-    private static volatile ReadJobRecipe latestStatusReceipt;
     private static final Object MANUAL_STATUS_RECEIPT = new Object();
     private static final String PENDING_CHAT_RECEIPT = "waex_pending_chat_receipt";
 
@@ -251,15 +250,12 @@ public class BlueOnReplyHook extends BaseFeature {
         if (constructor == null || arguments == null) return;
         ReadJobRecipe recipe = new ReadJobRecipe(constructor, copyArguments(arguments));
         synchronized (PENDING_STATUS_RECEIPTS) {
-            boolean captured = false;
             for (Object argument : arguments) if (argument instanceof String[])
                 for (String id : (String[]) argument) if (id != null && !id.isEmpty()) {
                     PENDING_STATUS_RECEIPTS.put(id, recipe);
-                    captured = true;
                     while (PENDING_STATUS_RECEIPTS.size() > 256)
                         PENDING_STATUS_RECEIPTS.remove(PENDING_STATUS_RECEIPTS.keySet().iterator().next());
                 }
-            if (captured) latestStatusReceipt = recipe;
         }
     }
 
@@ -330,16 +326,10 @@ public class BlueOnReplyHook extends BaseFeature {
         String id = findStatusId(statusItem, new java.util.IdentityHashMap<>(), 0);
         ReadJobRecipe recipe;
         synchronized (PENDING_STATUS_RECEIPTS) {
-            if (id != null) {
-                recipe = PENDING_STATUS_RECEIPTS.get(id);
-            } else {
-                // Some playback pages expose no reachable MessageKey. The latest capture is
-                // the host job for the status just opened, unlike arbitrary map iteration.
-                recipe = latestStatusReceipt;
-                if (recipe != null && !PENDING_STATUS_RECEIPTS.containsValue(recipe)) {
-                    recipe = null;
-                }
-            }
+            // Never substitute the most recently captured receipt when the active playback
+            // item cannot be identified. After backward navigation, that receipt belongs to
+            // the last-viewed status and would acknowledge the wrong item.
+            recipe = id == null ? null : PENDING_STATUS_RECEIPTS.get(id);
         }
         if (recipe == null || enqueueJobMethod == null || getOrFindJobManager() == null) return false;
         try {
@@ -354,7 +344,6 @@ public class BlueOnReplyHook extends BaseFeature {
                 while (iterator.hasNext()) {
                     if (iterator.next().getValue() == recipe) iterator.remove();
                 }
-                if (latestStatusReceipt == recipe) latestStatusReceipt = null;
             }
             return true;
         } catch (Throwable t) {

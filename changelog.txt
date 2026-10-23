@@ -1,5 +1,5 @@
 [Added]
-- Send seen via status
+- Send seen via status (Experimental)
 - Added module settings for Hooking method (Lightweight, Balanced, Maximum Capability, Customized)
 
 [Improvements]
