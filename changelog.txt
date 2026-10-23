@@ -41,7 +41,8 @@
   - Customized (Pro): You can customize the hooking method for each feature.
 
 [Feature: Bootloader Spoofer]
-- Play Integrity Bypass Hook was introduced to bypass the WhatsApp new aggressive device validation. But still this is not 100% due to WhatsApp frequently updates itself. For now module will work for verifications flawlessly as tested on latest beta 2.26.43.2. But if you still face issue, then you need to pass the device integrity check via PlayIntegrityFix or TeeSimulator or any other available methods. 
+- Introduced Play Integrity & Roadblock Bypass: Intercepts WhatsApp's aggressive device integrity checks and suppresses unofficial app verification roadblock screens dynamically.
+- Tested on latest WhatsApp beta release (2.26.43.2). If your environment requires strict hardware-backed attestation for SMS/registration verification, ensure your device passes Device Integrity (e.g., using a valid keybox via Bootloader Spoofer or tools like PlayIntegrityFix/TEESimulator).
 
 
 [Notes]
