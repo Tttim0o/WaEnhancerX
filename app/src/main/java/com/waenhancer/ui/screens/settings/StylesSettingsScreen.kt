@@ -407,6 +407,47 @@ fun StylesSettingsScreen() {
                                     )
                                 }
                             }
+                            if (item.key == "custom_time_format") {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = colors.outlineVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.padding(start = 32.dp)
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { typedEditorKey = "timestamp_time_format" }
+                                        .padding(start = 32.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier.weight(1f),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = UiText.get(R.string.timestamp_time_format_title, "Time format"),
+                                            style = typography.bodyLg,
+                                            fontWeight = FontWeight.Medium,
+                                            color = colors.onSurface
+                                        )
+                                        Text(
+                                            text = if (preferenceManager.getBoolean("ampm", false))
+                                                UiText.get(R.string.timestamp_time_format_12_hour, "12-hour clock (3:45:30 PM)")
+                                            else UiText.get(R.string.timestamp_time_format_24_hour, "24-hour clock (15:45:30)"),
+                                            style = typography.bodyMd,
+                                            color = colors.onSurfaceVariant,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = WaexIcons.ChevronRight,
+                                        contentDescription = UiText.get(R.string.waex_ui_configure_1_s, "Configure %1\$s",
+                                            UiText.get(R.string.timestamp_time_format_title, "Time format")),
+                                        tint = colors.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
                             if (index < group.items.lastIndex) {
                                 HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant)
                             }
@@ -449,6 +490,16 @@ private fun TypedStyleEditorDialog(
         }
     }
     when (key) {
+        "timestamp_time_format" -> ChoiceValueEditorDialog(
+            title = UiText.get(R.string.timestamp_time_format_title, "Time format"),
+            selectedValue = if (preferenceManager.getBoolean("ampm", false)) "12" else "24",
+            choices = listOf(
+                "12" to UiText.get(R.string.timestamp_time_format_12_hour, "12-hour clock (3:45:30 PM)"),
+                "24" to UiText.get(R.string.timestamp_time_format_24_hour, "24-hour clock (15:45:30)")
+            ),
+            onDismiss = onDismiss,
+            onSave = { completeSave(preferenceManager.putBooleans(mapOf("ampm" to (it == "12")))) }
+        )
         "custom_theme" -> TextValueEditorDialog(
             title = UiText.get(R.string.feat_custom_theme_title, "Custom Theme CSS"),
             description = UiText.get(R.string.waex_ui_style_whatsapp_views_using_ids_widget, "Style WhatsApp views using IDs, widget types, scoped activities, and common CSS properties. Restart WhatsApp after saving."),
