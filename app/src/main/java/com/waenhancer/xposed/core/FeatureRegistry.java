@@ -552,7 +552,8 @@ public final class FeatureRegistry {
                 lazyHooks.onActivityResumed(activity);
             }
             @Override public void onActivityStopped(@NonNull Activity activity) {
-                lazyHooks.onActivityStopped(activity);
+                // A stopped Activity remains alive in WhatsApp's back stack. Do not dispose
+                // its lazy UI state or process-wide hooks while another Activity covers it.
             }
             @Override public void onActivityDestroyed(@NonNull Activity activity) {
                 lazyHooks.onActivityDestroyed(activity);
