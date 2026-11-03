@@ -162,12 +162,16 @@ public final class VoiceDictationHook extends BaseFeature {
                 new GlyphDrawable(glyph, field.getTextSize()), drawables[3]);
     }
 
-    /** Hooks the field class's own onTouchEvent once, so overrides in WhatsApp's class see us first. */
+    /**
+     * Hooks dispatchTouchEvent once per field class. It runs before any OnTouchListener
+     * WhatsApp puts on the field; such a listener consumed taps before onTouchEvent saw them,
+     * so the 🎙️ button did nothing.
+     */
     private void hookTouches(Class<?> fieldClass) {
         if (!hookedFieldClasses.add(fieldClass)) return;
         try {
-            Method onTouchEvent = XposedHelpers.findMethodBestMatch(fieldClass, "onTouchEvent", MotionEvent.class);
-            XposedBridge.hookMethod(onTouchEvent, new XC_MethodHook() {
+            Method dispatch = XposedHelpers.findMethodBestMatch(fieldClass, "dispatchTouchEvent", MotionEvent.class);
+            XposedBridge.hookMethod(dispatch, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
                     if (!(param.thisObject instanceof EditText) || disabled.get()) return;
@@ -180,6 +184,7 @@ public final class VoiceDictationHook extends BaseFeature {
             });
         } catch (Throwable t) {
             XposedBridge.log(TAG + " Touch hook unavailable: " + t.getClass().getSimpleName());
+            VoiceTranscriptionBridge.log("Dictation button cannot receive taps: " + VoiceTranscriptionBridge.describe(t));
         }
     }
 
@@ -189,8 +194,10 @@ public final class VoiceDictationHook extends BaseFeature {
         if (!(button instanceof GlyphDrawable)) return false;
         boolean pressed = XposedHelpers.getAdditionalInstanceField(field, FIELD_PRESSED) != null;
         float x = event.getX();
-        boolean inside = x >= field.getWidth() - field.getTotalPaddingRight()
-                && x <= field.getWidth() - field.getPaddingRight() + 8;
+        // The drawable plus a finger's width of slack on its left; up to the field's edge.
+        float slack = 12 * field.getResources().getDisplayMetrics().density;
+        boolean inside = x >= field.getWidth() - field.getTotalPaddingRight() - slack
+                && x <= field.getWidth();
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if (!inside) return false;
@@ -199,7 +206,10 @@ public final class VoiceDictationHook extends BaseFeature {
             case MotionEvent.ACTION_UP:
                 if (!pressed) return false;
                 XposedHelpers.removeAdditionalInstanceField(field, FIELD_PRESSED);
-                if (inside) onButton(field);
+                if (inside) {
+                    VoiceTranscriptionBridge.log("🎙️ tapped (" + state.name().toLowerCase(java.util.Locale.ROOT) + ")");
+                    onButton(field);
+                }
                 return true;
             case MotionEvent.ACTION_CANCEL:
                 if (!pressed) return false;
