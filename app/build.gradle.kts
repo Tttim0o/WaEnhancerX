@@ -108,8 +108,10 @@ android {
             // shrinking/obfuscation pass as release. The mapping file remains under
             // app/build/outputs/mapping/debug for local crash retracing.
             // AGP deliberately disables R8 obfuscation for debuggable variants.
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // Test builds: no R8 (stand-in branch only). The minified 2.0.5 debug APK
+            // installed no hooks in WhatsApp, while unminified test.24 worked.
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("releaseConfig")
         }
