@@ -117,6 +117,8 @@ public class DownloadViewOnceHook extends BaseFeature {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) {
                     if (!isEnabled("downloadviewonce", false) || !(param.thisObject instanceof Activity)) return;
+                    // Superclass methods are hooked too; skip other activities sharing them.
+                    if (!viewOnceClass.isInstance(param.thisObject)) return;
 
                     Menu menu = null;
                     if (param.args.length > 0 && param.args[0] instanceof Menu) {

@@ -109,6 +109,8 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
             protected void afterHookedMethod(MethodHookParam param) {
                 if (param.hasThrowable() || !isEnabled("download_profile", false)
                         || !(param.thisObject instanceof Activity)
+                        // Superclass methods are hooked too; skip other activities sharing them.
+                        || !viewer.isInstance(param.thisObject)
                         || param.args.length == 0
                         || !(param.args[0] instanceof Menu)) return;
                 installMenuAction((Activity) param.thisObject, (Menu) param.args[0]);
