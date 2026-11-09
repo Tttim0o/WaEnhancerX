@@ -45,4 +45,20 @@ public final class BootloaderSpooferFeature {
     public static VerificationReport verify(Context context, String xml, boolean managed) {
         return new VerificationReport();
     }
+
+    public static String getCustomKeyboxXml(Context context) { return ""; }
+
+    public static String getManagedKeyboxXml(Context context) { return ""; }
+
+    public static long getLastUpdated(Context context) { return 0L; }
+
+    public static String getLastError(Context context) { return UNAVAILABLE; }
+
+    public static long syncDefaultKeybox(Context context) {
+        throw new IllegalStateException(UNAVAILABLE);
+    }
+
+    public static void saveCustomKeyboxXml(Context context, String xml) {
+        throw new IllegalStateException(UNAVAILABLE);
+    }
 }
