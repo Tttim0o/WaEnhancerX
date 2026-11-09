@@ -339,8 +339,8 @@
 
   /** WhatsApp style *bold*, _italic_, ~strike~, `code` and links, built as elements. */
   function rich(parent, text) {
-    const pattern = /(https?:\/\/[^\s<>"']+)|(^|[\s(])([*_~`])(\S(?:[^\n]*?\S)?)\3(?=$|[\s).,!?:;])/g;
-    const tags = { '*': 'b', _: 'i', '~': 's', '`': 'code' };
+    const pattern = /(https?:\/\/[^\s<>"']+)|(^|[\s(])(```|[*_~`])(\S(?:[^\n]*?\S)?)\3(?=$|[\s).,!?:;])/g;
+    const tags = { '*': 'b', _: 'i', '~': 's', '`': 'code', '```': 'code' };
     let last = 0, m;
     while ((m = pattern.exec(text))) {
       if (m.index > last) parent.append(text.slice(last, m.index));
