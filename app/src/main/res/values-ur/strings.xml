@@ -12,6 +12,7 @@
     <string name="go_to_telegram">ٹیلیگرام چینل</string>
     <string name="go_to_github">گٹ ہب کے مسائل</string>
     <string name="contributors">شراکت دار</string>
+    <string name="contributor">شراکت دار</string>
     <string name="stargazers_title">ہمارے حامی</string>
     <string name="stargazers_thank_you">WaEnhancerX کی حمایت کرنے کا شکریہ</string>
     <string name="stargazers_message">ہر ستارہ اس منصوبے کو دریافت کرنے میں زیادہ سے زیادہ لوگوں کی مدد کرتا ہے۔ یہ دیوار ہر اس شخص کے لیے ہے جس نے اپنی حمایت ظاہر کی ہے۔</string>
@@ -119,8 +120,6 @@
     <string name="feat_hideonceseen_desc">ایک بار دیکھے جانے والے فوٹو یا ویڈیو کو کھولنے پر بھیجنے والے کو معلوم ہونے سے روکتا ہے</string>
     <string name="feat_anti_revoke_title">منسوخی مخالف پیغامات</string>
     <string name="feat_anti_revoke_desc">آپ کے پیغامات کو حذف نہیں کیا جائے گا۔</string>
-    <string name="feat_hide_anti_revoke_title">چیٹ مینو میں Hide Anti-Revoke شامل کریں۔</string>
-    <string name="feat_hide_anti_revoke_desc">اس چیٹ کے لیے حذف شدہ پیغامات کو چھپانے کے لیے گفتگو کے مینو میں آپشن شامل کریں۔</string>
     <string name="feat_preserve_own_revoke_title">میرے منسوخ شدہ پیغامات رکھیں</string>
     <string name="feat_preserve_own_revoke_desc">وصول کنندگان کے لیے حذف کرتے وقت اپنی مقامی کاپی ڈیلیٹ فار ایورین کے بعد اپنے پاس رکھیں</string>
     <string name="feat_antirevokestatus_title">اینٹی ڈیلیٹ اسٹیٹس</string>
@@ -201,8 +200,8 @@
     <string name="feat_status_text_composer_desc">اپنی مرضی کے مطابق کرنے کے لیے اسٹیٹس میں کلر سلیکٹر کو دبائیں اور پکڑیں۔</string>
     <string name="feat_status_downloader_title">اسٹیٹس ڈاؤن لوڈ اور شیئر کریں۔</string>
     <string name="feat_status_downloader_desc">اسٹیٹس کو شیئر کرنے اور ڈاؤن لوڈ کرنے کے لیے دو بٹن دکھاتا ہے۔</string>
-    <string name="feat_media_upload_quality_title">ایچ ڈی کوالٹی کی تصاویر اور ویڈیوز</string>
-    <string name="feat_media_upload_quality_desc">ڈیفالٹ کے ذریعے ایچ ڈی کوالٹی میں تصاویر اور ویڈیوز بھیجیں۔</string>
+    <string name="feat_media_upload_quality_title">اصل معیار کی تصاویر اور ویڈیوز</string>
+    <string name="feat_media_upload_quality_desc">اصل معیار میں تصاویر اور ویڈیوز بھیجیں</string>
     <string name="feat_send_audio_as_voice_status_title">آڈیو ٹو وائس اسٹیٹس</string>
     <string name="feat_send_audio_as_voice_status_desc">ایک مقامی آڈیو فائل چنیں اور اسے آواز کی حیثیت کے طور پر شائع کریں۔</string>
     <string name="feat_status_video_splitter_title">اسٹیٹس ویڈیو سپلٹر</string>
@@ -389,9 +388,6 @@
     <string name="diag_target_sheet_custom_rule_warning">تمام ایپس انجیکٹ اور فعال ہیں۔ ایک حسب ضرورت ورژن قانون نافذ ہے؛ اس ورژن کے ساتھ مطابقت سرکاری طور پر تصدیق نہیں کی گئی۔</string>
     <string name="feat_bypass_screenshot_restriction_title">اسکرین شاٹ کی اجازت دیں</string>
     <string name="feat_bypass_screenshot_restriction_desc">پورے واٹس ایپ میں اسکرین شاٹ اور اسکرین ریکارڈنگ کی اجازت دیں</string>
-    <string name="timestamp_time_format_title">وقت کا فارمیٹ</string>
-    <string name="timestamp_time_format_12_hour">12 گھنٹے کی گھڑی (3:45:30 PM)</string>
-    <string name="timestamp_time_format_24_hour">24 گھنٹے کی گھڑی (15:45:30)</string>
     <string name="waex_ui_selected_icon_color">منتخب آئیکن کا رنگ</string>
     <string name="waex_ui_unselected_icon_color">غیر منتخب آئیکن کا رنگ</string>
     <string name="waex_ui_using_app_default_color">ایپ کا ڈیفالٹ رنگ استعمال ہو رہا ہے</string>

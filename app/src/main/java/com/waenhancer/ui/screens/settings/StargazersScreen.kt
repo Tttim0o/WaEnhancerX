@@ -41,13 +41,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.VolunteerActivism
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.LoadingIndicator
+import com.waenhancer.ui.components.WaexModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -69,8 +69,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
@@ -91,6 +93,7 @@ import com.waenhancer.app.R
 import com.waenhancer.config.PreferenceStores
 import com.waenhancer.licensing.LicenseManager
 import com.waenhancer.ui.components.WaexTopBar
+import com.waenhancer.ui.components.NetworkErrorCenter
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
 import com.waenhancer.ui.navigation.LocalWaexNavController
@@ -170,6 +173,7 @@ fun StargazersScreen() {
     var searchQuery by remember { mutableStateOf("") }
     val confettiProgress = remember { Animatable(0f) }
     val supportSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val pullToRefreshState = rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
     val filteredStargazers = remember(stargazers, searchQuery) {
         val query = searchQuery.trim()
@@ -212,9 +216,12 @@ fun StargazersScreen() {
         result.onSuccess { snapshot ->
             stargazers = sortStargazers(context, snapshot.stargazers)
             lastUpdated = formatUpdatedAt(snapshot.updatedAt)
-        }.onFailure {
+        }.onFailure { failure ->
             errorMessage = UiText.get(R.string.waex_ui_we_couldn_t_load_the_supporters_right, "We couldn't load the supporters right now.")
             stargazers = emptyList()
+            if (NetworkErrorCenter.isNetworkError(failure)) {
+                NetworkErrorCenter.show(failure) { refreshKey++ }
+            }
         }
         isLoading = false
     }
@@ -226,7 +233,12 @@ fun StargazersScreen() {
         isLoadingProfile = true
         loadStargazerProfile(context, stargazer.login)
             .onSuccess { selectedProfile = it }
-            .onFailure { profileError = UiText.get(R.string.waex_ui_could_not_load_this_github_profile, "Could not load this GitHub profile.") }
+            .onFailure { failure ->
+                profileError = UiText.get(R.string.waex_ui_could_not_load_this_github_profile, "Could not load this GitHub profile.")
+                if (NetworkErrorCenter.isNetworkError(failure)) {
+                    NetworkErrorCenter.show(failure)
+                }
+            }
         isLoadingProfile = false
     }
 
@@ -290,6 +302,41 @@ fun StargazersScreen() {
         PullToRefreshBox(
             isRefreshing = isLoading && refreshKey > 0,
             onRefresh = { refreshKey++ },
+            state = pullToRefreshState,
+            indicator = {
+                val isRefreshing = isLoading && refreshKey > 0
+                if (isRefreshing || pullToRefreshState.distanceFraction > 0f) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 12.dp)
+                            .size(52.dp)
+                            .shadow(6.dp, RoundedCornerShape(18.dp)),
+                        shape = RoundedCornerShape(18.dp),
+                        color = colors.primaryContainer,
+                        contentColor = colors.primary
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            if (isRefreshing) {
+                                LoadingIndicator(
+                                    modifier = Modifier.size(30.dp),
+                                    color = colors.primary
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = WaexIcons.Refresh,
+                                    contentDescription = UiText.get(R.string.waex_ui_refresh, "Refresh"),
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .graphicsLayer {
+                                            rotationZ = 180f * pullToRefreshState.distanceFraction.coerceIn(0f, 1f)
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(scaffoldPadding)
@@ -324,7 +371,7 @@ fun StargazersScreen() {
                             }
                         },
                         singleLine = true,
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(20.dp)
                     )
                 }
             }
@@ -336,25 +383,25 @@ fun StargazersScreen() {
                     exit = fadeOut(tween(200)) + shrinkVertically(animationSpec = tween(250))
                 ) {
                     Surface(
-                        shape = radius.bentoCardShape,
-                        color = colors.surfaceContainerLow,
-                        border = BorderStroke(1.dp, colors.outlineVariant),
+                        shape = RoundedCornerShape(28.dp),
+                        color = colors.primaryContainer,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
                             modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.Start
                         ) {
                             Surface(
-                                shape = CircleShape,
-                                color = colors.primary.copy(alpha = 0.12f),
-                                modifier = Modifier.size(56.dp)
+                                shape = RoundedCornerShape(18.dp),
+                                color = colors.primary,
+                                contentColor = colors.onPrimary,
+                                modifier = Modifier.size(58.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = WaexIcons.Premium,
                                         contentDescription = null,
-                                        tint = colors.primary,
+                                        tint = colors.onPrimary,
                                         modifier = Modifier.size(28.dp)
                                     )
                                 }
@@ -365,14 +412,14 @@ fun StargazersScreen() {
                                 style = typography.headlineMd,
                                 fontWeight = FontWeight.Bold,
                                 color = colors.onSurface,
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Start
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
                                 text = stringResource(R.string.stargazers_message),
                                 style = typography.bodyMd,
                                 color = colors.onSurfaceVariant,
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Start
                             )
                             if (stargazers.isNotEmpty()) {
                                 Spacer(Modifier.height(14.dp))
@@ -380,7 +427,7 @@ fun StargazersScreen() {
                                     text = UiText.get(R.string.waex_ui_1_s_supporters_and_counting, "%1\$s supporters and counting", stargazers.size),
                                     style = typography.bodyLg,
                                     fontWeight = FontWeight.Bold,
-                                    color = colors.primary
+                                    color = colors.onSurface
                                 )
                                 if (lastUpdated.isNotEmpty()) {
                                     Spacer(Modifier.height(6.dp))
@@ -388,7 +435,7 @@ fun StargazersScreen() {
                                         text = stringResource(R.string.stargazers_last_updated, lastUpdated),
                                         style = typography.bodyMd,
                                         color = colors.onSurfaceVariant,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Start
                                     )
                                 }
                             }
@@ -488,9 +535,8 @@ fun StargazersScreen() {
                 items(filteredStargazers, key = { it.login }) { stargazer ->
                     val isDev = stargazer.login.equals(BuildConfig.DEV_GH.trim(), ignoreCase = true)
                     Surface(
-                        shape = radius.bentoCardShape,
+                        shape = RoundedCornerShape(22.dp),
                         color = colors.surfaceContainerLow,
-                        border = BorderStroke(1.dp, colors.outlineVariant),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
@@ -558,7 +604,7 @@ fun StargazersScreen() {
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Rounded.VolunteerActivism,
-                                            contentDescription = stringResource(R.string.contributors),
+                                            contentDescription = stringResource(R.string.contributor),
                                             tint = colors.primary,
                                             modifier = Modifier.size(13.dp)
                                         )
@@ -575,7 +621,7 @@ fun StargazersScreen() {
     }
 
     selectedStargazer?.let { stargazer ->
-        ModalBottomSheet(
+        WaexModalBottomSheet(
             onDismissRequest = { selectedStargazer = null },
             containerColor = colors.surface,
             contentColor = colors.onSurface,
@@ -658,7 +704,7 @@ fun StargazersScreen() {
                                             contentColor = colors.onSurface
                                         ) {
                                             Text(
-                                                text = stringResource(R.string.contributors),
+                                                text = stringResource(R.string.contributor),
                                                 style = typography.labelSm,
                                                 fontWeight = FontWeight.Medium
                                             )
@@ -679,7 +725,7 @@ fun StargazersScreen() {
                                         Box(contentAlignment = Alignment.Center) {
                                             Icon(
                                                 imageVector = Icons.Rounded.VolunteerActivism,
-                                                contentDescription = stringResource(R.string.contributors),
+                                                contentDescription = stringResource(R.string.contributor),
                                                 tint = colors.primary,
                                                 modifier = Modifier.size(13.dp)
                                             )
@@ -775,7 +821,7 @@ fun StargazersScreen() {
     }
 
     if (showSupportSheet) {
-        ModalBottomSheet(
+        WaexModalBottomSheet(
             onDismissRequest = { showSupportSheet = false },
             sheetState = supportSheetState,
             containerColor = colors.surface,
@@ -1074,47 +1120,63 @@ private fun parseStargazerProfile(json: String, fallbackLogin: String): Stargaze
 }
 
 @Composable
-private fun StargazerProfileShimmer() {
+private fun stargazerShimmerBrush(): androidx.compose.ui.graphics.Brush {
     val colors = WaexTheme.colors
-    val transition = rememberInfiniteTransition(label = "profile shimmer")
-    val alpha by transition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.75f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "profile shimmer alpha"
+    val shimmerColors = listOf(
+        colors.surfaceContainerHighest,
+        colors.surfaceContainerHighest.copy(alpha = 0.55f),
+        colors.onSurface.copy(alpha = 0.07f),
+        colors.surfaceContainerHighest.copy(alpha = 0.55f),
+        colors.surfaceContainerHighest
     )
+    val transition = rememberInfiniteTransition(label = "stargazer shimmer")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1400f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "stargazer shimmer translate"
+    )
+    return androidx.compose.ui.graphics.Brush.linearGradient(
+        colors = shimmerColors,
+        start = androidx.compose.ui.geometry.Offset(translateAnim - 700f, 0f),
+        end = androidx.compose.ui.geometry.Offset(translateAnim, 0f)
+    )
+}
+
+@Composable
+private fun StargazerProfileShimmer() {
+    val shimmer = stargazerShimmerBrush()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
-            .alpha(alpha),
+            .height(120.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Surface(
-            color = colors.surfaceContainerHighest,
-            shape = RoundedCornerShape(6.dp),
+        Box(
             modifier = Modifier
                 .fillMaxWidth(0.72f)
                 .height(14.dp)
-        ) {}
-        Surface(
-            color = colors.surfaceContainerHighest,
-            shape = RoundedCornerShape(6.dp),
+                .clip(RoundedCornerShape(6.dp))
+                .background(shimmer)
+        )
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(16.dp)
-        ) {}
-        Surface(
-            color = colors.surfaceContainerHighest,
-            shape = RoundedCornerShape(6.dp),
+                .clip(RoundedCornerShape(6.dp))
+                .background(shimmer)
+        )
+        Box(
             modifier = Modifier
                 .fillMaxWidth(0.86f)
                 .height(16.dp)
-        ) {}
+                .clip(RoundedCornerShape(6.dp))
+                .background(shimmer)
+        )
     }
 }
 
@@ -1122,16 +1184,7 @@ private fun StargazerProfileShimmer() {
 private fun StargazerCardShimmer() {
     val colors = WaexTheme.colors
     val radius = WaexTheme.radius
-    val transition = rememberInfiniteTransition(label = "stargazer card shimmer")
-    val alpha by transition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.75f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "stargazer card shimmer alpha"
-    )
+    val shimmer = stargazerShimmerBrush()
 
     Surface(
         shape = radius.bentoCardShape,
@@ -1141,23 +1194,23 @@ private fun StargazerCardShimmer() {
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 14.dp)
-                .alpha(alpha),
+                .padding(horizontal = 8.dp, vertical = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Surface(
-                shape = CircleShape,
-                color = colors.surfaceContainerHighest,
-                modifier = Modifier.size(56.dp)
-            ) {}
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(shimmer)
+            )
             Spacer(Modifier.height(9.dp))
-            Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = colors.surfaceContainerHighest,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth(0.72f)
                     .height(14.dp)
-            ) {}
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(shimmer)
+            )
         }
     }
 }

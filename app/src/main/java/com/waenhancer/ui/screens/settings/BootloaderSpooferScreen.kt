@@ -22,11 +22,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.Color
 import com.waenhancer.licensing.features.BootloaderSpooferFeature
 import com.waenhancer.ui.components.StitchSwitch
 import com.waenhancer.ui.components.WaexTopBar
+import com.waenhancer.ui.components.WaexModalBottomSheet
 import com.waenhancer.ui.designsystem.WaexTheme
+import com.waenhancer.ui.components.WaexCircularProgressIndicator
+import com.waenhancer.ui.components.NetworkErrorCenter
 import com.waenhancer.ui.navigation.LocalWaexNavController
 import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import kotlinx.coroutines.Dispatchers
@@ -50,9 +52,9 @@ fun BootloaderSpooferScreen() {
     val scope = rememberCoroutineScope()
     var enabled by remember { mutableStateOf(prefs.getBoolean(BootloaderSpooferFeature.ENABLED, true)) }
     var custom by remember { mutableStateOf(prefs.getBoolean(BootloaderSpooferFeature.CUSTOM_ENABLED, false)) }
-    var customReady by remember { mutableStateOf(prefs.getString(BootloaderSpooferFeature.CUSTOM_XML, "").isNotBlank()) }
-    var updated by remember { mutableStateOf(prefs.getString(BootloaderSpooferFeature.LAST_UPDATED, "")) }
-    var syncError by remember { mutableStateOf(prefs.getString(BootloaderSpooferFeature.LAST_ERROR, "")) }
+    var customReady by remember { mutableStateOf(BootloaderSpooferFeature.getCustomKeyboxXml(context).isNotBlank()) }
+    var updated by remember { mutableStateOf(BootloaderSpooferFeature.getLastUpdated(context)) }
+    var syncError by remember { mutableStateOf(BootloaderSpooferFeature.getLastError(context)) }
     var syncing by remember { mutableStateOf(false) }
     var verifying by remember { mutableStateOf(false) }
     var report by remember { mutableStateOf<BootloaderSpooferFeature.VerificationReport?>(null) }
@@ -78,11 +80,24 @@ fun BootloaderSpooferScreen() {
         verifying = true
         if (autoOpen) showReport = true
         scope.launch {
-            val selectedXml = withContext(Dispatchers.IO) {
-                prefs.getString(
-                    if (forCustom) BootloaderSpooferFeature.CUSTOM_XML
-                    else BootloaderSpooferFeature.DEFAULT_XML, ""
-                )
+            var selectedXml = withContext(Dispatchers.IO) {
+                if (forCustom) BootloaderSpooferFeature.getCustomKeyboxXml(context)
+                else BootloaderSpooferFeature.getManagedKeyboxXml(context)
+            }
+            if (!forCustom && selectedXml.isBlank()) {
+                val syncResult = withContext(Dispatchers.IO) {
+                    try {
+                        BootloaderSpooferFeature.syncDefaultKeybox(context)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                if (syncResult != null) {
+                    updated = syncResult
+                    selectedXml = withContext(Dispatchers.IO) {
+                        BootloaderSpooferFeature.getManagedKeyboxXml(context)
+                    }
+                }
             }
             report = withContext(Dispatchers.Default) {
                 BootloaderSpooferFeature.verify(context, selectedXml, !forCustom)
@@ -90,6 +105,43 @@ fun BootloaderSpooferScreen() {
             reportSource = if (forCustom) "custom" else "managed"
             reportCachedAt = System.currentTimeMillis()
             verifying = false
+        }
+    }
+
+    fun refreshManagedKeybox() {
+        syncing = true
+        syncError = ""
+        BootloaderSpooferFeature.syncDefaultKeyboxAsync(context) { success, detail ->
+            syncing = false
+            if (success) {
+                updated = detail
+                syncError = ""
+                Toast.makeText(
+                    context,
+                    UiText.get(R.string.waex_ui_managed_keybox_updated, "Managed keybox updated"),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                syncError = UiText.get(
+                    R.string.waex_ui_managed_keybox_unavailable,
+                    "Managed keybox unavailable"
+                )
+                if (NetworkErrorCenter.isNetworkError(detail)) {
+                    NetworkErrorCenter.show(detail, retry = ::refreshManagedKeybox)
+                } else {
+                    Toast.makeText(
+                        context,
+                        UiText.get(R.string.waex_ui_refresh_failed_1_s, "Refresh failed: %1\$s", detail),
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (BootloaderSpooferFeature.getManagedKeyboxXml(context).isBlank()) {
+            refreshManagedKeybox()
         }
     }
 
@@ -102,7 +154,7 @@ fun BootloaderSpooferScreen() {
                         ?: error(UiText.get(R.string.waex_ui_could_not_read_the_selected_file, "Could not read the selected file"))
                     require(xml.length <= 2_000_000) { UiText.get(R.string.waex_ui_keybox_file_is_too_large, "Keybox file is too large") }
                     BootloaderSpooferFeature.parse(xml)
-                    prefs.putString(BootloaderSpooferFeature.CUSTOM_XML, xml)
+                    BootloaderSpooferFeature.saveCustomKeyboxXml(context, xml)
                 }
             }.onSuccess {
                 customReady = true
@@ -115,108 +167,217 @@ fun BootloaderSpooferScreen() {
         }
     }
 
-    Scaffold(topBar = { WaexTopBar(UiText.get(R.string.feat_bootloader_spoofer_title, "Bootloader Spoofer"), onBackClick = { nav.popBack() }) },
-        containerColor = colors.background) { insets ->
-        Column(Modifier.fillMaxSize().padding(insets).verticalScroll(rememberScrollState())
-            .padding(horizontal = WaexTheme.spacing.pageMargin, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Scaffold(
+        topBar = {
+            WaexTopBar(
+                UiText.get(R.string.feat_bootloader_spoofer_title, "Bootloader Spoofer"),
+                onBackClick = { nav.popBack() }
+            )
+        },
+        containerColor = colors.background
+    ) { insets ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(insets)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = WaexTheme.spacing.pageMargin, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
             val managedReady = updated.isNotBlank()
             val statusColor = when {
                 syncing -> colors.primary
-                custom && customReady -> Color(0xFF10B981)
-                !custom && managedReady -> Color(0xFF10B981)
+                custom && customReady -> colors.success
+                !custom && managedReady -> colors.success
                 syncError.isNotBlank() -> colors.error
-                else -> Color(0xFFF59E0B)
+                else -> colors.warning
             }
-            Surface(shape = radius.bentoCardShape, color = statusColor.copy(alpha = 0.09f),
-                border = BorderStroke(1.dp, statusColor.copy(alpha = 0.35f)), modifier = Modifier.fillMaxWidth()) {
-                Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                    if (syncing) CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 3.dp, color = statusColor)
-                    else Surface(Modifier.size(12.dp), shape = CircleShape, color = statusColor) {}
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                        Text(when {
-                            syncing -> UiText.get(R.string.waex_ui_refreshing_managed_keybox, "Refreshing managed keybox")
-                            custom && customReady -> UiText.get(R.string.waex_ui_custom_keybox_ready, "Custom keybox ready")
-                            !custom && managedReady -> UiText.get(R.string.waex_ui_managed_keybox_ready, "Managed keybox ready")
-                            syncError.isNotBlank() -> UiText.get(R.string.waex_ui_managed_keybox_unavailable, "Managed keybox unavailable")
-                            else -> UiText.get(R.string.waex_ui_keybox_setup_required, "Keybox setup required")
-                        }, style = typography.bodyLg, fontWeight = FontWeight.Bold, color = colors.onSurface)
-                        Text(when {
-                            syncing -> UiText.get(R.string.waex_ui_downloading_and_validating_the_certifi, "Downloading and validating the certificate chain…")
-                            syncError.isNotBlank() && !managedReady -> syncError
-                            enabled -> UiText.get(R.string.waex_ui_active_after_whatsapp_is_restarted, "Active after WhatsApp is restarted")
-                            else -> UiText.get(R.string.waex_ui_enable_the_feature_when_your_source_is, "Enable the feature when your source is ready")
-                        }, style = typography.bodyMd, color = colors.onSurfaceVariant)
+            val statusTitle = when {
+                syncing -> UiText.get(R.string.waex_ui_refreshing_managed_keybox, "Refreshing managed keybox")
+                custom && customReady -> UiText.get(R.string.waex_ui_custom_keybox_ready, "Custom keybox ready")
+                !custom && managedReady -> UiText.get(R.string.waex_ui_managed_keybox_ready, "Managed keybox ready")
+                syncError.isNotBlank() -> UiText.get(R.string.waex_ui_managed_keybox_unavailable, "Managed keybox unavailable")
+                else -> UiText.get(R.string.waex_ui_keybox_setup_required, "Keybox setup required")
+            }
+            val statusDescription = when {
+                syncing -> UiText.get(R.string.waex_ui_downloading_and_validating_the_certifi, "Downloading and validating the certificate chain…")
+                syncError.isNotBlank() && !managedReady -> syncError
+                enabled -> UiText.get(R.string.waex_ui_active_after_whatsapp_is_restarted, "Active after WhatsApp is restarted")
+                else -> UiText.get(R.string.waex_ui_enable_the_feature_when_your_source_is, "Enable the feature when your source is ready")
+            }
+
+            Surface(
+                shape = radius.cardShape,
+                color = colors.surfaceContainerLow,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (syncing) {
+                        WaexCircularProgressIndicator(
+                            Modifier.size(22.dp),
+                            strokeWidth = 2.dp,
+                            color = statusColor
+                        )
+                    } else {
+                        Icon(
+                            imageVector = when {
+                                statusColor == colors.success -> WaexIcons.Check
+                                statusColor == colors.error -> WaexIcons.Clear
+                                else -> WaexIcons.Info
+                            },
+                            contentDescription = null,
+                            tint = statusColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            statusTitle,
+                            style = typography.titleMd,
+                            color = colors.onSurface
+                        )
+                        Text(
+                            statusDescription,
+                            style = typography.bodyMd,
+                            color = colors.onSurfaceVariant
+                        )
                     }
                 }
             }
-            Surface(shape = radius.bentoCardShape, color = colors.surfaceDim,
-                border = BorderStroke(1.dp, colors.outlineVariant), modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Text(UiText.get(R.string.waex_ui_device_attestation, "DEVICE ATTESTATION"), style = typography.labelSm, fontWeight = FontWeight.Bold, color = colors.primary)
-                    SettingRow(UiText.get(R.string.waex_ui_enable_bootloader_spoofer, "Enable Bootloader Spoofer"),
-                        UiText.get(R.string.waex_ui_spoof_the_locked_and_verified_boot_sta, "Spoof the locked and verified boot state used by WhatsApp integrity checks"), enabled) {
-                        enabled = it; prefs.putBoolean(BootloaderSpooferFeature.ENABLED, it)
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    sentenceCase(UiText.get(R.string.waex_ui_device_attestation, "Device attestation")),
+                    style = typography.labelLg,
+                    color = colors.primary
+                )
+                Surface(
+                    shape = radius.cardShape,
+                    color = colors.surfaceContainerLow,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SettingRow(
+                        UiText.get(R.string.waex_ui_enable_bootloader_spoofer, "Enable Bootloader Spoofer"),
+                        UiText.get(R.string.waex_ui_spoof_the_locked_and_verified_boot_sta, "Spoof the locked and verified boot state used by WhatsApp integrity checks"),
+                        enabled,
+                        modifier = Modifier.padding(14.dp)
+                    ) {
+                        enabled = it
+                        prefs.putBoolean(BootloaderSpooferFeature.ENABLED, it)
                     }
-                    HorizontalDivider(color = colors.outlineVariant)
-                    SettingRow(UiText.get(R.string.waex_ui_use_custom_keybox, "Use Custom Keybox"),
-                        if (customReady) UiText.get(R.string.waex_ui_imported_keybox_selected, "Imported keybox selected") else UiText.get(R.string.waex_ui_import_a_keybox_xml_before_enabling, "Import a keybox.xml before enabling"), custom,
-                        customReady) {
-                        custom = it
-                        prefs.putBoolean(BootloaderSpooferFeature.CUSTOM_ENABLED, it)
-                        // Source changed — invalidate cache and silently re-verify in background.
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    sentenceCase(UiText.get(R.string.waex_ui_keybox_source, "Keybox source")),
+                    style = typography.labelLg,
+                    color = colors.primary
+                )
+                KeyboxSourceOption(
+                    title = UiText.get(R.string.waex_ui_waex_managed_keybox, "WAEX managed keybox"),
+                    description = if (managedReady) {
+                        UiText.get(
+                            R.string.waex_ui_validated_and_stored_privately_updated,
+                            "Validated and stored privately\nUpdated: %1\$s",
+                            formatUpdated(updated)
+                        )
+                    } else {
+                        UiText.get(R.string.waex_ui_no_validated_managed_keybox_is_cached, "No validated managed keybox is cached yet")
+                    },
+                    selected = !custom,
+                    onClick = {
+                        custom = false
+                        prefs.putBoolean(BootloaderSpooferFeature.CUSTOM_ENABLED, false)
                         reportSource = ""
-                        val canVerifyNew = if (it) customReady else prefs.getString(BootloaderSpooferFeature.DEFAULT_XML, "").isNotBlank()
-                        if (canVerifyNew) runVerify(forCustom = it, autoOpen = false)
+                        if (managedReady) runVerify(forCustom = false, autoOpen = false)
                     }
-                }
+                )
+                KeyboxSourceOption(
+                    title = UiText.get(R.string.waex_ui_custom_keybox, "Custom keybox"),
+                    description = if (customReady) {
+                        UiText.get(R.string.waex_ui_stored_privately_on_this_device, "Stored privately on this device")
+                    } else {
+                        UiText.get(R.string.waex_ui_import_a_keybox_xml_before_enabling, "Import a keybox.xml before enabling")
+                    },
+                    selected = custom,
+                    onClick = {
+                        custom = true
+                        prefs.putBoolean(BootloaderSpooferFeature.CUSTOM_ENABLED, true)
+                        reportSource = ""
+                        if (customReady) runVerify(forCustom = true, autoOpen = false)
+                    }
+                )
             }
-            Surface(shape = radius.bentoCardShape, color = colors.surfaceDim,
-                border = BorderStroke(1.dp, colors.outlineVariant), modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(UiText.get(R.string.waex_ui_keybox_source, "KEYBOX SOURCE"), style = typography.labelSm, fontWeight = FontWeight.Bold, color = colors.primary)
-                    Text(if (custom) UiText.get(R.string.waex_ui_custom_keybox, "Custom keybox") else UiText.get(R.string.waex_ui_waex_managed_keybox, "WAEX managed keybox"), style = typography.bodyLg,
-                        fontWeight = FontWeight.SemiBold, color = colors.onSurface)
-                    Text(if (custom) UiText.get(R.string.waex_ui_stored_privately_on_this_device, "Stored privately on this device")
-                    else if (managedReady) UiText.get(R.string.waex_ui_validated_and_stored_privately_updated, "Validated and stored privately\nUpdated: %1\$s", formatUpdated(updated))
-                    else UiText.get(R.string.waex_ui_no_validated_managed_keybox_is_cached, "No validated managed keybox is cached yet"),
-                        style = typography.bodyMd, color = colors.onSurfaceVariant)
-                    Button(onClick = {
-                        syncing = true; syncError = ""
-                        BootloaderSpooferFeature.syncDefaultKeyboxAsync(context) { success, detail ->
-                            syncing = false
-                            if (success) {
-                                updated = detail; syncError = ""
-                                Toast.makeText(context, UiText.get(R.string.waex_ui_managed_keybox_updated, "Managed keybox updated"), Toast.LENGTH_SHORT).show()
-                            } else {
-                                syncError = detail
-                                Toast.makeText(context, UiText.get(R.string.waex_ui_refresh_failed_1_s, "Refresh failed: %1\$s", detail), Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    }, enabled = !syncing, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (syncing) UiText.get(R.string.waex_ui_refreshing, "Refreshing…") else UiText.get(R.string.waex_ui_refresh_managed_keybox, "Refresh managed keybox"))
-                    }
-                    OutlinedButton(onClick = { importer.launch("*/*") }, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (customReady) UiText.get(R.string.waex_ui_replace_custom_keybox_xml, "Replace custom keybox.xml") else UiText.get(R.string.waex_ui_import_custom_keybox_xml, "Import custom keybox.xml"))
-                    }
+
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (custom) {
                     OutlinedButton(
-                        onClick = { runVerify(forCustom = custom) },
-                        enabled = !verifying && (if (custom) customReady else managedReady),
+                        onClick = { importer.launch("*/*") },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        if (verifying) {
-                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                            Spacer(Modifier.width(8.dp))
-                            Text(UiText.get(R.string.waex_ui_verifying_keybox, "Verifying keybox…"))
-                        } else {
-                            Text(UiText.get(R.string.waex_ui_verify_selected_keybox, "Verify selected keybox"))
-                        }
+                        Text(
+                            if (customReady) UiText.get(R.string.waex_ui_replace_custom_keybox_xml, "Replace custom keybox.xml")
+                            else UiText.get(R.string.waex_ui_import_custom_keybox_xml, "Import custom keybox.xml")
+                        )
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = ::refreshManagedKeybox,
+                        enabled = !syncing,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            if (syncing) UiText.get(R.string.waex_ui_refreshing, "Refreshing…")
+                            else UiText.get(R.string.waex_ui_refresh_managed_keybox, "Refresh managed keybox")
+                        )
+                    }
+                }
+                Button(
+                    onClick = { runVerify(forCustom = custom) },
+                    enabled = !verifying && (if (custom) customReady else managedReady),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (verifying) {
+                        WaexCircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                        Text(UiText.get(R.string.waex_ui_verifying_keybox, "Verifying keybox…"))
+                    } else {
+                        Text(UiText.get(R.string.waex_ui_verify_selected_keybox, "Verify selected keybox"))
                     }
                 }
             }
-            Text(UiText.get(R.string.waex_ui_restart_whatsapp_after_changing_the_ke, "Restart WhatsApp after changing the keybox source or enabling this feature."),
-                style = typography.bodyMd, color = colors.onSurfaceVariant)
+
+            Surface(
+                shape = radius.cardShape,
+                color = colors.primaryContainer,
+                contentColor = colors.primary,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = WaexIcons.Info,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        UiText.get(R.string.waex_ui_restart_whatsapp_after_changing_the_ke, "Restart WhatsApp after changing the keybox source or enabling this feature."),
+                        style = typography.bodyMd,
+                        color = colors.onSurface
+                    )
+                }
+            }
         }
     }
     if (showReport) VerificationSheet(
@@ -224,6 +385,13 @@ fun BootloaderSpooferScreen() {
         isLoading = verifying,
         onDismiss = { showReport = false; if (!verifying) report = null }
     )
+}
+
+private fun sentenceCase(value: String): String {
+    val normalized = value.lowercase(Locale.getDefault())
+    return normalized.replaceFirstChar { character ->
+        if (character.isLowerCase()) character.titlecase(Locale.getDefault()) else character.toString()
+    }
 }
 
 private fun formatUpdated(value: String): String {
@@ -252,12 +420,12 @@ private fun VerificationSheet(
     val radius = WaexTheme.radius
     val scoreColor = when {
         isLoading || report == null -> colors.onSurfaceVariant
-        report.totalScore >= 85 -> Color(0xFF10B981)
-        report.totalScore >= 60 -> Color(0xFFF59E0B)
+        report.totalScore >= 85 -> colors.success
+        report.totalScore >= 60 -> colors.warning
         else -> colors.error
     }
 
-    ModalBottomSheet(
+    WaexModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = colors.surface,
         shape = radius.bottomSheetShape,
@@ -336,7 +504,7 @@ private fun VerificationSheet(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            CircularProgressIndicator(
+                            WaexCircularProgressIndicator(
                                 modifier = Modifier.size(36.dp),
                                 strokeWidth = 3.dp,
                                 color = colors.primary
@@ -380,7 +548,10 @@ private fun VerificationSheet(
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                if (report?.recommended == true) UiText.get(R.string.waex_ui_recommended, "RECOMMENDED") else UiText.get(R.string.waex_ui_needs_attention, "NEEDS ATTENTION"),
+                                sentenceCase(
+                                    if (report?.recommended == true) UiText.get(R.string.waex_ui_recommended, "Recommended")
+                                    else UiText.get(R.string.waex_ui_needs_attention, "Needs attention")
+                                ),
                                 style = typography.labelSm,
                                 fontWeight = FontWeight.Bold,
                                 color = scoreColor,
@@ -524,13 +695,13 @@ private fun AuditCard(title: String, score: Int, maximum: Int, checks: List<Pair
                         modifier = Modifier
                             .size(18.dp)
                             .clip(CircleShape)
-                            .background(if (passed) Color(0xFF10B981).copy(alpha = 0.15f) else colors.error.copy(alpha = 0.15f)),
+                            .background(if (passed) colors.successContainer else colors.errorContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (passed) WaexIcons.Check else WaexIcons.Clear,
                             contentDescription = null,
-                            tint = if (passed) Color(0xFF10B981) else colors.error,
+                            tint = if (passed) colors.onSuccessContainer else colors.onErrorContainer,
                             modifier = Modifier.size(11.dp)
                         )
                     }
@@ -547,16 +718,72 @@ private fun AuditCard(title: String, score: Int, maximum: Int, checks: List<Pair
 }
 
 @Composable
-private fun SettingRow(title: String, summary: String, checked: Boolean, enabled: Boolean = true,
-                       onChecked: (Boolean) -> Unit) {
+private fun KeyboxSourceOption(
+    title: String,
+    description: String,
+    selected: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    val radius = WaexTheme.radius
+    val interactionModifier = if (enabled) Modifier.clickable(onClick = onClick) else Modifier
+
+    Surface(
+        shape = radius.cardShape,
+        color = if (selected) colors.primaryContainer else colors.surfaceContainerLow,
+        contentColor = colors.onSurface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(interactionModifier)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            RadioButton(
+                selected = selected,
+                onClick = null,
+                enabled = enabled,
+                colors = RadioButtonDefaults.colors(selectedColor = colors.primary)
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    title,
+                    style = typography.titleMd,
+                    color = if (enabled) colors.onSurface else colors.onSurfaceVariant
+                )
+                Text(
+                    description,
+                    style = typography.bodyMd,
+                    color = colors.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingRow(
+    title: String,
+    summary: String,
+    checked: Boolean,
+    modifier: Modifier = Modifier,
+    onChecked: (Boolean) -> Unit
+) {
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = typography.bodyLg, fontWeight = FontWeight.SemiBold,
-                color = if (enabled) colors.onSurface else colors.onSurfaceVariant)
+            Text(title, style = typography.bodyLg, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
             Text(summary, style = typography.bodyMd, color = colors.onSurfaceVariant)
         }
-        StitchSwitch(checked = checked, onCheckedChange = { if (enabled) onChecked(it) })
+        Spacer(Modifier.width(12.dp))
+        StitchSwitch(checked = checked, onCheckedChange = onChecked)
     }
 }

@@ -502,6 +502,8 @@
     <string name="waex_ui_no_hidden_read_receipt_to_send" formatted="false">"No hidden read receipt to send"</string>
     <string name="waex_ui_no_injected_hooks_matching_filter" formatted="false">"No injected hooks matching filter"</string>
     <string name="waex_ui_no_internet_connection" formatted="false">"No Internet Connection"</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX couldn\'t reach the service. Check your connection and try again."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"The request took too long. Check your connection and try again."</string>
     <string name="waex_ui_no_linked_devices_found_for_this_licen" formatted="false">"No linked devices found for this license."</string>
     <string name="waex_ui_no_message_history_found" formatted="false">"No message history found"</string>
     <string name="waex_ui_no_messages" formatted="false">"No messages"</string>
@@ -589,6 +591,7 @@
     <string name="waex_ui_refresh_hooks" formatted="false">"Refresh hooks"</string>
     <string name="waex_ui_refresh_managed_keybox" formatted="false">"Refresh managed keybox"</string>
     <string name="waex_ui_refreshing" formatted="false">"Refreshing…"</string>
+    <string name="waex_ui_refresh" formatted="false">"Refresh"</string>
     <string name="waex_ui_refreshing_managed_keybox" formatted="false">"Refreshing managed keybox"</string>
     <string name="waex_ui_release_details" formatted="false">"Release Details"</string>
     <string name="waex_ui_release" formatted="false">"Release"</string>
@@ -746,6 +749,8 @@
     <string name="waex_ui_unable_to_execute_the_root_installer" formatted="false">"Unable to execute the root installer"</string>
     <string name="waex_ui_unable_to_load_release" formatted="false">"Unable to load release."</string>
     <string name="waex_ui_unable_to_load_releases" formatted="false">"Unable to load releases."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub Rate Limit Exceeded"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API limit reached. Pull to refresh or try again in a few minutes."</string>
     <string name="waex_ui_unable_to_remove_the_license_please_tr" formatted="false">"Unable to remove the license. Please try again."</string>
     <string name="waex_ui_unable_to_save_setting" formatted="false">"Unable to save setting"</string>
     <string name="waex_ui_unavailable" formatted="false">"Unavailable"</string>
@@ -848,8 +853,9 @@
     <string name="waex_ui_filteritems" formatted="false">"FilterItems"</string>
     <string name="waex_ui_custom_privacy_per_contact" formatted="false">"Custom Privacy (Per-Contact)"</string>
     <string name="waex_ui_chat_filter_display_feature" formatted="false">"Chat Filter Display"</string>
-    <string name="waex_ui_seconds_on_timestamp" formatted="false">"Seconds on Timestamp"</string>
+    <string name="waex_ui_seconds_on_timestamp" formatted="false">"Custom Timestamp"</string>
     <string name="waex_ui_enable_igstatus_on_home_screen" formatted="false">"Enable IGStatus on Home Screen"</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"Native IGStatus"</string>
     <string name="waex_ui_new_settings_style" formatted="false">"New Settings Style"</string>
     <string name="waex_ui_separate_chats_and_groups" formatted="false">"Separate Chats and Groups"</string>
     <string name="waex_ui_callrecording" formatted="false">"CallRecording"</string>
@@ -865,7 +871,8 @@
     <string name="waex_ui_typing_privacy" formatted="false">"Typing Privacy"</string>
     <string name="waex_ui_hide_read_receipts" formatted="false">"Hide Read Receipts"</string>
     <string name="waex_ui_anti_edit_messages" formatted="false">"Anti Edit Messages"</string>
-    <string name="waex_ui_hide_anti_revoke" formatted="false">"Hide Anti Revoke"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"Show as Deleted Message"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"Display deleted messages using WhatsApp\'s native deleted message layout"</string>
     <string name="waex_ui_message_device_source" formatted="false">"Message Device Source"</string>
     <string name="waex_ui_minor_fixes" formatted="false">"Minor Fixes"</string>
     <string name="waex_ui_preserve_delete_for_me" formatted="false">"Preserve Delete For Me"</string>
@@ -1077,7 +1084,6 @@
     <string name="waex_ui_record_button_during_calls" formatted="false">"Record button during calls"</string>
     <string name="waex_ui_recording_tap_to_stop" formatted="false">"Recording… tap ⏹️ to stop."</string>
     <string name="waex_ui_recording_too_short" formatted="false">"Recording too short."</string>
-    <string name="waex_ui_refresh" formatted="false">"Refresh"</string>
     <string name="waex_ui_running" formatted="false">"Running"</string>
     <string name="waex_ui_runs_on_your_phone_nothing_is_uploaded" formatted="false">"Runs on your phone, nothing is uploaded. Larger models are more accurate but slower."</string>
     <string name="waex_ui_searching" formatted="false">"Searching…"</string>

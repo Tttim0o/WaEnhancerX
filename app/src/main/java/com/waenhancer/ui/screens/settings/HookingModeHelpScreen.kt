@@ -36,7 +36,6 @@ import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -62,6 +61,7 @@ import com.waenhancer.ui.components.StitchSwitch
 import com.waenhancer.ui.components.WaexTopBar
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
+import com.waenhancer.ui.components.WaexLinearProgressIndicator
 import com.waenhancer.ui.navigation.LocalIsPro
 import com.waenhancer.ui.navigation.LocalOnActivatePro
 import com.waenhancer.ui.navigation.LocalWaexNavController
@@ -135,13 +135,13 @@ fun HookingModeHelpScreen() {
                         verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         Text(
-                            text = "Performance & Hook Loading",
+                        text = "Choose when hooks load",
                             style = typography.titleMd,
                             fontWeight = FontWeight.Bold,
                             color = colors.onSurface
                         )
                         Text(
-                            text = "Select when visual hooks inject into WhatsApp. Tap any mode below to apply it directly.",
+                            text = "Choose how much loads at launch and what waits until it is needed.",
                             style = typography.bodySm,
                             color = colors.onSurfaceVariant,
                             lineHeight = 17.sp
@@ -166,13 +166,13 @@ fun HookingModeHelpScreen() {
                         modifier = Modifier
                             .size(34.dp)
                             .clip(radius.smShape)
-                            .background(Color(0xFF10B981).copy(alpha = 0.12f)),
+                            .background(colors.successContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Shield,
                             contentDescription = null,
-                            tint = Color(0xFF10B981),
+                            tint = colors.onSuccessContainer,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -181,13 +181,13 @@ fun HookingModeHelpScreen() {
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Text(
-                            text = "Core Features Always Protected",
+                            text = "Background features always load",
                             style = typography.bodySm,
                             fontWeight = FontWeight.Bold,
                             color = colors.onSurface
                         )
                         Text(
-                            text = "Privacy, Anti-Revoke, Status Saver, and Call interceptors always start immediately in all modes to ensure no background messages or events are missed.",
+                            text = "Privacy, anti-revoke, status, and call features start immediately in every mode so background events are not missed.",
                             style = typography.bodySm,
                             color = colors.onSurfaceVariant,
                             lineHeight = 17.sp
@@ -204,11 +204,11 @@ fun HookingModeHelpScreen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "SELECT PROFILES",
+                    text = "Profiles",
                     style = typography.labelSm,
                     fontWeight = FontWeight.Bold,
                     color = colors.primary,
-                    letterSpacing = 1.sp
+                    letterSpacing = 0.sp
                 )
             }
 
@@ -216,7 +216,7 @@ fun HookingModeHelpScreen() {
             HookingProfileCard(
                 modeKey = HookingModePolicy.LIGHTWEIGHT,
                 title = "Lightweight",
-                badgeText = "Pro · Ultra-Low RAM",
+                badgeText = "Pro · Lowest memory",
                 isRecommended = false,
                 isPro = true,
                 isProUnlocked = isPro,
@@ -226,9 +226,9 @@ fun HookingModeHelpScreen() {
                 ramFraction = 0.12f,
                 summary = "Zero UI hooks at startup. Visual tweaks load only when their target screens open.",
                 pros = listOf(
-                    "Ultra-low background memory footprint (<80 MB)",
-                    "Fastest WhatsApp app launch speed",
-                    "Ideal for low-end devices or users monitoring memory"
+                    "Lowest background memory use (<80 MB)",
+                    "Shortest WhatsApp launch path",
+                    "Useful on memory-constrained devices"
                 ),
                 tradeoff = "First navigation to customized screens may exhibit a brief initial setup pause.",
                 onSelect = {
@@ -255,9 +255,9 @@ fun HookingModeHelpScreen() {
                 ramFraction = 0.36f,
                 summary = "Loads main Home UI hooks at startup; all other screens load lazily on-demand.",
                 pros = listOf(
-                    "Home UI & Floating Bottom Bar instant and glitch-free",
-                    "Significantly reduced WhatsApp launch overhead",
-                    "Optimal balance between memory consumption and responsiveness"
+                    "Home UI and floating bar are ready immediately",
+                    "Lower launch overhead than full preloading",
+                    "A practical balance of memory and responsiveness"
                 ),
                 tradeoff = "Minor brief delay on the very first visit to rarely opened sub-screens.",
                 onSelect = {
@@ -280,9 +280,9 @@ fun HookingModeHelpScreen() {
                 ramFraction = 0.85f,
                 summary = "Pre-loads all visual and system hooks immediately during WhatsApp startup.",
                 pros = listOf(
-                    "Guaranteed maximum hook compatibility across modified WhatsApp builds",
-                    "Every UI element and overlay is ready before any screen is shown",
-                    "Eliminates on-demand injection delays"
+                    "Best compatibility across modified WhatsApp builds",
+                    "UI elements and overlays are ready before the first screen",
+                    "Avoids on-demand injection delays"
                 ),
                 tradeoff = "Noticeably higher memory footprint and slower WhatsApp initial cold launch.",
                 onSelect = {
@@ -304,9 +304,9 @@ fun HookingModeHelpScreen() {
                 ramFraction = 0.36f,
                 summary = "Choose Startup or Lazy loading independently for every feature.",
                 pros = listOf(
-                    "Starts with the same values as Balanced",
-                    "Fine-grained control over launch time and responsiveness",
-                    "Changes are retained when switching between profiles"
+                    "Starts with the Balanced defaults",
+                    "Choose launch-time or on-demand loading per feature",
+                    "Your choices remain when switching profiles"
                 ),
                 tradeoff = "Lazy background-sensitive hooks can miss events until their target screen is opened. Restart WhatsApp after changes.",
                 onSelect = {
@@ -321,11 +321,11 @@ fun HookingModeHelpScreen() {
 
             if (activeMode == HookingModePolicy.CUSTOMIZED) {
                 Text(
-                    text = "CUSTOMIZE FEATURES",
+                    text = "Customize features",
                     style = typography.labelSm,
                     fontWeight = FontWeight.Bold,
                     color = colors.primary,
-                    letterSpacing = 1.sp
+                    letterSpacing = 0.sp
                 )
                 Text(
                     text = "Startup installs the hook when WhatsApp launches. Lazy installs it when the relevant screen is first opened.",
@@ -400,7 +400,7 @@ fun HookingModeHelpScreen() {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "Quick Comparison",
+                        text = "At a glance",
                         style = typography.titleMd,
                         fontWeight = FontWeight.Bold,
                         color = colors.onSurface
@@ -743,7 +743,7 @@ fun HookingModeHelpScreen() {
                     )
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.5f))
                     ComparisonTableRow(
-                        label = "Seconds on Timestamp",
+                        label = "Custom Timestamp",
                         light = "Lazy",
                         balanced = "Startup",
                         max = "Startup"
@@ -890,14 +890,14 @@ private fun HookingProfileCard(
                             Box(
                                 modifier = Modifier
                                     .clip(radius.smShape)
-                                    .background(Color(0xFF10B981).copy(alpha = 0.14f))
+                                    .background(colors.successContainer)
                                     .padding(horizontal = 7.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "ACTIVE",
                                     style = typography.labelSm,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF10B981),
+                                    color = colors.onSuccessContainer,
                                     fontSize = 11.sp
                                 )
                             }
@@ -961,16 +961,15 @@ private fun HookingProfileCard(
                         )
                     }
 
-                    LinearProgressIndicator(
+                    WaexLinearProgressIndicator(
                         progress = { animatedProgress },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
+                            .height(12.dp),
                         color = when {
-                            ramFraction <= 0.35f -> Color(0xFF10B981)
+                            ramFraction <= 0.35f -> colors.success
                             ramFraction <= 0.60f -> colors.primary
-                            else -> Color(0xFFF59E0B)
+                            else -> colors.warning
                         },
                         trackColor = colors.outlineVariant
                     )
@@ -997,7 +996,7 @@ private fun HookingProfileCard(
                                 Icon(
                                     imageVector = Icons.Rounded.CheckCircle,
                                     contentDescription = null,
-                                    tint = Color(0xFF10B981),
+                                    tint = colors.success,
                                     modifier = Modifier
                                         .padding(top = 2.dp)
                                         .size(14.dp)
@@ -1145,7 +1144,7 @@ private val CUSTOMIZABLE_HOOKS = listOf(
     "ProfilePhotoDownloadHook", "PresenceToastsHook", "TaskerIntegrationHook",
     "ChatBubbleColorsHook", "ChannelRecommendationsFilterHook", "ChatFilterDisplayHook",
     "CustomDpiHook", "CustomTimeHook", "CssThemeHook", "HideHomeTabsHook",
-    "IGStatusHook", "StatusStyleHook", "PropsOverrideHook", "NewSettingsStyleHook",
+    "StatusStyleHook", "PropsOverrideHook", "NewSettingsStyleHook",
     "OnlinePresenceIndicatorsHook", "SeparateGroupsHook", "FloatingBottomBarHook",
     "FilterItemsHook"
 )

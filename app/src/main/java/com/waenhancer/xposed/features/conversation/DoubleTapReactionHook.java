@@ -42,14 +42,15 @@ public class DoubleTapReactionHook extends BaseFeature {
     private static final String PREF_EMOJI_KEY = "doubletap2like_emoji";
     private static final String FIELD_BOUND_MSG = "waex_doubletap_fmessage";
     private static final String FIELD_TOUCH_WRAPPER = "waex_doubletap_touch_wrapper";
+    private static final int TAG_BOUND_MSG = 0x57414454; // 'WADT'
+    private static final int TAG_TRACKER = 0x57414455;
+    private static final int TAG_TOUCH_INSTALLED = 0x57414456;
 
     private Class<?> fMessageClass;
     private Class<?> actionUserClass;
     private Method reactionSenderMethod;
     private volatile Object cachedActionUserInstance;
     private final Set<Method> hookedAdapterMethods = ConcurrentHashMap.newKeySet();
-
-    private static final WeakHashMap<View, TouchTracker> touchTrackerMap = new WeakHashMap<>();
 
     private static class TouchTracker {
         float downX;
@@ -75,6 +76,7 @@ public class DoubleTapReactionHook extends BaseFeature {
 
     @Override
     public void hook() throws Throwable {
+        if (!isEnabled(PREF_KEY, false)) return;
         initReflection();
         hookListViewAdapter();
     }
@@ -180,15 +182,13 @@ public class DoubleTapReactionHook extends BaseFeature {
                                     XposedBridge.hookMethod(getViewMethod, new XC_MethodHook() {
                                         @Override
                                         protected void afterHookedMethod(MethodHookParam p) {
+                                            if (!isEnabled(PREF_KEY, false)) return;
                                             if (!(p.getResult() instanceof ViewGroup)) return;
                                             ViewGroup row = (ViewGroup) p.getResult();
 
-                                            // A recycled row must never keep a previous reaction target,
-                                            // even if the new item is unavailable or the feature is off.
-                                            XposedHelpers.removeAdditionalInstanceField(row, FIELD_BOUND_MSG);
-                                            TouchTracker tracker = touchTrackerMap.get(row);
+                                            row.setTag(TAG_BOUND_MSG, null);
+                                            TouchTracker tracker = (TouchTracker) row.getTag(TAG_TRACKER);
                                             if (tracker != null) tracker.resetAll();
-                                            if (!isEnabled(PREF_KEY, false)) return;
                                             if (!(p.thisObject instanceof ListAdapter) || p.args == null
                                                     || p.args.length == 0 || !(p.args[0] instanceof Integer)) return;
 
@@ -203,7 +203,7 @@ public class DoubleTapReactionHook extends BaseFeature {
                                                 return;
                                             }
 
-                                            XposedHelpers.setAdditionalInstanceField(row, FIELD_BOUND_MSG, item);
+                                            row.setTag(TAG_BOUND_MSG, item);
                                             bindDoubleTapListener(row);
                                         }
                                     });
@@ -223,43 +223,57 @@ public class DoubleTapReactionHook extends BaseFeature {
     }
 
     private void bindDoubleTapListener(final ViewGroup row) {
-        TouchTracker tracker = touchTrackerMap.get(row);
+        TouchTracker tracker = (TouchTracker) row.getTag(TAG_TRACKER);
         if (tracker == null) {
             tracker = new TouchTracker();
-            touchTrackerMap.put(row, tracker);
+            row.setTag(TAG_TRACKER, tracker);
         } else {
             // List rows are recycled; a tap on the previous message must not carry over.
             tracker.resetAll();
         }
 
-        Object installedWrapper = XposedHelpers.getAdditionalInstanceField(row, FIELD_TOUCH_WRAPPER);
-        View.OnTouchListener currentListener = getOnTouchListener(row);
-        if (installedWrapper != null && installedWrapper == currentListener) return;
+        if (row.getTag(TAG_TOUCH_INSTALLED) != null) return;
+        row.setTag(TAG_TOUCH_INSTALLED, Boolean.TRUE);
 
-        final View.OnTouchListener originalListener = currentListener;
+        final View.OnTouchListener originalListener = getOnTouchListener(row);
         final int touchSlop = ViewConfiguration.get(row.getContext()).getScaledTouchSlop();
         View.OnTouchListener wrapper = (view, event) -> {
             boolean handled = originalListener != null && originalListener.onTouch(view, event);
             observeTouch(view, event, touchSlop);
             return handled;
         };
-        XposedHelpers.setAdditionalInstanceField(row, FIELD_TOUCH_WRAPPER, wrapper);
         row.setOnTouchListener(wrapper);
     }
+
+    private static volatile java.lang.reflect.Field sListenerInfoField;
+    private static volatile java.lang.reflect.Field sOnTouchListenerField;
 
     @Nullable
     private View.OnTouchListener getOnTouchListener(View view) {
         try {
-            Object listenerInfo = XposedHelpers.getObjectField(view, "mListenerInfo");
-            return listenerInfo == null ? null
-                    : (View.OnTouchListener) XposedHelpers.getObjectField(listenerInfo, "mOnTouchListener");
+            java.lang.reflect.Field liField = sListenerInfoField;
+            if (liField == null) {
+                liField = View.class.getDeclaredField("mListenerInfo");
+                liField.setAccessible(true);
+                sListenerInfoField = liField;
+            }
+            Object listenerInfo = liField.get(view);
+            if (listenerInfo == null) return null;
+
+            java.lang.reflect.Field otlField = sOnTouchListenerField;
+            if (otlField == null) {
+                otlField = listenerInfo.getClass().getDeclaredField("mOnTouchListener");
+                otlField.setAccessible(true);
+                sOnTouchListenerField = otlField;
+            }
+            return (View.OnTouchListener) otlField.get(listenerInfo);
         } catch (Throwable ignored) {
             return null;
         }
     }
 
     private void observeTouch(View view, MotionEvent event, int touchSlop) {
-        TouchTracker tracker = touchTrackerMap.get(view);
+        TouchTracker tracker = (TouchTracker) view.getTag(TAG_TRACKER);
         if (tracker == null) return;
 
         switch (event.getActionMasked()) {
@@ -290,7 +304,8 @@ public class DoubleTapReactionHook extends BaseFeature {
                 if (tracker.lastTapTime != 0L
                         && now - tracker.lastTapTime <= ViewConfiguration.getDoubleTapTimeout()) {
                     tracker.lastTapTime = 0L;
-                    Object message = XposedHelpers.getAdditionalInstanceField(view, FIELD_BOUND_MSG);
+                    Object msgTag = view.getTag(TAG_BOUND_MSG);
+                    Object message = msgTag != null ? msgTag : XposedHelpers.getAdditionalInstanceField(view, FIELD_BOUND_MSG);
                     if (message != null) handleDoubleTapReaction(view, message);
                 } else {
                     tracker.lastTapTime = now;

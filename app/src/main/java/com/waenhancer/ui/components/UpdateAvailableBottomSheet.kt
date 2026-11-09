@@ -32,7 +32,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -82,7 +81,7 @@ fun UpdateAvailableBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    WaexModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.surface,
@@ -282,15 +281,18 @@ private fun NativeChangelogSectionRow(
                     .padding(bottom = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                section.items.forEach { item ->
+                section.items.forEachIndexed { itemIndex, item ->
+                    val level = section.itemLevels.getOrElse(itemIndex) { 0 }
                     Row(
                         verticalAlignment = Alignment.Top,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = (level * 18).dp)
                     ) {
                         Box(
                             modifier = Modifier
                                 .padding(top = 6.dp)
-                                .size(4.dp)
+                                .size(if (level == 0) 4.dp else 3.dp)
                                 .background(colors.onSurfaceVariant, CircleShape)
                         )
                         Spacer(modifier = Modifier.width(10.dp))

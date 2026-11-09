@@ -55,7 +55,6 @@
     "tabId": "privacy",
     "keys": [
       "anti_revoke",
-      "hide_anti_revoke",
       "preserve_own_revoke",
       "antirevokestatus",
       "antidisappearing",
@@ -103,7 +102,8 @@
       "sticker_confirm_alert",
       "removeseemore",
       "stamp_copied_message",
-      "doubletap2like"
+      "doubletap2like",
+      "disable_defemojis"
     ],
     "proKeys": [
       "message_bomber"
@@ -158,7 +158,8 @@
     "keys": [
       "download_view_once",
       "media_preview",
-      "download_profile"
+      "download_profile",
+      "parallel_downloading"
     ]
   },
   {
@@ -193,7 +194,8 @@
       "seen_tick_customization",
       "floating_bottom_bar",
       "unlock_premium_customization",
-      "custom_filters"
+      "custom_filters",
+      "custom_ab_props"
     ],
     "proKeys": [
       "unlock_premium_customization"

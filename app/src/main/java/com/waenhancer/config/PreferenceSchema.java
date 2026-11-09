@@ -61,6 +61,8 @@ public final class PreferenceSchema {
         }
     }
 
+    public static final String KEY_FORCE_TARGET_DEBUGGABLE = "force_target_debuggable";
+
     private static final Map<String, Entry> ENTRIES;
     private static final Set<String> EXPORTABLE;
     private static final Set<String> PUBLIC_KEYS;
@@ -68,6 +70,7 @@ public final class PreferenceSchema {
 
     static {
         Map<String, Entry> entries = new LinkedHashMap<>();
+        add(entries, KEY_FORCE_TARGET_DEBUGGABLE, Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "active_xposed_api_version", Type.INT, Sensitivity.RUNTIME, Store.PUBLIC);
         add(entries, "active_xposed_framework", Type.STRING, Sensitivity.RUNTIME, Store.PUBLIC);
         add(entries, "admin_emoji", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -79,7 +82,6 @@ public final class PreferenceSchema {
         add(entries, "waex_sim_enabled", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "waex_sim_trigger", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "waex_sim_kind", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
-        add(entries, "ampm", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "animation_emojis", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "animation_list", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "antidisappearing", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -89,6 +91,7 @@ public final class PreferenceSchema {
         add(entries, "anti_revoke", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "preserve_own_revoke", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "anti_revoke_indicator", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "show_as_deleted", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "antirevokestatus", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "anti_view_once", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "anti_view_once_media", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -118,6 +121,7 @@ public final class PreferenceSchema {
         add(entries, "bubble_right", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "bypass_version_check", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "call_block_contacts", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "call_block_notification_enabled", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "call_info", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "call_privacy", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "call_recording_blacklist", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -161,6 +165,8 @@ public final class PreferenceSchema {
         add(entries, "css_test_value", Type.STRING, Sensitivity.RUNTIME, Store.PUBLIC);
         add(entries, "css_theme", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "custom_action_bar_color", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "custom_ab_props", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "custom_ab_props_items", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "custom_css", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "custom_css_theme", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "custom_dpi", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -261,8 +267,6 @@ public final class PreferenceSchema {
         add(entries, "hide_chats", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_delivery_receipts", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_forwarded_tag", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
-        add(entries, "hide_anti_revoke", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
-        add(entries, "hidden_antirevoke_chats", Type.STRING_SET, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_read_receipts", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_seen_receipts", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "hide_seen_view", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -280,6 +284,7 @@ public final class PreferenceSchema {
         add(entries, "ignored_timestamp", Type.LONG, Sensitivity.RUNTIME, Store.PRIVATE);
         add(entries, "ignored_version", Type.STRING, Sensitivity.RUNTIME, Store.PRIVATE);
         add(entries, "igstatus", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "native_igstatus", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "imagequality", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "init_prefs_creation", Type.BOOLEAN, Sensitivity.RUNTIME, Store.PRIVATE);
         add(entries, "inline_translation", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -368,6 +373,9 @@ public final class PreferenceSchema {
         add(entries, "tasker_secret", Type.STRING, Sensitivity.SECRET, Store.PRIVATE);
         add(entries, "text_color", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "thememode", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "timestamp_format", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "timestamp_custom_pattern", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "timestamp_custom_text", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "toast_viewed_message", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "toast_viewed_status", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "toastdeleted", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
@@ -375,7 +383,7 @@ public final class PreferenceSchema {
         add(entries, "custom_transcription_url", Type.STRING, Sensitivity.PRIVATE_SETTING, Store.PRIVATE);
         add(entries, "custom_transcription_key", Type.STRING, Sensitivity.SECRET, Store.PRIVATE);
         add(entries, "custom_transcription_model", Type.STRING, Sensitivity.PRIVATE_SETTING, Store.PRIVATE);
-        add(entries, "transcription_language", Type.STRING, Sensitivity.PRIVATE_SETTING, Store.PRIVATE);
+        add(entries, "transcription_language", Type.STRING, Sensitivity.RUNTIME, Store.PUBLIC);
         add(entries, "local_model", Type.STRING, Sensitivity.PRIVATE_SETTING, Store.PRIVATE);
         add(entries, "local_server_mode", Type.STRING, Sensitivity.PRIVATE_SETTING, Store.PRIVATE);
         add(entries, "local_server_port", Type.INT, Sensitivity.PRIVATE_SETTING, Store.PRIVATE);

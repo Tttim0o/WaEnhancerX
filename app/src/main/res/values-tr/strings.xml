@@ -12,6 +12,7 @@
     <string name="go_to_telegram">Telegram Kanalı</string>
     <string name="go_to_github">GitHub Sorunları</string>
     <string name="contributors">Katkıda Bulunanlar</string>
+    <string name="contributor">Katkıda Bulunan</string>
     <string name="stargazers_title">Destekçilerimiz</string>
     <string name="stargazers_thank_you">WaEnhancerX\'i desteklediğiniz için teşekkür ederiz</string>
     <string name="stargazers_message">Her yıldız daha fazla kişinin projeyi keşfetmesine yardımcı oluyor. Bu duvar desteğini gösteren herkes içindir.</string>
@@ -119,8 +120,6 @@
     <string name="feat_hideonceseen_desc">Bir kez görüntülenen bir fotoğraf veya videoyu açtığınızı gizler</string>
     <string name="feat_anti_revoke_title">İptal Engelleme Mesajları</string>
     <string name="feat_anti_revoke_desc">Mesajlar sizin için silinmeyecek</string>
-    <string name="feat_hide_anti_revoke_title">Sohbet Menüsüne İptal Engellemeyi Gizle Ekle</string>
-    <string name="feat_hide_anti_revoke_desc">Söz konusu sohbet için silinen mesajları gizlemek üzere sohbet menüsüne seçenek ekleyin</string>
     <string name="feat_preserve_own_revoke_title">İptal Edilen Mesajlarımı Sakla</string>
     <string name="feat_preserve_own_revoke_desc">Yerel kopyanızı Herkes için Sil\'den sonra alıcılar için silerken saklayın</string>
     <string name="feat_antirevokestatus_title">Silinmeyi Önleme Durumu</string>
@@ -201,8 +200,8 @@
     <string name="feat_status_text_composer_desc">Durumu özelleştirmek için renk seçiciyi basılı tutun</string>
     <string name="feat_status_downloader_title">İndirme ve Paylaşma Durumu</string>
     <string name="feat_status_downloader_desc">Durumu paylaşmak ve indirmek için iki düğmeyi gösterir</string>
-    <string name="feat_media_upload_quality_title">HD Kalitesinde Resimler ve Videolar</string>
-    <string name="feat_media_upload_quality_desc">Görüntüleri ve videoları varsayılan olarak HD kalitesinde gönder</string>
+    <string name="feat_media_upload_quality_title">Orijinal Kalitede Resimler ve Videolar</string>
+    <string name="feat_media_upload_quality_desc">Görüntüleri ve videoları orijinal kalitede gönderin</string>
     <string name="feat_send_audio_as_voice_status_title">Sesten Sese Durumu</string>
     <string name="feat_send_audio_as_voice_status_desc">Yerel bir ses dosyası seçin ve onu ses durumu olarak yayınlayın</string>
     <string name="feat_status_video_splitter_title">Durum Video Ayırıcı</string>
@@ -389,9 +388,6 @@
     <string name="diag_target_sheet_custom_rule_warning">Tüm uygulamalar enjekte edilmiş ve etkin. Özel bir sürüm kuralı geçerlidir; bu sürümle uyumluluk resmi olarak doğrulanmamıştır.</string>
     <string name="feat_bypass_screenshot_restriction_title">Ekran görüntüsüne izin ver</string>
     <string name="feat_bypass_screenshot_restriction_desc">WhatsApp genelinde ekran görüntüsü almaya ve ekran kaydına izin ver</string>
-    <string name="timestamp_time_format_title">Saat biçimi</string>
-    <string name="timestamp_time_format_12_hour">12 saatlik saat (3:45:30 ÖS)</string>
-    <string name="timestamp_time_format_24_hour">24 saatlik saat (15:45:30)</string>
     <string name="waex_ui_selected_icon_color">Seçili simge rengi</string>
     <string name="waex_ui_unselected_icon_color">Seçilmemiş simge rengi</string>
     <string name="waex_ui_using_app_default_color">Uygulamanın varsayılan rengi kullanılıyor</string>

@@ -23,7 +23,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.waenhancer.ui.components.WaexCircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -48,6 +48,7 @@ import com.waenhancer.ui.components.WaexConfirmationBottomSheet
 import com.waenhancer.ui.components.WaexInfoBanner
 import com.waenhancer.ui.components.WaexSectionHeader
 import com.waenhancer.ui.components.WaexTopBar
+import com.waenhancer.ui.components.NetworkErrorCenter
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
 import androidx.compose.foundation.shape.CircleShape
@@ -253,7 +254,12 @@ fun LicenseActivationScreen() {
 
                         override fun onError(msg: String?) {
                             isRemovingLicense = false
-                            removeLicenseError = msg ?: UiText.get(R.string.waex_ui_unable_to_remove_the_license_please_tr, "Unable to remove the license. Please try again.")
+                            if (NetworkErrorCenter.isNetworkError(msg)) {
+                                removeLicenseError = ""
+                                NetworkErrorCenter.show(msg)
+                            } else {
+                                removeLicenseError = msg ?: UiText.get(R.string.waex_ui_unable_to_remove_the_license_please_tr, "Unable to remove the license. Please try again.")
+                            }
                         }
                     }
                 )
@@ -269,7 +275,7 @@ fun LicenseActivationScreen() {
             },
             confirmContent = {
                 if (isRemovingLicense) {
-                    CircularProgressIndicator(
+                    WaexCircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp,
                         color = Color.White
@@ -536,7 +542,12 @@ fun LicenseActivationScreen() {
 
                                         override fun onError(msg: String?) {
                                             isVerifying = false
-                                            errorMessage = msg ?: UiText.get(R.string.waex_ui_verification_failed, "Verification failed.")
+                                            if (NetworkErrorCenter.isNetworkError(msg)) {
+                                                errorMessage = ""
+                                                NetworkErrorCenter.show(msg)
+                                            } else {
+                                                errorMessage = msg ?: UiText.get(R.string.waex_ui_verification_failed, "Verification failed.")
+                                            }
                                         }
                                     }
                                 )
@@ -552,7 +563,7 @@ fun LicenseActivationScreen() {
                             enabled = licenseKeyInput.isNotBlank() && !isVerifying
                         ) {
                             if (isVerifying) {
-                                CircularProgressIndicator(
+                                WaexCircularProgressIndicator(
                                     color = colors.onPrimary,
                                     modifier = Modifier.size(18.dp),
                                     strokeWidth = 2.dp

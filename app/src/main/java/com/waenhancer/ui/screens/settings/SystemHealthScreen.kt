@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,9 +36,11 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.waenhancer.ui.components.WaexTopBar
 import com.waenhancer.ui.components.StitchSwitch
 import com.waenhancer.ui.designsystem.WaexTheme
+import com.waenhancer.ui.components.WaexCircularProgressIndicator
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.navigation.LocalWaexNavController
 import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
@@ -47,12 +48,15 @@ import com.waenhancer.utils.SystemDiagnostics
 import com.waenhancer.utils.SystemDiagnosticsReader
 import com.waenhancer.utils.WhatsAppPackageDetector
 import com.waenhancer.utils.XposedRuntimeInspector
+import com.waenhancer.utils.LsposedScopeReader
+import com.waenhancer.utils.LsposedScopeSnapshot
 import com.waenhancer.utils.TargetRuntimePresentation
 import com.waenhancer.ui.components.rememberRuntimeObservationClock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.BorderStroke
 import com.waenhancer.utils.InternalLabels
+import com.waenhancer.utils.MagiskDenylistDiagnostics
 
 @Composable
 fun SystemHealthScreen() {
@@ -64,11 +68,15 @@ fun SystemHealthScreen() {
     val typography = WaexTheme.typography
     val radius = WaexTheme.radius
     var diagnostics by remember {
-        mutableStateOf(SystemDiagnosticsReader.cached())
+        mutableStateOf(SystemDiagnosticsReader.getOrFastSnapshot(context))
     }
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var runtimeSnapshot by remember {
         mutableStateOf(XposedRuntimeInspector.cached())
+    }
+    var scopeSnapshot by remember { mutableStateOf<LsposedScopeSnapshot?>(null) }
+    var denylistReport by remember {
+        mutableStateOf<MagiskDenylistDiagnostics.DenylistReport?>(MagiskDenylistDiagnostics.cached())
     }
     var showHookToast by remember {
         mutableStateOf(preferences.getBoolean("show_hook_toast", true))
@@ -77,17 +85,23 @@ fun SystemHealthScreen() {
         mutableStateOf(preferences.getBoolean("show_restart_sheet", true))
     }
     LaunchedEffect(refreshTrigger) {
+        val liveScope = withContext(Dispatchers.IO) { LsposedScopeReader.read(context) }
+        scopeSnapshot = liveScope
         diagnostics = withContext(Dispatchers.IO) { SystemDiagnosticsReader.read(context) }
-    }
-    LaunchedEffect(refreshTrigger) {
         val packages = withContext(Dispatchers.IO) {
-            WhatsAppPackageDetector.detectWhatsAppApps(context, runtimeSnapshot)
+            WhatsAppPackageDetector.detectWhatsAppApps(context, runtimeSnapshot, liveScope)
                 .filter { it.isInstalled }.map { it.packageName }
         }
         val refreshed = withContext(Dispatchers.IO) {
             XposedRuntimeInspector.inspect(packages)
         }
         runtimeSnapshot = refreshed
+        val denylist = withContext(Dispatchers.IO) {
+            MagiskDenylistDiagnostics.checkDenylistStatus(
+                context, packages, liveScope, forceRefresh = refreshTrigger > 0
+            )
+        }
+        denylistReport = denylist
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -117,13 +131,10 @@ fun SystemHealthScreen() {
         containerColor = colors.background
     ) { insets ->
         val data = diagnostics
-        if (data == null) {
-            Column(Modifier.fillMaxSize().padding(insets), Arrangement.Center, Alignment.CenterHorizontally) { CircularProgressIndicator(color = colors.primary) }
-        } else {
-            val reportedApps = remember(data, refreshTrigger, runtimeSnapshot) {
-                WhatsAppPackageDetector.detectWhatsAppApps(context, runtimeSnapshot)
-                    .filter { it.isInstalled }
-            }
+        val reportedApps = remember(data, refreshTrigger, runtimeSnapshot, scopeSnapshot) {
+            WhatsAppPackageDetector.detectWhatsAppApps(context, runtimeSnapshot, scopeSnapshot)
+                .filter { it.isInstalled }
+        }
             val observationTime = rememberRuntimeObservationClock()
             val targetApps = reportedApps.map {
                 TargetRuntimePresentation.asOf(it, observationTime.wall, observationTime.elapsed)
@@ -134,20 +145,28 @@ fun SystemHealthScreen() {
             ) {
                 DiagnosticCard(UiText.get(R.string.waex_ui_module_framework, "Module & Framework"), listOf(
                     UiText.get(R.string.waex_ui_module_status, "Module status") to if (data.moduleActive) UiText.get(R.string.diag_status_active, "Active") else UiText.get(R.string.diag_status_inactive, "Inactive"),
-                    UiText.get(R.string.waex_ui_module_version, "Module version") to "${data.moduleVersion} (${data.moduleVersionCode})",
+            UiText.get(R.string.waex_ui_module_version, "Module version") to "${data.moduleVersion} (${data.moduleVersionCode})",
+            "Build commit" to data.buildCommit,
+            "Mapping ID" to data.mappingId,
                     UiText.get(R.string.waex_ui_xposed_framework, "Xposed framework") to InternalLabels.text(data.framework.name),
                     UiText.get(R.string.waex_ui_framework_package, "Framework package") to (data.framework.packageName ?: UiText.get(R.string.waex_ui_not_available_label, "Not available")),
                     UiText.get(R.string.waex_ui_framework_version, "Framework version") to (data.framework.version ?: UiText.get(R.string.waex_ui_not_available_label, "Not available")),
                     UiText.get(R.string.waex_ui_xposed_api, "Xposed API") to (data.framework.api?.toString() ?: UiText.get(R.string.waex_ui_not_reported_yet, "Not reported yet")),
                     UiText.get(R.string.waex_ui_root_allowed, "Root allowed") to if (data.rootAllowed) UiText.get(R.string.waex_ui_yes, "Yes") else UiText.get(R.string.waex_ui_no, "No")
-                ), if (data.moduleActive) Color(0xFF10B981) else colors.error)
+                ), if (data.moduleActive) colors.success else colors.error)
 
                 DiagnosticCard(UiText.get(R.string.waex_ui_device_environment, "Device Environment"), listOf(
                     "Android" to "${data.androidVersion} (API ${data.sdk})",
                     UiText.get(R.string.waex_ui_device, "Device") to data.device,
                     UiText.get(R.string.waex_ui_supported_abis, "Supported ABIs") to data.abis,
                     UiText.get(R.string.waex_ui_kernel, "Kernel") to data.kernel,
-                    "SELinux" to InternalLabels.text(data.selinux)
+                    "SELinux" to InternalLabels.text(data.selinux),
+                    stringResource(R.string.diag_label_denylist) to when (denylistReport?.state) {
+                        MagiskDenylistDiagnostics.DenylistState.BLOCKING_TARGETS -> stringResource(R.string.diag_denylist_blocked)
+                        MagiskDenylistDiagnostics.DenylistState.CLEAN -> stringResource(R.string.diag_denylist_clean)
+                        MagiskDenylistDiagnostics.DenylistState.NOT_ACTIVE -> stringResource(R.string.diag_denylist_not_active)
+                        MagiskDenylistDiagnostics.DenylistState.CHECKING, null -> stringResource(R.string.diag_denylist_checking)
+                    }
                 ), colors.primary)
 
                 DiagnosticCard(
@@ -238,8 +257,6 @@ fun SystemHealthScreen() {
             }
         }
     }
-
-}
 
 @Composable
 private fun DiagnosticCard(title: String, entries: List<Pair<String, String>>, accent: Color) {

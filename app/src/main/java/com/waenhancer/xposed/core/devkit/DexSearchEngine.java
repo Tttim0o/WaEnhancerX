@@ -22,6 +22,8 @@ public final class DexSearchEngine {
     /** Stored in the DexCacheManager file, so a host update clears it with the cache. */
     private static final String PREFS_NAME = "waex_dex_cache";
     private static final String KEY_USED_AT_STARTUP = "dexkit_used_at_startup";
+    private int leases;
+    private boolean closePending;
 
     static {
         try {
@@ -49,12 +51,30 @@ public final class DexSearchEngine {
             File libFile = new File(nativeLibraryDir, "libdexkit.so");
             if (libFile.exists()) {
                 System.load(libFile.getAbsolutePath());
+                return;
             }
-        } catch (Throwable t) {
-            try {
-                System.loadLibrary("dexkit");
-            } catch (Throwable ignored) {}
-        }
+        } catch (Throwable ignored) {}
+
+        try {
+            String modulePath = com.waenhancer.xposed.MainHook.sModulePath;
+            if (modulePath != null) {
+                File baseApk = new File(modulePath);
+                File parent = baseApk.getParentFile();
+                if (parent != null) {
+                    for (String abi : android.os.Build.SUPPORTED_ABIS) {
+                        File libFile = new File(parent, "lib/" + abi + "/libdexkit.so");
+                        if (libFile.exists()) {
+                            System.load(libFile.getAbsolutePath());
+                            return;
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            System.loadLibrary("dexkit");
+        } catch (Throwable ignored) {}
     }
 
     public void initialize(@NonNull Context context) {
@@ -108,6 +128,18 @@ public final class DexSearchEngine {
     private static SharedPreferences prefs(Context context) {
         Context app = context.getApplicationContext();
         return (app != null ? app : context).getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    }
+
+    /** Keeps the native bridge alive across one complete feature-resolution transaction. */
+    public synchronized void acquireLease() {
+        leases++;
+        closePending = false;
+    }
+
+    /** Releases a feature-resolution lease and honors a close requested while it was active. */
+    public synchronized void releaseLease() {
+        if (leases > 0) leases--;
+        if (leases == 0 && closePending) closeNow();
     }
 
     @Nullable
@@ -188,12 +220,21 @@ public final class DexSearchEngine {
     }
 
     public synchronized void close() {
+        if (leases > 0) {
+            closePending = true;
+            return;
+        }
+        closeNow();
+    }
+
+    private void closeNow() {
         if (mBridge != null) {
             try {
                 mBridge.close();
             } catch (Throwable ignored) {}
             mBridge = null;
         }
+        closePending = false;
     }
 
     @FunctionalInterface
