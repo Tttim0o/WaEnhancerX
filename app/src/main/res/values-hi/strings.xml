@@ -12,6 +12,7 @@
     <string name="go_to_telegram">टेलीग्राम चैनल</string>
     <string name="go_to_github">गिटहब मुद्दे</string>
     <string name="contributors">योगदानकर्ता</string>
+    <string name="contributor">योगदानकर्ता</string>
     <string name="stargazers_title">हमारे समर्थक</string>
     <string name="stargazers_thank_you">WaEnhancerX का समर्थन करने के लिए धन्यवाद</string>
     <string name="stargazers_message">प्रत्येक सितारा अधिक लोगों को प्रोजेक्ट खोजने में मदद करता है। यह दीवार उन सभी के लिए है जिन्होंने अपना समर्थन दिखाया है।</string>
@@ -119,8 +120,6 @@
     <string name="feat_hideonceseen_desc">व्यू वन्स फ़ोटो या वीडियो देखने पर प्रेषक को पता नहीं चलने देता</string>
     <string name="feat_anti_revoke_title">निरस्तीकरण विरोधी संदेश</string>
     <string name="feat_anti_revoke_desc">आपके लिए संदेश हटाए नहीं जाएंगे</string>
-    <string name="feat_hide_anti_revoke_title">चैट मेनू में हाईड एंटी-रिवोक जोड़ें</string>
-    <string name="feat_hide_anti_revoke_desc">उस चैट के लिए हटाए गए संदेशों को छिपाने के लिए वार्तालाप मेनू में विकल्प जोड़ें</string>
     <string name="feat_preserve_own_revoke_title">मेरे निरस्त किए गए संदेश रखें</string>
     <string name="feat_preserve_own_revoke_desc">सभी के लिए हटाएं के बाद प्राप्तकर्ताओं के लिए हटाते समय अपनी स्थानीय प्रतिलिपि रखें</string>
     <string name="feat_antirevokestatus_title">एंटी-डिलीट स्थिति</string>
@@ -201,8 +200,8 @@
     <string name="feat_status_text_composer_desc">स्थिति को अनुकूलित करने के लिए रंग चयनकर्ता को दबाकर रखें</string>
     <string name="feat_status_downloader_title">स्थिति डाउनलोड करें और साझा करें</string>
     <string name="feat_status_downloader_desc">स्टेटस साझा करने और डाउनलोड करने के लिए दो बटन दिखाता है</string>
-    <string name="feat_media_upload_quality_title">एचडी गुणवत्ता वाली छवियां और वीडियो</string>
-    <string name="feat_media_upload_quality_desc">डिफ़ॉल्ट रूप से चित्र और वीडियो एचडी गुणवत्ता में भेजें</string>
+    <string name="feat_media_upload_quality_title">मूल गुणवत्ता में चित्र और वीडियो</string>
+    <string name="feat_media_upload_quality_desc">चित्र और वीडियो मूल गुणवत्ता में भेजें</string>
     <string name="feat_send_audio_as_voice_status_title">ऑडियो से वॉयस स्थिति</string>
     <string name="feat_send_audio_as_voice_status_desc">एक स्थानीय ऑडियो फ़ाइल चुनें और इसे ध्वनि स्थिति के रूप में प्रकाशित करें</string>
     <string name="feat_status_video_splitter_title">स्टेटस वीडियो स्प्लिटर</string>
@@ -389,9 +388,6 @@
     <string name="diag_target_sheet_custom_rule_warning">सभी ऐप्स इंजेक्ट और सक्रिय हैं। एक कस्टम संस्करण नियम प्रभावी है; इस संस्करण के साथ अनुकूलता आधिकारिक रूप से सत्यापित नहीं की गई है।</string>
     <string name="feat_bypass_screenshot_restriction_title">स्क्रीनशॉट की अनुमति दें</string>
     <string name="feat_bypass_screenshot_restriction_desc">पूरे WhatsApp में स्क्रीनशॉट और स्क्रीन रिकॉर्डिंग की अनुमति दें</string>
-    <string name="timestamp_time_format_title">समय प्रारूप</string>
-    <string name="timestamp_time_format_12_hour">12 घंटे की घड़ी (3:45:30 PM)</string>
-    <string name="timestamp_time_format_24_hour">24 घंटे की घड़ी (15:45:30)</string>
     <string name="waex_ui_selected_icon_color">चयनित आइकन रंग</string>
     <string name="waex_ui_unselected_icon_color">अचयनित आइकन रंग</string>
     <string name="waex_ui_using_app_default_color">ऐप का डिफ़ॉल्ट रंग उपयोग कर रहे हैं</string>

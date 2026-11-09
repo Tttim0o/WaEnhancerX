@@ -118,8 +118,10 @@ public final class InternalLabels {
             case "FilterItems": return UiText.get(R.string.waex_ui_filteritems, "FilterItems");
             case "Custom Privacy (Per-Contact)": return UiText.get(R.string.waex_ui_custom_privacy_per_contact, "Custom Privacy (Per-Contact)");
             case "Chat Filter Display": return UiText.get(R.string.waex_ui_chat_filter_display_feature, "Chat Filter Display");
-            case "Seconds on Timestamp": return UiText.get(R.string.waex_ui_seconds_on_timestamp, "Seconds on Timestamp");
+            case "Custom Timestamp":
+            case "Seconds on Timestamp": return UiText.get(R.string.feat_custom_time_format_title, "Custom Timestamp");
             case "Enable IGStatus on Home Screen": return UiText.get(R.string.waex_ui_enable_igstatus_on_home_screen, "Enable IGStatus on Home Screen");
+            case "Native IGStatus": return UiText.get(R.string.waex_ui_native_igstatus, "Native IGStatus");
             case "New Settings Style": return UiText.get(R.string.waex_ui_new_settings_style, "New Settings Style");
             case "Separate Chats and Groups": return UiText.get(R.string.waex_ui_separate_chats_and_groups, "Separate Chats and Groups");
             case "CallRecording": return UiText.get(R.string.waex_ui_callrecording, "CallRecording");
@@ -135,7 +137,7 @@ public final class InternalLabels {
             case "Typing Privacy": return UiText.get(R.string.waex_ui_typing_privacy, "Typing Privacy");
             case "Hide Read Receipts": return UiText.get(R.string.waex_ui_hide_read_receipts, "Hide Read Receipts");
             case "Anti Edit Messages": return UiText.get(R.string.waex_ui_anti_edit_messages, "Anti Edit Messages");
-            case "Hide Anti Revoke": return UiText.get(R.string.waex_ui_hide_anti_revoke, "Hide Anti Revoke");
+            case "Show as Deleted Message": return UiText.get(R.string.waex_ui_show_as_deleted, "Show as Deleted Message");
             case "Message Device Source": return UiText.get(R.string.waex_ui_message_device_source, "Message Device Source");
             case "Minor Fixes": return UiText.get(R.string.waex_ui_minor_fixes, "Minor Fixes");
             case "Preserve Delete For Me": return UiText.get(R.string.waex_ui_preserve_delete_for_me, "Preserve Delete For Me");

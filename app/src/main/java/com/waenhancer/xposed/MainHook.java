@@ -1,16 +1,48 @@
 package com.waenhancer.xposed;
 
-import com.waenhancer.app.R;
-import com.waenhancer.utils.UiText;
-
+import android.app.Activity;
+import android.app.Application;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Process;
+import android.widget.Toast;
+import java.lang.reflect.Field;
+
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import com.waenhancer.app.BuildConfig;
+import com.waenhancer.app.R;
+import com.waenhancer.config.PreferenceSchema;
+import com.waenhancer.config.PreferenceStores;
+import com.waenhancer.licensing.customprops.CustomAbPropsRuntime;
+import com.waenhancer.utils.UiText;
+import com.waenhancer.utils.WhatsAppPackageDetector;
 import com.waenhancer.xposed.bridge.client.PreferenceBridgeClient;
 import com.waenhancer.xposed.core.FeatureRegistry;
+import com.waenhancer.xposed.core.RestartPromptController;
+import com.waenhancer.xposed.core.VersionGuard;
+import com.waenhancer.xposed.core.components.WaexBottomSheet;
+import com.waenhancer.xposed.features.customization.PropsOverrideHook;
+import com.waenhancer.xposed.features.updates.WhatsAppUpdateSheet;
+import com.waenhancer.xposed.utils.ActivityTracker;
 import com.waenhancer.xposed.utils.ModuleStatus;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
@@ -19,30 +51,6 @@ import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import java.util.concurrent.atomic.AtomicBoolean;
-import android.app.Activity;
-import android.app.Application;
-import android.content.BroadcastReceiver;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Process;
-import android.widget.Toast;
-import com.waenhancer.config.PreferenceStores;
-import com.waenhancer.utils.WhatsAppPackageDetector;
-import com.waenhancer.xposed.core.RestartPromptController;
-import com.waenhancer.xposed.core.VersionGuard;
-import com.waenhancer.xposed.core.components.WaexBottomSheet;
-import com.waenhancer.xposed.features.updates.WhatsAppUpdateSheet;
-import com.waenhancer.xposed.utils.ActivityTracker;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Locale;
-
-
 
 /**
  * Main Xposed Entry point for Wa Enhancer X.
@@ -66,11 +74,13 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     private static volatile String sBridgeStatus = "PENDING";
     private static volatile String sRuntimeError;
     private static volatile Handler sReportHandler;
+    public static volatile String sModulePath;
     private String mModulePath;
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
         mModulePath = startupParam.modulePath;
+        sModulePath = startupParam.modulePath;
     }
 
     public static synchronized XSharedPreferences getPrefs() {
@@ -93,6 +103,121 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         String packageName = lpparam.packageName;
         if (packageName == null) return;
+
+        // System Framework Hook (Developer Options: JDWP debugger for target WhatsApp packages)
+        if ("android".equals(packageName)) {
+            if (BuildConfig.DEBUG) {
+                try {
+                    XC_MethodHook startHook = new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) {
+                            try {
+                                if (param.args == null || param.args.length < 6) return;
+                                Object arg1 = param.args[1];
+                                String processName = arg1 instanceof String ? (String) arg1 : null;
+                                if (processName != null && WhatsAppPackageDetector.isWhatsAppPackageName(processName)) {
+                                    XSharedPreferences prefs = getPrefs();
+                                    if (prefs != null) {
+                                        prefs.reload();
+                                        if (prefs.getBoolean(PreferenceSchema.KEY_FORCE_TARGET_DEBUGGABLE, false)) {
+                                            int runtimeFlags = ((Number) param.args[5]).intValue();
+                                            param.args[5] = runtimeFlags | 1; // 1 = Zygote.DEBUG_ENABLE_JDWP
+                                            XposedBridge.log("[WAEX] Debugger (JDWP) enabled for: " + processName);
+                                        }
+                                    }
+                                }
+                            } catch (Throwable t) {
+                                XposedBridge.log("[WAEX] Process start hook error: " + t.getMessage());
+                            }
+                        }
+                    };
+
+                    XposedBridge.hookAllMethods(Process.class, "start", startHook);
+
+                    try {
+                        Class<?> processListClass = XposedHelpers.findClass("com.android.server.am.ProcessList", lpparam.classLoader);
+                        XposedBridge.hookAllMethods(processListClass, "startProcessLocked", new XC_MethodHook() {
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) {
+                                try {
+                                    if (param.args == null) return;
+                                    for (Object arg : param.args) {
+                                        if (arg == null) continue;
+                                        if (arg.getClass().getName().contains("ProcessRecord")) {
+                                            ApplicationInfo info = (ApplicationInfo) XposedHelpers.getObjectField(arg, "info");
+                                            if (info != null && info.packageName != null && WhatsAppPackageDetector.isWhatsAppPackageName(info.packageName)) {
+                                                XSharedPreferences prefs = getPrefs();
+                                                if (prefs != null) {
+                                                    prefs.reload();
+                                                    if (prefs.getBoolean(PreferenceSchema.KEY_FORCE_TARGET_DEBUGGABLE, false)) {
+                                                        info.flags |= ApplicationInfo.FLAG_DEBUGGABLE;
+                                                        XposedBridge.log("[WAEX] ProcessList: forced FLAG_DEBUGGABLE on ProcessRecord." + info.packageName);
+                                                    }
+                                                }
+                                            }
+                                        } else if (arg instanceof ApplicationInfo) {
+                                            ApplicationInfo ai = (ApplicationInfo) arg;
+                                            if (ai.packageName != null && WhatsAppPackageDetector.isWhatsAppPackageName(ai.packageName)) {
+                                                XSharedPreferences prefs = getPrefs();
+                                                if (prefs != null) {
+                                                    prefs.reload();
+                                                    if (prefs.getBoolean(PreferenceSchema.KEY_FORCE_TARGET_DEBUGGABLE, false)) {
+                                                        ai.flags |= ApplicationInfo.FLAG_DEBUGGABLE;
+                                                        XposedBridge.log("[WAEX] ProcessList: forced FLAG_DEBUGGABLE on ApplicationInfo." + ai.packageName);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Throwable t) {
+                                    XposedBridge.log("[WAEX] ProcessList hook error: " + t.getMessage());
+                                }
+                            }
+                        });
+                    } catch (Throwable t) {
+                        XposedBridge.log("[WAEX] Failed to hook ProcessList: " + t.getMessage());
+                    }
+
+                    try {
+                        Class<?> amsClass = XposedHelpers.findClass("com.android.server.am.ActivityManagerService", lpparam.classLoader);
+                        XC_MethodHook amsHook = new XC_MethodHook() {
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) {
+                                try {
+                                    if (param.args == null) return;
+                                    for (Object arg : param.args) {
+                                        if (arg instanceof ApplicationInfo) {
+                                            ApplicationInfo ai = (ApplicationInfo) arg;
+                                            if (ai.packageName != null && WhatsAppPackageDetector.isWhatsAppPackageName(ai.packageName)) {
+                                                XSharedPreferences prefs = getPrefs();
+                                                if (prefs != null) {
+                                                    prefs.reload();
+                                                    if (prefs.getBoolean(PreferenceSchema.KEY_FORCE_TARGET_DEBUGGABLE, false)) {
+                                                        ai.flags |= ApplicationInfo.FLAG_DEBUGGABLE;
+                                                        XposedBridge.log("[WAEX] AMS: forced FLAG_DEBUGGABLE on " + ai.packageName);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Throwable t) {
+                                    XposedBridge.log("[WAEX] AMS hook error: " + t.getMessage());
+                                }
+                            }
+                        };
+                        XposedBridge.hookAllMethods(amsClass, "startProcessLocked", amsHook);
+
+                        Class<?> amsLocalClass = XposedHelpers.findClass("com.android.server.am.ActivityManagerService$LocalService", lpparam.classLoader);
+                        XposedBridge.hookAllMethods(amsLocalClass, "startProcess", amsHook);
+                    } catch (Throwable t) {
+                        XposedBridge.log("[WAEX] Failed to hook AMS: " + t.getMessage());
+                    }
+                } catch (Throwable t) {
+                    XposedBridge.log("[WAEX] Failed to register system debug hooks: " + t.getMessage());
+                }
+            }
+            return;
+        }
 
         // 1. Self Hook: verify module active inside WaEnhancerX UI
         if (packageName.equals(PACKAGE_MANAGER)) {
@@ -179,6 +304,21 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                                 // Overlaps DexKit's APK parse with the host's own startup.
                                 com.waenhancer.xposed.core.devkit.DexSearchEngine
                                         .prewarmIfUsedLastStart(context);
+                                if (BuildConfig.DEBUG) {
+                                    try {
+                                        boolean isDebuggableRequested = (preloadedPrefs != null
+                                                && preloadedPrefs.getBoolean(PreferenceSchema.KEY_FORCE_TARGET_DEBUGGABLE, false));
+                                        if (isDebuggableRequested) {
+                                            context.getApplicationInfo().flags |= ApplicationInfo.FLAG_DEBUGGABLE;
+                                            try {
+                                                android.webkit.WebView.setWebContentsDebuggingEnabled(true);
+                                            } catch (Throwable ignored) {}
+                                            XposedBridge.log("[WAEX] Forced FLAG_DEBUGGABLE on " + lpparam.packageName);
+                                        }
+                                    } catch (Throwable t) {
+                                        XposedBridge.log("[WAEX] Error setting debuggable flag: " + t.getMessage());
+                                    }
+                                }
                                 try {
                                     if (sPreferenceBridge == null) {
                                         synchronized (MainHook.class) {
@@ -186,6 +326,22 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                                                 sPreferenceBridge = new PreferenceBridgeClient(
                                                         context, preloadedPrefs, true);
                                             }
+                                        }
+                                    }
+                                    PreferenceBridgeClient earlyBridge = sPreferenceBridge;
+                                    if (earlyBridge != null) {
+                                        earlyBridge.awaitInitialSync();
+                                        if (CustomAbPropsRuntime.loadInto(
+                                                earlyBridge,
+                                                PropsOverrideHook.BOOLEANS,
+                                                PropsOverrideHook.INTEGERS,
+                                                PropsOverrideHook.FLOATS,
+                                                PropsOverrideHook.STRINGS)) {
+                                            // Arbitrary MobileConfig values may be cached before
+                                            // Application.onCreate. Install the same typed registry
+                                            // used by built-in props during attach instead.
+                                            new PropsOverrideHook(context, lpparam.classLoader,
+                                                    earlyBridge).hook();
                                         }
                                     }
                                 } catch (Throwable t) {
@@ -201,183 +357,197 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                         + t.getMessage());
             }
 
+            Runnable[] pendingInit = new Runnable[1];
+            java.util.function.Consumer<Context> initializeTargetFromContext = (Context targetCtx) -> {
+                if (targetCtx == null) return;
+                Context appContext = targetCtx.getApplicationContext() != null ? targetCtx.getApplicationContext() : targetCtx;
+                if (!TARGET_INITIALIZED.compareAndSet(false, true)) {
+                    return;
+                }
+                XposedBridge.log("[WAEX] Triggering target initialization with context: " + appContext.getClass().getName());
+                try {
+                    if (appContext instanceof Application) {
+                        ActivityTracker.install((Application) appContext);
+                    }
+                } catch (Throwable t) {
+                    XposedBridge.log("[WAEX] ActivityTracker initialization failed: "
+                            + t.getClass().getSimpleName());
+                }
+
+                try {
+                    // Wraps the host's handler: its Application.onCreate already ran.
+                    com.waenhancer.xposed.core.CrashRecorder.install(appContext);
+                } catch (Throwable t) {
+                    XposedBridge.log("[WAEX] Crash recorder unavailable: "
+                            + t.getClass().getSimpleName());
+                }
+                postReport(() -> com.waenhancer.xposed.core.CrashRecorder
+                        .offerPendingReport(appContext));
+
+                // Manager IPC can cold-start the WAEX process; keep it off the
+                // target's main thread so it does not delay hook installation.
+                postReport(() -> {
+                    try {
+                        WhatsAppPackageDetector.registerHookedPackage(appContext, packageName);
+                    } catch (Throwable t) {
+                        XposedBridge.log("[WAEX] Hooked-package reporting failed: "
+                                + t.getClass().getSimpleName());
+                    }
+                });
+                reportTargetRuntime(appContext, packageName, "INJECTED", "PENDING", null);
+                postReport(() -> {
+                    try {
+                        appContext.getContentResolver().call(
+                                Uri.parse("content://com.waenhancer.hookprovider"),
+                                "request_update_check", packageName, null);
+                    } catch (Throwable ignored) {}
+                });
+
+                try {
+                    IntentFilter filter = new IntentFilter("com.waenhancer.WHATSAPP.RESTART");
+                    BroadcastReceiver receiver = new BroadcastReceiver() {
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            String pkg = intent.getStringExtra("PKG");
+                            if (packageName.equals(pkg)) {
+                                Process.killProcess(Process.myPid());
+                            }
+                        }
+                    };
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        appContext.registerReceiver(receiver, filter, RESTART_PERMISSION,
+                                null, Context.RECEIVER_EXPORTED);
+                    } else {
+                        appContext.registerReceiver(receiver, filter, RESTART_PERMISSION, null);
+                    }
+                } catch (Throwable ignored) {}
+
+                boolean showHookToast = true;
+                try {
+                    PreferenceBridgeClient resolvedBridge = sPreferenceBridge;
+                    if (resolvedBridge == null) {
+                        resolvedBridge = new PreferenceBridgeClient(appContext, preloadedPrefs);
+                        sPreferenceBridge = resolvedBridge;
+                    } else {
+                        resolvedBridge.awaitInitialSync();
+                    }
+                    final PreferenceBridgeClient bridgeClient = resolvedBridge;
+                    UiText.initialize(appContext, bridgeClient);
+                    reportTargetRuntime(
+                            appContext,
+                            packageName,
+                            "INITIALIZING",
+                            bridgeClient.getLastSyncSource(),
+                            bridgeClient.getLastSyncError());
+                    try {
+                        RestartPromptController.initialize(bridgeClient);
+                    } catch (Throwable t) {
+                        XposedBridge.log("[WAEX] Restart prompt setup failed: "
+                                + t.getClass().getSimpleName());
+                    }
+                    try {
+                        IntentFilter prefsFilter = new IntentFilter(
+                                "com.waenhancer.action.PREFERENCES_CHANGED");
+                        BroadcastReceiver prefsReceiver = new BroadcastReceiver() {
+                            @Override
+                            public void onReceive(Context context, Intent intent) {
+                                bridgeClient.syncPreferences();
+                            }
+                        };
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            appContext.registerReceiver(prefsReceiver, prefsFilter, RESTART_PERMISSION,
+                                    null, Context.RECEIVER_EXPORTED);
+                        } else {
+                            appContext.registerReceiver(prefsReceiver, prefsFilter,
+                                    RESTART_PERMISSION, null);
+                        }
+                    } catch (Throwable t) {
+                        XposedBridge.log("[WAEX] Failed to register preference refresh receiver: "
+                                + t.getMessage());
+                    }
+                    showHookToast = bridgeClient.getBoolean("show_hook_toast", true);
+
+                    // Verify universal version compatibility before loading hooks
+                    boolean isSupported = VersionGuard.verifyAndGuard(
+                            appContext,
+                            lpparam.classLoader,
+                            bridgeClient
+                    );
+
+                    if (isSupported) {
+                        try {
+                            WhatsAppUpdateSheet.init(bridgeClient);
+                        } catch (Throwable t) {
+                            XposedBridge.log("[WAEX] WhatsApp update-sheet setup failed: "
+                                    + t.getClass().getSimpleName());
+                        }
+                        if (showHookToast) {
+                            try {
+                                showInjectionToastOnFirstVisibleActivity();
+                            } catch (Throwable t) {
+                                XposedBridge.log("[WAEX] Injection toast unavailable: "
+                                        + t.getClass().getSimpleName());
+                            }
+                        }
+                        FeatureRegistry registry = new FeatureRegistry(appContext, lpparam.classLoader, bridgeClient);
+                        registry.initializeAll();
+                        postReport(() -> {
+                            registry.reportInjectedHooks(appContext, packageName);
+                            com.waenhancer.xposed.core.devkit.DexSearchEngine.getInstance()
+                                    .recordStartupUsage(appContext);
+                        });
+                        reportTargetRuntime(
+                                appContext,
+                                packageName,
+                                registry.hasFailures() ? "READY_WITH_ERRORS" : "READY",
+                                bridgeClient.getLastSyncSource(),
+                                bridgeClient.getLastSyncError());
+                    } else {
+                        reportTargetRuntime(
+                                appContext,
+                                packageName,
+                                VersionGuard.runtimeStatus(),
+                                bridgeClient.getLastSyncSource(),
+                                null);
+                    }
+                } catch (Throwable t) {
+                    PreferenceBridgeClient bridge = sPreferenceBridge;
+                    String bridgeStatus = bridge == null ? "FAILED" : bridge.getLastSyncSource();
+                    String detail = t.getClass().getSimpleName() + ": "
+                            + (t.getMessage() == null ? "No detail" : t.getMessage());
+                    reportTargetRuntime(
+                            appContext,
+                            packageName,
+                            "INITIALIZATION_FAILED",
+                            bridgeStatus,
+                            detail);
+                    XposedBridge.log("[WAEX] Error initializing FeatureRegistry: " + t.getMessage());
+                    showInjectionErrorSheet(t, packageName, lpparam.processName);
+                }
+            };
+
             // Reuse an initializer from the Application and Instrumentation entry points.
-            // Some WhatsApp/clone Application subclasses bypass superclass onCreate().
             XC_MethodHook applicationInitializer = new XC_MethodHook() {
                             @Override
                             protected void afterHookedMethod(MethodHookParam param) {
                                 Object app = param.thisObject instanceof Application
                                         ? param.thisObject
-                                        : (param.args != null && param.args.length == 1 ? param.args[0] : null);
-                                if (!(app instanceof Application)) return;
-                                Context appContext = (Context) app;
-                                if (!TARGET_INITIALIZED.compareAndSet(false, true)) {
-                                    return;
-                                }
-                                // Optional observers and reports may fail without disabling hooks.
-                                try {
-                                    ActivityTracker.install(
-                                            (Application) appContext);
-                                } catch (Throwable t) {
-                                    XposedBridge.log("[WAEX] ActivityTracker initialization failed: "
-                                            + t.getClass().getSimpleName());
-                                }
-                                try {
-                                    // Wraps the host's handler: its Application.onCreate already ran.
-                                    com.waenhancer.xposed.core.CrashRecorder.install(appContext);
-                                    WhatsAppPackageDetector.registerHookedPackage(
-                                            appContext, packageName);
-                                } catch (Throwable t) {
-                                    XposedBridge.log("[WAEX] Crash recorder unavailable: "
-                                            + t.getClass().getSimpleName());
-                                }
-                                postReport(() -> com.waenhancer.xposed.core.CrashRecorder
-                                        .offerPendingReport(appContext));
-
-                                // Manager IPC can cold-start the WAEX process; keep it off the
-                                // target's main thread so it does not delay hook installation.
-                                postReport(() -> {
+                                        : (param.args != null && param.args.length == 1 && param.args[0] instanceof Application
+                                                ? param.args[0]
+                                                : null);
+                                if (app == null && param.thisObject != null) {
                                     try {
-                                        com.waenhancer.utils.WhatsAppPackageDetector.registerHookedPackage(
-                                                appContext, packageName);
-                                    } catch (Throwable t) {
-                                        XposedBridge.log("[WAEX] Hooked-package reporting failed: "
-                                                + t.getClass().getSimpleName());
-                                    }
-                                });
-                                reportTargetRuntime(
-                                        appContext, packageName, "INJECTED", "PENDING", null);
-                                postReport(() -> {
-                                    try {
-                                        appContext.getContentResolver().call(
-                                                Uri.parse("content://com.waenhancer.hookprovider"),
-                                                "request_update_check", packageName, null);
+                                        Field appContextField = param.thisObject.getClass().getField("appContext");
+                                        Object ctx = appContextField.get(param.thisObject);
+                                        if (ctx instanceof Context) app = ctx;
                                     } catch (Throwable ignored) {}
-                                });
-
-                                try {
-                                    IntentFilter filter = new IntentFilter("com.waenhancer.WHATSAPP.RESTART");
-                                    BroadcastReceiver receiver = new BroadcastReceiver() {
-                                        @Override
-                                        public void onReceive(Context context, Intent intent) {
-                                            String pkg = intent.getStringExtra("PKG");
-                                            if (packageName.equals(pkg)) {
-                                                Process.killProcess(Process.myPid());
-                                            }
-                                        }
-                                    };
-                                    if (Build.VERSION.SDK_INT >= 33) {
-                                        appContext.registerReceiver(receiver, filter, RESTART_PERMISSION,
-                                                null, Context.RECEIVER_EXPORTED);
-                                    } else {
-                                        appContext.registerReceiver(receiver, filter, RESTART_PERMISSION, null);
-                                    }
-                                } catch (Throwable ignored) {}
-
-                                boolean showHookToast = true;
-                                try {
-                                    PreferenceBridgeClient resolvedBridge = sPreferenceBridge;
-                                    if (resolvedBridge == null) {
-                                        resolvedBridge = new PreferenceBridgeClient(appContext, preloadedPrefs);
-                                        sPreferenceBridge = resolvedBridge;
-                                    } else {
-                                        resolvedBridge.awaitInitialSync();
-                                    }
-                                    final PreferenceBridgeClient bridgeClient = resolvedBridge;
-                                    UiText.initialize(appContext, bridgeClient);
-                                    reportTargetRuntime(
-                                            appContext,
-                                            packageName,
-                                            "INITIALIZING",
-                                            bridgeClient.getLastSyncSource(),
-                                            bridgeClient.getLastSyncError());
-                                    try {
-                                        RestartPromptController.initialize(bridgeClient);
-                                    } catch (Throwable t) {
-                                        XposedBridge.log("[WAEX] Restart prompt setup failed: "
-                                                + t.getClass().getSimpleName());
-                                    }
-                                    try {
-                                        IntentFilter prefsFilter = new IntentFilter(
-                                                "com.waenhancer.action.PREFERENCES_CHANGED");
-                                        BroadcastReceiver prefsReceiver = new BroadcastReceiver() {
-                                            @Override
-                                            public void onReceive(Context context, Intent intent) {
-                                                bridgeClient.syncPreferences();
-                                            }
-                                        };
-                                        if (Build.VERSION.SDK_INT >= 33) {
-                                            appContext.registerReceiver(prefsReceiver, prefsFilter, RESTART_PERMISSION,
-                                                    null, Context.RECEIVER_EXPORTED);
-                                        } else {
-                                            appContext.registerReceiver(prefsReceiver, prefsFilter,
-                                                    RESTART_PERMISSION, null);
-                                        }
-                                    } catch (Throwable t) {
-                                        XposedBridge.log("[WAEX] Failed to register preference refresh receiver: "
-                                                + t.getMessage());
-                                    }
-                                    showHookToast = bridgeClient.getBoolean("show_hook_toast", true);
-
-                                    // Verify universal version compatibility before loading hooks
-                                    boolean isSupported = VersionGuard.verifyAndGuard(
-                                            appContext,
-                                            lpparam.classLoader,
-                                            bridgeClient
-                                    );
-
-                                    if (isSupported) {
-                                        try {
-                                            WhatsAppUpdateSheet.init(bridgeClient);
-                                        } catch (Throwable t) {
-                                            XposedBridge.log("[WAEX] WhatsApp update-sheet setup failed: "
-                                                    + t.getClass().getSimpleName());
-                                        }
-                                        if (showHookToast) {
-                                            try {
-                                                showInjectionToastOnFirstVisibleActivity();
-                                            } catch (Throwable t) {
-                                                XposedBridge.log("[WAEX] Injection toast unavailable: "
-                                                        + t.getClass().getSimpleName());
-                                            }
-                                        }
-                                        FeatureRegistry registry = new FeatureRegistry(appContext, lpparam.classLoader, bridgeClient);
-                                        registry.initializeAll();
-                                        postReport(() -> {
-                                            registry.reportInjectedHooks(appContext, packageName);
-                                            com.waenhancer.xposed.core.devkit.DexSearchEngine.getInstance()
-                                                    .recordStartupUsage(appContext);
-                                        });
-                                        reportTargetRuntime(
-                                                appContext,
-                                                packageName,
-                                                registry.hasFailures() ? "READY_WITH_ERRORS" : "READY",
-                                                bridgeClient.getLastSyncSource(),
-                                                bridgeClient.getLastSyncError());
-                                    } else {
-                                        reportTargetRuntime(
-                                                appContext,
-                                                packageName,
-                                                VersionGuard.runtimeStatus(),
-                                                bridgeClient.getLastSyncSource(),
-                                                null);
-                                    }
-                                } catch (Throwable t) {
-                                    PreferenceBridgeClient bridge = sPreferenceBridge;
-                                    String bridgeStatus = bridge == null ? "FAILED" : bridge.getLastSyncSource();
-                                    String detail = t.getClass().getSimpleName() + ": "
-                                            + (t.getMessage() == null ? "No detail" : t.getMessage());
-                                    reportTargetRuntime(
-                                            appContext,
-                                            packageName,
-                                            "INITIALIZATION_FAILED",
-                                            bridgeStatus,
-                                            detail);
-                                    XposedBridge.log("[WAEX] Error initializing FeatureRegistry: " + t.getMessage());
-                                    showInjectionErrorSheet(t, packageName, lpparam.processName);
+                                }
+                                if (app instanceof Context) {
+                                    initializeTargetFromContext.accept((Context) app);
                                 }
                             }
                         };
+
 
             // Each lifecycle entry point may independently fail to register.
             // TARGET_INITIALIZED guarantees initialization occurs at most once.
@@ -396,6 +566,14 @@ public class MainHook implements IXposedHookLoadPackage, IXposedHookZygoteInit {
                         applicationInitializer);
             } catch (Throwable t) {
                 XposedBridge.log("[WAEX] Cannot hook Instrumentation.callApplicationOnCreate: "
+                        + t.getClass().getSimpleName());
+            }
+            try {
+                XposedHelpers.findAndHookMethod(
+                        "com.whatsapp.app.shell.AbstractAppShellDelegate", lpparam.classLoader,
+                        "onCreate", applicationInitializer);
+            } catch (Throwable t) {
+                XposedBridge.log("[WAEX] Cannot hook AbstractAppShellDelegate.onCreate: "
                         + t.getClass().getSimpleName());
             }
         }

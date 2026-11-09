@@ -194,10 +194,10 @@ public final class VoiceDictationHook extends BaseFeature {
         if (!(button instanceof GlyphDrawable)) return false;
         boolean pressed = XposedHelpers.getAdditionalInstanceField(field, FIELD_PRESSED) != null;
         float x = event.getX();
-        // The drawable plus a finger's width of slack on its left; up to the field's edge.
-        float slack = 12 * field.getResources().getDisplayMetrics().density;
-        boolean inside = x >= field.getWidth() - field.getTotalPaddingRight() - slack
-                && x <= field.getWidth();
+        // Allow a generous touch hit area on the right side of the EditText
+        int rightBoundary = field.getWidth();
+        int leftBoundary = Math.max(0, rightBoundary - Math.max(field.getTotalPaddingRight(), dp(field.getContext(), 48)));
+        boolean inside = x >= leftBoundary && x <= rightBoundary;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if (!inside) return false;
@@ -218,6 +218,11 @@ public final class VoiceDictationHook extends BaseFeature {
             default:
                 return pressed;
         }
+    }
+
+    private static int dp(Context ctx, int dp) {
+        return Math.round(android.util.TypedValue.applyDimension(
+                android.util.TypedValue.COMPLEX_UNIT_DIP, dp, ctx.getResources().getDisplayMetrics()));
     }
 
     // ─── Recording and transcribing ─────────────────────────────────────

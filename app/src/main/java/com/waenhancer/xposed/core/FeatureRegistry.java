@@ -12,6 +12,16 @@ import com.waenhancer.hooking.HookingEngine.FeaturePolicy;
 import com.waenhancer.hooking.HookingEngine.Installation;
 import com.waenhancer.hooking.LazyHookCoordinator;
 import com.waenhancer.hooking.ScreenScopedFeature;
+import com.waenhancer.licensing.customprops.CustomAbPropsRuntime;
+import com.waenhancer.licensing.features.AudioToVoiceStatusFeature;
+import com.waenhancer.licensing.features.BootloaderSpooferFeature;
+import com.waenhancer.licensing.features.DeviceDefaultEmojisFeature;
+import com.waenhancer.licensing.features.FileSizeSpooferFeature;
+import com.waenhancer.licensing.features.MessageBomberFeature;
+import com.waenhancer.licensing.features.NewChatFeature;
+import com.waenhancer.licensing.features.PlayIntegrityBypassHook;
+import com.waenhancer.licensing.features.StatusSplitterFeature;
+import com.waenhancer.licensing.features.UnlockWaPlusFeature;
 import com.waenhancer.xposed.core.devkit.DexSearchEngine;
 import com.waenhancer.xposed.utils.ActivityTracker;
 import com.waenhancer.xposed.features.automation.PresenceToastsHook;
@@ -36,17 +46,18 @@ import com.waenhancer.xposed.features.customization.FilterItemsHook;
 import com.waenhancer.xposed.features.customization.FloatingBottomBarHook;
 import com.waenhancer.xposed.features.customization.OnlinePresenceIndicatorsHook;
 import com.waenhancer.xposed.features.customization.HideHomeTabsHook;
-import com.waenhancer.xposed.features.customization.IGStatusHook;
 import com.waenhancer.xposed.features.customization.NewSettingsStyleHook;
 import com.waenhancer.xposed.features.customization.PropsOverrideHook;
 import com.waenhancer.xposed.features.customization.SeparateGroupsHook;
 import com.waenhancer.xposed.features.customization.StatusStyleHook;
+import com.waenhancer.xposed.features.customization.TextStatusComposerHook;
 import com.waenhancer.xposed.features.homescreen.ChatListCustomizationsHook;
 import com.waenhancer.xposed.features.homescreen.HomeScreenHeaderActionsHook;
 import com.waenhancer.xposed.features.media.CallRecordingHook;
 import com.waenhancer.xposed.features.media.DownloadViewOnceHook;
 import com.waenhancer.xposed.features.media.MediaPreviewHook;
 import com.waenhancer.xposed.features.media.MediaQualityBypassHook;
+import com.waenhancer.xposed.features.media.ParallelDownloadingHook;
 import com.waenhancer.xposed.features.media.ProfilePhotoDownloadHook;
 import com.waenhancer.xposed.features.media.ProximitySensorHook;
 import com.waenhancer.xposed.features.media.StatusDownloadHook;
@@ -70,24 +81,17 @@ import com.waenhancer.xposed.features.privacy.HideReceiptsHook;
 import com.waenhancer.xposed.features.privacy.LockedChatsEnhancerHook;
 import com.waenhancer.xposed.features.privacy.ScreenshotRestrictionBypassHook;
 import com.waenhancer.xposed.features.privacy.TypingPrivacyHook;
-import com.waenhancer.licensing.features.PlayIntegrityBypassHook;
-import com.waenhancer.licensing.features.AudioToVoiceStatusFeature;
-import com.waenhancer.licensing.features.BootloaderSpooferFeature;
-import com.waenhancer.licensing.features.FileSizeSpooferFeature;
-import com.waenhancer.licensing.features.MessageBomberFeature;
-import com.waenhancer.licensing.features.NewChatFeature;
-import com.waenhancer.licensing.features.StatusSplitterFeature;
-import com.waenhancer.licensing.features.UnlockWaPlusFeature;
 import de.robv.android.xposed.XposedBridge;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Orchestrates and registers all modular hooks in WAEX and reports injected status.
@@ -313,12 +317,27 @@ public final class FeatureRegistry {
                 () -> new CopyStatusTextHook(context, classLoader, prefs));
 
         registerFeature(ChatLimitsBypassHook.class, "Conversation",
-                () -> prefs.getBoolean("unlimited_pinned_chats", false)
-                        || prefs.getBoolean("pinnedlimit", false)
-                        || prefs.getBoolean("chat_limits_bypass", false)
-                        || prefs.getBoolean("removeforwardlimit", false)
-                        || prefs.getBoolean("revokeallmessages", false),
+                // Install the callbacks even when the startup preference snapshot is empty.
+                // Public preferences arrive through the provider after WhatsApp has started on
+                // some LSPosed builds; a disabled-at-registration feature can never become live.
+                () -> true,
                 () -> new ChatLimitsBypassHook(context, classLoader, prefs));
+
+        try {
+            if (prefs.getBoolean("disable_defemojis", false)
+                    || prefs.getBoolean(context.getPackageName() + ":disable_defemojis", false)) {
+                DeviceDefaultEmojisFeature.install(context, classLoader, prefs,
+                        (cacheKey, query) -> DexSearchEngine.getInstance().findClassWithCache(
+                                context, classLoader, cacheKey, query::execute));
+                features.add(new FeatureEntry("Device Default Emojis", "DeviceDefaultEmojisFeature", "Conversation", "ACTIVE"));
+            } else {
+                features.add(new FeatureEntry("Device Default Emojis", "DeviceDefaultEmojisFeature", "Conversation", "DISABLED"));
+            }
+        } catch (Throwable t) {
+            FeatureEntry entry = new FeatureEntry("Device Default Emojis", "DeviceDefaultEmojisFeature", "Conversation", "FAILED");
+            entry.error = t.getMessage();
+            features.add(entry);
+        }
 
         registerFeature(DoubleTapReactionHook.class, "Conversation",
                 () -> prefs.getBoolean("doubletap2like", false),
@@ -379,6 +398,10 @@ public final class FeatureRegistry {
 
         registerFeature(MediaQualityBypassHook.class, "Media",
                 () -> new MediaQualityBypassHook(context, classLoader, prefs));
+
+        registerFeature(ParallelDownloadingHook.class, "Media",
+                () -> prefs.getBoolean("parallel_downloading", false),
+                () -> new ParallelDownloadingHook(context, classLoader, prefs));
 
         registerFeature(MediaPreviewHook.class, "Media",
                 () -> prefs.getBoolean("media_preview", prefs.getBoolean("enable_media_preview", true)),
@@ -469,13 +492,13 @@ public final class FeatureRegistry {
                 },
                 () -> new HideHomeTabsHook(context, classLoader, prefs));
 
-        registerFeature(IGStatusHook.class, "Customization",
-                () -> prefs.getBoolean("igstatus", false),
-                () -> new IGStatusHook(context, classLoader, prefs));
-
         registerFeature(StatusStyleHook.class, "Customization",
                 () -> !"1".equals(prefs.getString("status_style", "1")),
                 () -> new StatusStyleHook(context, classLoader, prefs));
+
+        registerFeature(TextStatusComposerHook.class, "Customization",
+                () -> prefs.getBoolean("status_text_composer", false),
+                () -> new TextStatusComposerHook(context, classLoader, prefs));
 
         registerFeature(PropsOverrideHook.class, "Core",
                 () -> new PropsOverrideHook(context, classLoader, prefs));
@@ -497,6 +520,10 @@ public final class FeatureRegistry {
                 () -> new FloatingBottomBarHook(context, classLoader, prefs));
 
         registerFeature(FilterItemsHook.class, "Customization",
+                () -> {
+                    String raw = prefs.getString("filter_items", null);
+                    return raw != null && !raw.trim().isEmpty() && !raw.trim().equals("[]");
+                },
                 () -> new FilterItemsHook(context, classLoader, prefs));
 
         try {
@@ -601,6 +628,8 @@ public final class FeatureRegistry {
         PropsOverrideHook.setBooleanOverride(6251, metaAiFullyDisabled, false);
         PropsOverrideHook.setBooleanOverride(8026, metaAiFullyDisabled, false);
         PropsOverrideHook.setBooleanOverride(14886, metaAiFullyDisabled, false);
+        MediaQualityBypassHook.configurePropertyOverrides(
+                prefs.getBoolean("imagequality", false));
         for (FeatureEntry entry : features) {
             if (entry.policy == null || entry.policy.preHook == null || !isEntryEnabled(entry)) continue;
             try {
@@ -610,6 +639,13 @@ public final class FeatureRegistry {
                         + error.getClass().getSimpleName());
             }
         }
+        // User entries are applied last intentionally, allowing an explicit custom value to win.
+        CustomAbPropsRuntime.loadInto(
+                prefs,
+                PropsOverrideHook.BOOLEANS,
+                PropsOverrideHook.INTEGERS,
+                PropsOverrideHook.FLOATS,
+                PropsOverrideHook.STRINGS);
     }
 
     private void install(FeatureEntry entry) {
@@ -624,6 +660,8 @@ public final class FeatureRegistry {
             return;
         }
         if (!entry.installationStarted.compareAndSet(false, true)) return;
+        DexSearchEngine dexSearchEngine = DexSearchEngine.getInstance();
+        dexSearchEngine.acquireLease();
         try {
             entry.feature = entry.factory.create();
             entry.name = entry.feature.getName();
@@ -643,8 +681,9 @@ public final class FeatureRegistry {
             XposedBridge.log("[WAEX] Error initializing feature [" + entry.name + "]: " + entry.error);
             XposedBridge.log(t);
         } finally {
+            dexSearchEngine.releaseLease();
             if (entry.installation != Installation.STARTUP) {
-                DexSearchEngine.getInstance().close();
+                dexSearchEngine.close();
             }
             reportInjectedHooks(reportingContext, reportingPackage);
         }

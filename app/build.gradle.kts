@@ -37,6 +37,8 @@ android {
         }
 
         val devGh = project.findProperty("DEV_GH")?.toString()?.trim() ?: "mubashardev"
+        val gitSha = (project.findProperty("GIT_SHA")?.toString()
+            ?: System.getenv("GITHUB_SHA") ?: "unknown").take(12)
         buildConfigField("String", "DEV_GH", "\"$devGh\"")
 
         // GitHub repository the in-app updater reads releases from (owner/name). Test builds of
@@ -45,6 +47,9 @@ android {
             ?.takeIf { it.matches(Regex("[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")) }
             ?: "Xposed-Modules-Repo/com.waenhancer"
         buildConfigField("String", "UPDATE_REPOSITORY", "\"$updateRepository\"")
+        buildConfigField("String", "GH_DEV", "\"$devGh\"")
+        buildConfigField("String", "GIT_SHA", "\"$gitSha\"")
+        buildConfigField("String", "MAPPING_ID", "\"${configuredVersionCode}-$gitSha\"")
 
         // On-device transcription (whisper.cpp) is built for 64-bit ARM only. This filter
         // applies to the CMake build alone; prebuilt libraries keep all their ABIs.
@@ -186,7 +191,8 @@ dependencies {
 
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
+    // Material 3 Expressive wavy progress indicators compatible with AGP 9.0.x and compileSdk 36
+    implementation("androidx.compose.material3:material3:1.5.0-alpha18")
     implementation(libs.androidx.compose.icons.core)
     implementation("androidx.compose.material:material-icons-extended")
     debugImplementation(libs.androidx.compose.ui.tooling)
@@ -226,6 +232,7 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.libxposed.legacy)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)

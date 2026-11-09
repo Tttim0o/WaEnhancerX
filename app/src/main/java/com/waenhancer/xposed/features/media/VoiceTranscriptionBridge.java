@@ -183,6 +183,12 @@ final class VoiceTranscriptionBridge {
         }
     }
 
+    static void invalidateCache(@NonNull File audio) {
+        synchronized (TRANSCRIPTS) {
+            TRANSCRIPTS.remove(cacheKey(audio));
+        }
+    }
+
     /** Blocking: call on the worker. */
     @NonNull
     static Result transcribe(@NonNull Context context, @NonNull File audio) {

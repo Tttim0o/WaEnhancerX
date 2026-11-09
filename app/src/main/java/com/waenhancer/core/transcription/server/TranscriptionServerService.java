@@ -59,7 +59,9 @@ public final class TranscriptionServerService extends Service {
         if (LocalApiServer.MODE_OFF.equals(mode(context))) return false;
         Object always = PreferenceStores.read(context, PREF_ALWAYS);
         if (Boolean.TRUE.equals(always)) return true;
-        return "Local".equals(PreferenceStores.read(context, "transcription_provider"));
+        Object provider = PreferenceStores.read(context, "transcription_provider");
+        // Older builds stored the on-device provider as "Device".
+        return "Local".equals(provider) || "Device".equals(provider);
     }
 
     /**

@@ -45,7 +45,7 @@ import com.waenhancer.ui.components.WaexEmojiPickerDialog
 import com.waenhancer.ui.components.WaexPreferenceItem
 
 @Composable
-fun ConversationEnhancementsScreen() {
+fun ConversationEnhancementsScreen(targetEpoch: Int = 0) {
     val navController = LocalWaexNavController.current
     val preferenceManager = LocalWaexPreferenceManager.current
     val isPro = LocalIsPro.current
@@ -86,13 +86,14 @@ fun ConversationEnhancementsScreen() {
         )
     }
 
-    val stateMap = remember {
+    val stateMap = remember(targetEpoch) {
         mutableStateMapOf<String, Boolean>().apply {
             convKeys.forEach { key ->
                 put(key, preferenceManager.getBoolean(key, false))
             }
         }
     }
+
 
     val onToggle: (String, Boolean) -> Unit = { key, value ->
         stateMap[key] = value
@@ -252,7 +253,7 @@ fun ConversationEnhancementsScreen() {
                         checked = doubleTapEnabled,
                         onCheckedChange = { onToggle("doubletap2like", it) },
                         icon = WaexIcons.AutoAwesome,
-                        showDivider = doubleTapEnabled
+                        showDivider = true
                     )
 
                     if (doubleTapEnabled) {
@@ -266,7 +267,7 @@ fun ConversationEnhancementsScreen() {
                             description = UiText.get(R.string.waex_ui_change_the_default_emoji_sent_when_dou, "Change the default emoji sent when double-clicking (%1\$s)", currentEmoji),
                             icon = WaexIcons.Palette,
                             onClick = { showEmojiPicker = true },
-                            showDivider = false,
+                            showDivider = true,
                             trailing = {
                                 Surface(
                                     shape = CircleShape,
@@ -293,6 +294,15 @@ fun ConversationEnhancementsScreen() {
                             )
                         }
                     }
+
+                    WaexSwitchPreference(
+                        title = UiText.get(R.string.feat_disable_defemojis_title, "Use Device Default Emojis"),
+                        description = UiText.get(R.string.feat_disable_defemojis_desc, "Use system emojis (iOS, Samsung, Google) instead of WhatsApp's built-in emojis"),
+                        checked = stateMap["disable_defemojis"] ?: false,
+                        onCheckedChange = { onToggle("disable_defemojis", it) },
+                        icon = WaexIcons.Mood,
+                        showDivider = false
+                    )
                 }
             }
 

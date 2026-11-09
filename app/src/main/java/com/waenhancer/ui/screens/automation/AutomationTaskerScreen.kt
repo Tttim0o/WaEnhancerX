@@ -6,6 +6,11 @@ import com.waenhancer.app.R
 import androidx.compose.ui.res.stringResource
 import com.waenhancer.ui.components.WaexProChip
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.PaddingValues
+import com.waenhancer.ui.components.WaexCategoryHeader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,7 +34,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.waenhancer.ui.components.WaexCircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -67,6 +72,13 @@ import kotlinx.coroutines.launch
 import com.waenhancer.core.transcription.TranscriptionRequestHandler
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateDpAsState
@@ -90,8 +102,9 @@ import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import com.waenhancer.ui.navigation.Screen
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AutomationTaskerScreen() {
+fun AutomationTaskerScreen(targetEpoch: Int = 0) {
     val colors = WaexTheme.colors
     val spacing = WaexTheme.spacing
     val typography = WaexTheme.typography
@@ -102,9 +115,8 @@ fun AutomationTaskerScreen() {
 
     val navController = LocalWaexNavController.current
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
-    val itemCoordinates = remember { mutableStateMapOf<String, Float>() }
-    var containerY by remember { mutableStateOf(0f) }
+    val listState = rememberLazyListState()
+    val expandedSections = remember { mutableStateMapOf<String, Boolean>() }
 
     LaunchedEffect(navController.targetSubTabId) {
         val target = navController.targetSubTabId
@@ -114,15 +126,44 @@ fun AutomationTaskerScreen() {
         }
     }
 
-    LaunchedEffect(navController.scrollToTargetKey, itemCoordinates.keys.toList()) {
+    val preferenceManager = LocalWaexPreferenceManager.current
+
+    // Automation states
+    var taskerIntegrationEnabled by remember(targetEpoch) { mutableStateOf(preferenceManager.getBoolean("tasker_integration", false)) }
+
+    // Audio & AI states
+    var voiceTranscriptionEnabled by remember(targetEpoch) { mutableStateOf(preferenceManager.getBoolean("voice_transcription", true)) }
+
+    val aiConfigKeys = remember {
+        setOf(
+            "voice_transcription_auto", "voice_note_transcript_button", "voice_dictation_button",
+            "transcription_provider", "assembly_key", "groq_key",
+            "custom_transcription_url", "custom_transcription_key", "custom_transcription_model"
+        )
+    }
+
+    LaunchedEffect(navController.scrollToTargetKey) {
         val target = navController.scrollToTargetKey
         if (target != null) {
-            delay(100)
-            if (itemCoordinates.containsKey(target)) {
-                val yOffset = itemCoordinates[target] ?: 0f
-                scrollState.animateScrollTo(yOffset.toInt())
-                navController.scrollToTargetKey = null
+            if (target == "tasker_integration") {
+                selectedTab = "automation"
+                expandedSections["automation"] = true
+                delay(120)
+                listState.animateScrollToItem(1)
+            } else if (target == "voice_transcription") {
+                selectedTab = "ai"
+                expandedSections["ai_service"] = true
+                delay(120)
+                listState.animateScrollToItem(1)
+            } else if (target in aiConfigKeys) {
+                selectedTab = "ai"
+                voiceTranscriptionEnabled = true
+                expandedSections["ai_service"] = true
+                expandedSections["ai_config"] = true
+                delay(150)
+                listState.animateScrollToItem(3)
             }
+            navController.scrollToTargetKey = null
         }
     }
 
@@ -135,117 +176,105 @@ fun AutomationTaskerScreen() {
             }
         }
     }
-
-    val preferenceManager = LocalWaexPreferenceManager.current
-
-    // Automation states
-    var taskerIntegrationEnabled by remember { mutableStateOf(preferenceManager.getBoolean("tasker_integration", false)) }
-
-    // Audio & AI states
-    var voiceTranscriptionEnabled by remember { mutableStateOf(preferenceManager.getBoolean("voice_transcription", true)) }
-    var transcriptionProvider by remember { mutableStateOf(preferenceManager.getString("transcription_provider", "Groq")) } // "Groq" | "AssemblyAI" | "Custom"
-    var customUrl by remember { mutableStateOf(preferenceManager.getString("custom_transcription_url", "")) }
-    var customKey by remember { mutableStateOf(preferenceManager.getString("custom_transcription_key", "")) }
-    var customModel by remember { mutableStateOf(preferenceManager.getString("custom_transcription_model", "")) }
-    var autoTranscribe by remember { mutableStateOf(preferenceManager.getBoolean("voice_transcription_auto", false)) }
-    var transcriptButton by remember { mutableStateOf(preferenceManager.getBoolean("voice_note_transcript_button", true)) }
-    var dictationButton by remember { mutableStateOf(preferenceManager.getBoolean("voice_dictation_button", true)) }
+    var transcriptionProvider by remember(targetEpoch) {
+        mutableStateOf(
+            preferenceManager.getString("transcription_provider", "Groq")
+                ?.let { if (it.equals("Device", ignoreCase = true)) "Local" else it }
+        )
+    } // "Local" | "Groq" | "AssemblyAI" | "Custom"
+    var customUrl by remember(targetEpoch) { mutableStateOf(preferenceManager.getString("custom_transcription_url", "")) }
+    var customKey by remember(targetEpoch) { mutableStateOf(preferenceManager.getString("custom_transcription_key", "")) }
+    var customModel by remember(targetEpoch) { mutableStateOf(preferenceManager.getString("custom_transcription_model", "")) }
+    var autoTranscribe by remember(targetEpoch) { mutableStateOf(preferenceManager.getBoolean("voice_transcription_auto", false)) }
+    var transcriptButton by remember(targetEpoch) { mutableStateOf(preferenceManager.getBoolean("voice_note_transcript_button", true)) }
+    var dictationButton by remember(targetEpoch) { mutableStateOf(preferenceManager.getBoolean("voice_dictation_button", true)) }
     var showProviderDropdown by remember { mutableStateOf(false) }
-    var assemblyKey by remember { mutableStateOf(preferenceManager.getString("assembly_key", "")) }
+    var assemblyKey by remember(targetEpoch) { mutableStateOf(preferenceManager.getString("assembly_key", "")) }
     var connectionStatus by remember { mutableStateOf("idle") } // "idle" | "verifying" | "ok" | "fail"
     var connectionError by remember { mutableStateOf("") }
     var discoveringModels by remember { mutableStateOf(false) }
     var discoveredModels by remember { mutableStateOf(emptyList<String>()) }
     var showModelDropdown by remember { mutableStateOf(false) }
     var discoveryError by remember { mutableStateOf("") }
-    var transcriptionLanguage by remember { mutableStateOf(preferenceManager.getString("transcription_language", "")) }
-    var showLanguageDropdown by remember { mutableStateOf(false) }
-    val transcriptionLanguages = listOf(
-        "" to UiText.get(R.string.waex_ui_automatic, "Automatic"),
-        "sk" to "Slovenčina", "cs" to "Čeština", "en" to "English", "de" to "Deutsch",
-        "hu" to "Magyar", "pl" to "Polski", "uk" to "Українська", "es" to "Español"
-    )
-    var groqKey by remember { mutableStateOf(preferenceManager.getString("groq_key", "")) }
+    var groqKey by remember(targetEpoch) { mutableStateOf(preferenceManager.getString("groq_key", "")) }
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .onGloballyPositioned { containerCoordinates ->
-                containerY = containerCoordinates.positionInRoot().y
-            }
-            .padding(vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // Tab Switcher Header
-        Surface(
-            shape = radius.mdShape,
-            color = colors.surfaceDim,
-            border = BorderStroke(1.dp, colors.outlineVariant),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = spacing.pageMargin)
-                .height(48.dp)
-        ) {
-            BoxWithConstraints(
+        item(key = "tab_switcher") {
+            Surface(
+                shape = radius.mdShape,
+                color = colors.surfaceDim,
+                border = BorderStroke(1.dp, colors.outlineVariant.copy(alpha = 0.5f)),
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(4.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.pageMargin)
+                    .height(48.dp)
             ) {
-                val totalWidth = maxWidth
-                val tabWidth = totalWidth / 2
-
-                val activeIndex = if (selectedTab == "automation") 0 else 1
-                val targetOffset = tabWidth * activeIndex
-                val animatedOffset by animateDpAsState(
-                    targetValue = targetOffset,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    label = "sub_tab_offset"
-                )
-
-                // Sliding highlight box
-                Box(
+                BoxWithConstraints(
                     modifier = Modifier
-                        .offset(x = animatedOffset)
-                        .width(tabWidth)
-                        .fillMaxHeight()
-                        .clip(radius.defaultShape)
-                        .background(colors.surface)
-                        .border(1.dp, colors.outlineVariant, radius.defaultShape)
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.SpaceAround
+                        .fillMaxSize()
+                        .padding(4.dp)
                 ) {
-                    listOf("automation" to stringResource(R.string.subtab_automation), "ai" to stringResource(R.string.subtab_audio_ai)).forEach { (tabId, label) ->
-                        val isSelected = selectedTab == tabId
-                        val textColor by animateColorAsState(
-                            targetValue = if (isSelected) colors.primary else colors.onSurfaceVariant,
-                            animationSpec = tween(150),
-                            label = "sub_tab_text_color"
-                        )
+                    val totalWidth = maxWidth
+                    val tabWidth = totalWidth / 2
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .weight(1f)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) { selectedTab = tabId },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = label,
-                                style = typography.bodyMd,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = textColor
+                    val activeIndex = if (selectedTab == "automation") 0 else 1
+                    val targetOffset = tabWidth * activeIndex
+                    val animatedOffset by animateDpAsState(
+                        targetValue = targetOffset,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        label = "sub_tab_offset"
+                    )
+
+                    // Sliding highlight box
+                    Box(
+                        modifier = Modifier
+                            .offset(x = animatedOffset)
+                            .width(tabWidth)
+                            .fillMaxHeight()
+                            .clip(radius.defaultShape)
+                            .background(colors.surface)
+                            .border(1.dp, colors.outlineVariant, radius.defaultShape)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        listOf("automation" to stringResource(R.string.subtab_automation), "ai" to stringResource(R.string.subtab_audio_ai)).forEach { (tabId, label) ->
+                            val isSelected = selectedTab == tabId
+                            val textColor by animateColorAsState(
+                                targetValue = if (isSelected) colors.primary else colors.onSurfaceVariant,
+                                animationSpec = tween(150),
+                                label = "sub_tab_text_color"
                             )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(1f)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) { selectedTab = tabId },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    style = typography.bodyMd,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = textColor
+                                )
+                            }
                         }
                     }
                 }
@@ -261,34 +290,49 @@ fun AutomationTaskerScreen() {
                 }
             )
 
+            val isAutomationExpanded = expandedSections["automation"] ?: true
+            stickyHeader(key = "header_automation") {
+                WaexCategoryHeader(
+                    title = stringResource(R.string.subtab_automation),
+                    icon = WaexIcons.AutoAwesome,
+                    isExpanded = isAutomationExpanded,
+                    onToggleExpand = {
+                        expandedSections["automation"] = !isAutomationExpanded
+                    }
+                )
+            }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.pageMargin),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                val isPro = LocalIsPro.current
-                val onActivatePro = LocalOnActivatePro.current
-
-                cards.forEach { card ->
+            item(key = "card_automation") {
+                AnimatedVisibility(
+                    visible = isAutomationExpanded,
+                    enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                    exit = shrinkVertically(tween(250)) + fadeOut(tween(200))
+                ) {
+                    val isPro = LocalIsPro.current
+                    val onActivatePro = LocalOnActivatePro.current
+                    val card = cards.first()
                     val isLocked = card.isPro && !isPro
                     val isHighlighted = navController.highlightTargetKey == card.key
+                    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+                    if (isHighlighted) {
+                        LaunchedEffect(Unit) {
+                            delay(200)
+                            bringIntoViewRequester.bringIntoView()
+                        }
+                    }
                     val highlightBgColor by animateColorAsState(
                         targetValue = if (isHighlighted) colors.primary.copy(alpha = 0.15f) else colors.surfaceDim,
                         animationSpec = tween(durationMillis = 300),
                         label = "highlight_bg"
                     )
                     Surface(
-                        shape = radius.bentoCardShape,
+                        shape = radius.cardShape,
                         color = highlightBgColor,
-                        border = BorderStroke(1.dp, colors.outlineVariant),
+                        border = BorderStroke(1.dp, colors.outlineVariant.copy(alpha = 0.5f)),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onGloballyPositioned { coordinates ->
-                                val y = coordinates.positionInRoot().y - containerY + scrollState.value
-                                itemCoordinates[card.key] = y
-                            }
+                            .bringIntoViewRequester(bringIntoViewRequester)
+                            .padding(horizontal = spacing.pageMargin)
                             .clickable(enabled = isLocked) {
                                 onActivatePro()
                             }
@@ -304,7 +348,7 @@ fun AutomationTaskerScreen() {
                                 Box(
                                     modifier = Modifier
                                         .size(40.dp)
-                                        .clip(RoundedCornerShape(12.dp))
+                                        .clip(radius.defaultShape)
                                         .background(if (card.enabled && !isLocked) colors.primaryContainer else Color(0xFFF0F0F2)),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -355,69 +399,89 @@ fun AutomationTaskerScreen() {
             }
 
             if (taskerIntegrationEnabled) {
-                Surface(
-                    shape = radius.bentoCardShape,
-                    color = colors.surfaceDim,
-                    border = BorderStroke(1.dp, colors.outlineVariant),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = spacing.pageMargin)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                val isTaskerToolsExpanded = expandedSections["tasker_tools"] ?: true
+                stickyHeader(key = "header_tasker_tools") {
+                    WaexCategoryHeader(
+                        title = stringResource(R.string.tasker_integration_box_title),
+                        icon = WaexIcons.Extension,
+                        isExpanded = isTaskerToolsExpanded,
+                        onToggleExpand = {
+                            expandedSections["tasker_tools"] = !isTaskerToolsExpanded
+                        }
+                    )
+                }
+
+                item(key = "card_tasker_tools") {
+                    AnimatedVisibility(
+                        visible = isTaskerToolsExpanded,
+                        enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                        exit = shrinkVertically(tween(250)) + fadeOut(tween(200))
                     ) {
-                        Text(
-                            text = stringResource(R.string.tasker_integration_box_title),
-                            style = typography.bodyLg,
-                            fontWeight = FontWeight.Bold,
-                            color = colors.primary
-                        )
-                        Text(
-                            text = stringResource(R.string.tasker_integration_box_desc),
-                            style = typography.bodyMd,
-                            color = colors.onSurfaceVariant,
-                            fontSize = 12.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        Surface(
+                            shape = radius.cardShape,
+                            color = colors.surfaceDim,
+                            border = BorderStroke(1.dp, colors.outlineVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = spacing.pageMargin)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(radius.defaultShape)
-                                    .background(colors.primary.copy(alpha = 0.1f))
-                                    .clickable { navController.navigateTo(Screen.TaskerGuide) }
-                                    .padding(vertical = 10.dp),
-                                contentAlignment = Alignment.Center
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 Text(
-                                    text = stringResource(R.string.tasker_view_setup_guide),
-                                    style = typography.labelSm,
+                                    text = stringResource(R.string.tasker_integration_box_title),
+                                    style = typography.bodyLg,
                                     fontWeight = FontWeight.Bold,
                                     color = colors.primary
                                 )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(radius.defaultShape)
-                                    .background(colors.surface)
-                                    .border(1.dp, colors.outlineVariant, radius.defaultShape)
-                                    .clickable { navController.navigateTo(Screen.TaskerHistory) }
-                                    .padding(vertical = 10.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
                                 Text(
-                                    text = stringResource(R.string.tasker_execution_history),
-                                    style = typography.labelSm,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = colors.onSurface
+                                    text = stringResource(R.string.tasker_integration_box_desc),
+                                    style = typography.bodyMd,
+                                    color = colors.onSurfaceVariant,
+                                    fontSize = 12.sp
                                 )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(radius.defaultShape)
+                                            .background(colors.primary.copy(alpha = 0.1f))
+                                            .clickable { navController.navigateTo(Screen.TaskerGuide) }
+                                            .padding(vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.tasker_view_setup_guide),
+                                            style = typography.labelSm,
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.primary
+                                        )
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(radius.defaultShape)
+                                            .background(colors.surface)
+                                            .border(1.dp, colors.outlineVariant, radius.defaultShape)
+                                            .clickable { navController.navigateTo(Screen.TaskerHistory) }
+                                            .padding(vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.tasker_execution_history),
+                                            style = typography.labelSm,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = colors.onSurface
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -427,85 +491,124 @@ fun AutomationTaskerScreen() {
 
         } else {
             // Audio & AI Tab Content
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.pageMargin),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                val isHighlighted = navController.highlightTargetKey == "voice_transcription"
-                val highlightBgColor by animateColorAsState(
-                    targetValue = if (isHighlighted) colors.primary.copy(alpha = 0.15f) else colors.surfaceDim,
-                    animationSpec = tween(durationMillis = 300),
-                    label = "highlight_bg"
+            val isAiServiceExpanded = expandedSections["ai_service"] ?: true
+            stickyHeader(key = "header_ai_service") {
+                WaexCategoryHeader(
+                    title = UiText.get(R.string.feat_voice_transcription_title, "Audio Transcription"),
+                    icon = WaexIcons.Mic,
+                    isExpanded = isAiServiceExpanded,
+                    onToggleExpand = {
+                        expandedSections["ai_service"] = !isAiServiceExpanded
+                    }
                 )
+            }
 
-                // Voice Transcription Master Toggle Card
-                Surface(
-                    shape = radius.bentoCardShape,
-                    color = highlightBgColor,
-                    border = BorderStroke(1.dp, colors.outlineVariant),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { coordinates ->
-                            val y = coordinates.positionInRoot().y - containerY + scrollState.value
-                            itemCoordinates["voice_transcription"] = y
-                        }
+            item(key = "card_ai_master") {
+                AnimatedVisibility(
+                    visible = isAiServiceExpanded,
+                    enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                    exit = shrinkVertically(tween(250)) + fadeOut(tween(200))
                 ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    val isHighlighted = navController.highlightTargetKey == "voice_transcription"
+                    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+                    if (isHighlighted) {
+                        LaunchedEffect(Unit) {
+                            delay(200)
+                            bringIntoViewRequester.bringIntoView()
+                        }
+                    }
+                    val highlightBgColor by animateColorAsState(
+                        targetValue = if (isHighlighted) colors.primary.copy(alpha = 0.15f) else colors.surfaceDim,
+                        animationSpec = tween(durationMillis = 300),
+                        label = "highlight_bg"
+                    )
+
+                    // Voice Transcription Master Toggle Card
+                    Surface(
+                        shape = radius.cardShape,
+                        color = highlightBgColor,
+                        border = BorderStroke(1.dp, colors.outlineVariant.copy(alpha = 0.5f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .bringIntoViewRequester(bringIntoViewRequester)
+                            .padding(horizontal = spacing.pageMargin)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (voiceTranscriptionEnabled) colors.primaryContainer else Color(0xFFF0F0F2)),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = WaexIcons.Mic,
-                                contentDescription = null,
-                                tint = if (voiceTranscriptionEnabled) colors.primary else colors.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = UiText.get(R.string.feat_voice_transcription_title, "Audio Transcription"),
-                                style = typography.bodyLg,
-                                fontWeight = FontWeight.Bold,
-                                color = colors.onSurface
-                            )
-                            Text(
-                                text = UiText.get(R.string.feat_voice_transcription_desc, "Enable WhatsApp audio transcription with Groq AI or AssemblyAI"),
-                                style = typography.bodyMd,
-                                color = colors.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
-                        }
-                        StitchSwitch(
-                            checked = voiceTranscriptionEnabled,
-                            onCheckedChange = {
-                                voiceTranscriptionEnabled = it
-                                preferenceManager.putBoolean("voice_transcription", it)
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(radius.defaultShape)
+                                    .background(if (voiceTranscriptionEnabled) colors.primaryContainer else Color(0xFFF0F0F2)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = WaexIcons.Mic,
+                                    contentDescription = null,
+                                    tint = if (voiceTranscriptionEnabled) colors.primary else colors.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
                             }
-                        )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = UiText.get(R.string.feat_voice_transcription_title, "Audio Transcription"),
+                                    style = typography.bodyLg,
+                                    fontWeight = FontWeight.Bold,
+                                    color = colors.onSurface
+                                )
+                                Text(
+                                    text = UiText.get(R.string.feat_voice_transcription_desc, "Enable WhatsApp audio transcription with Groq AI or AssemblyAI"),
+                                    style = typography.bodyMd,
+                                    color = colors.onSurfaceVariant,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            StitchSwitch(
+                                checked = voiceTranscriptionEnabled,
+                                onCheckedChange = {
+                                    voiceTranscriptionEnabled = it
+                                    preferenceManager.putBoolean("voice_transcription", it)
+                                }
+                            )
+                        }
                     }
                 }
+            }
 
-                // AI Setup Parameters
-                if (voiceTranscriptionEnabled) {
-                    Surface(
-                        shape = radius.bentoCardShape,
-                        color = colors.surfaceDim,
-                        border = BorderStroke(1.dp, colors.outlineVariant),
-                        modifier = Modifier.fillMaxWidth()
+            // AI Setup Parameters
+            if (voiceTranscriptionEnabled) {
+                val isAiConfigExpanded = expandedSections["ai_config"] ?: true
+                stickyHeader(key = "header_ai_config") {
+                    WaexCategoryHeader(
+                        title = UiText.get(R.string.waex_ui_ai_transcription_provider, "AI Engine Configuration"),
+                        icon = WaexIcons.Settings,
+                        isExpanded = isAiConfigExpanded,
+                        onToggleExpand = {
+                            expandedSections["ai_config"] = !isAiConfigExpanded
+                        }
+                    )
+                }
+
+                item(key = "card_ai_config") {
+                    AnimatedVisibility(
+                        visible = isAiConfigExpanded,
+                        enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                        exit = shrinkVertically(tween(250)) + fadeOut(tween(200))
                     ) {
+                        Surface(
+                            shape = radius.cardShape,
+                            color = colors.surfaceDim,
+                            border = BorderStroke(1.dp, colors.outlineVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = spacing.pageMargin)
+                        ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -549,7 +652,7 @@ fun AutomationTaskerScreen() {
                                         color = colors.onSurface
                                     )
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_shows_next_to_the_time_of_voice_notes, "Shows 📝 next to the time of voice notes in chats. Tap it to read the transcript."),
+                                        text = "Adds a CC icon next to the timestamp on each voice note bubble. Tap the CC icon to transcribe that message.",
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant
                                     )
@@ -570,13 +673,13 @@ fun AutomationTaskerScreen() {
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_dictation_button, "Dictation button"),
+                                        text = UiText.get(R.string.waex_ui_dictation_button, "Dictation button [Experimental]"),
                                         style = typography.bodyMd,
                                         fontWeight = FontWeight.SemiBold,
                                         color = colors.onSurface
                                     )
                                     Text(
-                                        text = UiText.get(R.string.waex_ui_adds_to_the_message_field_tap_to_recor, "Adds 🎙️ to the message field. Tap to record, tap again to insert the text."),
+                                        text = "Adds a 🎙️ to the message text field. Tap to record speech, tap again to insert it as text.",
                                         style = typography.labelSm,
                                         color = colors.onSurfaceVariant
                                     )
@@ -591,43 +694,60 @@ fun AutomationTaskerScreen() {
                                 )
                             }
 
-                            // Provider Dropdown selection
-                            Column {
+
+                            // Provider Segmented / Pill selection
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
                                 Text(
-                                    text = UiText.get(R.string.waex_ui_ai_transcription_provider, "AI Transcription Provider"),
+                                    text = UiText.get(R.string.waex_ui_ai_transcription_provider, "AI Transcription Engine"),
                                     style = typography.labelSm,
-                                    color = colors.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 6.dp)
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colors.onSurfaceVariant
                                 )
-                                Box {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(44.dp)
-                                            .clip(radius.mdShape)
-                                            .background(colors.surface)
-                                            .border(1.dp, colors.outlineVariant, radius.mdShape)
-                                            .clickable { showProviderDropdown = true }
-                                            .padding(horizontal = 12.dp),
-                                        contentAlignment = Alignment.CenterStart
-                                    ) {
-                                        Text(text = transcriptionProvider, style = typography.bodyMd, color = colors.onSurface)
-                                    }
-                                    DropdownMenu(
-                                        expanded = showProviderDropdown,
-                                        onDismissRequest = { showProviderDropdown = false }
-                                    ) {
-                                        listOf("Groq", "AssemblyAI", "Custom", "Local").forEach { provider ->
-                                            DropdownMenuItem(
-                                                text = { Text(text = provider, style = typography.bodyMd) },
-                                                onClick = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    listOf(
+                                        "Local" to "Device",
+                                        "Groq" to "Groq",
+                                        "AssemblyAI" to "Assembly",
+                                        "Custom" to "Custom"
+                                    ).forEach { (provider, label) ->
+                                        val isSelected = transcriptionProvider == provider
+                                        Surface(
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = if (isSelected) colors.primary else colors.surfaceContainerLow,
+                                            border = androidx.compose.foundation.BorderStroke(
+                                                1.dp,
+                                                if (isSelected) colors.primary else colors.outlineVariant.copy(alpha = 0.5f)
+                                            ),
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(38.dp)
+                                                .clickable {
                                                     transcriptionProvider = provider
                                                     preferenceManager.putString("transcription_provider", provider)
                                                     com.waenhancer.core.transcription.server.TranscriptionServerService.apply(context.applicationContext)
-                                                connectionStatus = "idle"
-                                                    showProviderDropdown = false
+                                                    connectionStatus = "idle"
                                                 }
-                                            )
+                                        ) {
+                                            Box(
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = label,
+                                                    style = typography.labelSm,
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (isSelected) colors.onPrimary else colors.onSurface,
+                                                    maxLines = 1
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -672,7 +792,7 @@ fun AutomationTaskerScreen() {
                                     }
                                 }
                             } else if (transcriptionProvider == "Local") {
-                                LocalModelsSection(language = transcriptionLanguage)
+                                LocalModelsSection()
                             } else if (transcriptionProvider == "Custom") {
                                 Text(
                                     text = UiText.get(R.string.waex_ui_uses_the_openai_audio_transcriptions_r, "Uses the OpenAI /audio/transcriptions request format."),
@@ -685,7 +805,7 @@ fun AutomationTaskerScreen() {
                                     onValueChange = {
                                         customUrl = it
                                         preferenceManager.putString("custom_transcription_url", it.trim())
-                                                connectionStatus = "idle"
+                                        connectionStatus = "idle"
                                     }
                                 )
                                 TranscriptionTextField(
@@ -694,7 +814,7 @@ fun AutomationTaskerScreen() {
                                     onValueChange = {
                                         customKey = it
                                         preferenceManager.putString("custom_transcription_key", it)
-                                                connectionStatus = "idle"
+                                        connectionStatus = "idle"
                                     },
                                     isSecret = true
                                 )
@@ -788,51 +908,6 @@ fun AutomationTaskerScreen() {
                                 }
                             }
 
-                            // Spoken language: a fixed language is more accurate than detection
-                            Column {
-                                Text(
-                                    text = UiText.get(R.string.waex_ui_transcription_language, "Transcription language"),
-                                    style = typography.labelSm,
-                                    color = colors.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 6.dp)
-                                )
-                                Box {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(44.dp)
-                                            .clip(radius.mdShape)
-                                            .background(colors.surface)
-                                            .border(1.dp, colors.outlineVariant, radius.mdShape)
-                                            .clickable { showLanguageDropdown = true }
-                                            .padding(horizontal = 12.dp),
-                                        contentAlignment = Alignment.CenterStart
-                                    ) {
-                                        Text(
-                                            text = transcriptionLanguages.firstOrNull { it.first == transcriptionLanguage }?.second
-                                                ?: UiText.get(R.string.waex_ui_automatic, "Automatic"),
-                                            style = typography.bodyMd,
-                                            color = colors.onSurface
-                                        )
-                                    }
-                                    DropdownMenu(
-                                        expanded = showLanguageDropdown,
-                                        onDismissRequest = { showLanguageDropdown = false }
-                                    ) {
-                                        transcriptionLanguages.forEach { (code, label) ->
-                                            DropdownMenuItem(
-                                                text = { Text(text = label, style = typography.bodyMd) },
-                                                onClick = {
-                                                    transcriptionLanguage = code
-                                                    preferenceManager.putString("transcription_language", code)
-                                                    showLanguageDropdown = false
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
                             // Connection test: sends one second of silence with the current settings
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -850,13 +925,13 @@ fun AutomationTaskerScreen() {
                                             Icon(
                                                 imageVector = WaexIcons.Success,
                                                 contentDescription = null,
-                                                tint = Color(0xFF22C55E),
+                                                tint = colors.success,
                                                 modifier = Modifier.size(13.dp)
                                             )
-                                            Text(text = UiText.get(R.string.waex_ui_connected, "Connected"), style = typography.labelSm, color = Color(0xFF22C55E), fontWeight = FontWeight.Bold)
+                                            Text(text = UiText.get(R.string.waex_ui_connected, "Connected"), style = typography.labelSm, color = colors.success, fontWeight = FontWeight.Bold)
                                         }
                                         "fail" -> Text(text = UiText.get(R.string.waex_ui_connection_failed, "Connection failed"), style = typography.labelSm, color = colors.error, fontWeight = FontWeight.Bold)
-                                        "verifying" -> CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = colors.primary)
+                                        "verifying" -> WaexCircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp, color = colors.primary)
                                     }
                                 }
                                 Button(
@@ -891,10 +966,10 @@ fun AutomationTaskerScreen() {
                             TranscriptionServerSection()
                         }
                     }
+                    }
                 }
             }
         }
-        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 

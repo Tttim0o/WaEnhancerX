@@ -5,11 +5,24 @@ import com.waenhancer.utils.UiText
 import android.widget.Toast
 import com.waenhancer.ui.components.WaexProChip
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.PaddingValues
+import com.waenhancer.ui.components.WaexCategoryHeader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.waenhancer.config.FeatureCatalog
 import com.waenhancer.config.FeatureItem
 import com.waenhancer.ui.components.StitchSwitch
+import com.waenhancer.ui.components.WaexModalBottomSheet
 import com.waenhancer.ui.designsystem.WaexIcons
 import com.waenhancer.ui.designsystem.WaexTheme
 import com.waenhancer.ui.navigation.LocalWaexNavController
@@ -50,9 +64,14 @@ import com.waenhancer.ui.navigation.LocalIsPro
 import com.waenhancer.ui.navigation.LocalOnActivatePro
 import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import com.waenhancer.ui.navigation.Screen
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun StylesSettingsScreen() {
+fun StylesSettingsScreen(targetEpoch: Int = 0) {
     val colors = WaexTheme.colors
     val spacing = WaexTheme.spacing
     val typography = WaexTheme.typography
@@ -64,9 +83,22 @@ fun StylesSettingsScreen() {
 
     val navController = LocalWaexNavController.current
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
-    val itemCoordinates = remember { mutableStateMapOf<String, Float>() }
-    var containerY by remember { mutableStateOf(0f) }
+    val listState = rememberLazyListState()
+
+    val appearanceGroups = remember {
+        FeatureCatalog.groupsFor(4, "appearance").map { StyleGroup(it.id, WaexIcons.Palette, it.items()) }
+    }
+    val layoutGroups = remember {
+        FeatureCatalog.groupsFor(4, "layout").map { group ->
+            val icon = when (group.id) {
+                "conversation_list_activity_presence" -> WaexIcons.Security
+                "home_layout_navigation" -> WaexIcons.GridView
+                else -> WaexIcons.Extension
+            }
+            StyleGroup(group.id, icon, group.items())
+        }
+    }
+    val expandedSections = remember { mutableStateMapOf<String, Boolean>() }
 
     LaunchedEffect(navController.targetSubTabId) {
         val target = navController.targetSubTabId
@@ -76,15 +108,33 @@ fun StylesSettingsScreen() {
         }
     }
 
-    LaunchedEffect(navController.scrollToTargetKey, itemCoordinates.keys.toList()) {
+    val density = LocalDensity.current
+
+    LaunchedEffect(navController.scrollToTargetKey) {
         val target = navController.scrollToTargetKey
         if (target != null) {
-            delay(100)
-            if (itemCoordinates.containsKey(target)) {
-                val yOffset = itemCoordinates[target] ?: 0f
-                scrollState.animateScrollTo(yOffset.toInt())
-                navController.scrollToTargetKey = null
+            val inLayout = layoutGroups.any { grp -> grp.items.any { it.key == target } }
+            val inAppearance = appearanceGroups.any { grp -> grp.items.any { it.key == target } }
+            if (inLayout && selectedTab != "layout") {
+                selectedTab = "layout"
+                delay(120)
+            } else if (inAppearance && selectedTab != "appearance") {
+                selectedTab = "appearance"
+                delay(120)
             }
+            delay(80)
+            val groups = if (selectedTab == "layout") layoutGroups else appearanceGroups
+            val groupIdx = groups.indexOfFirst { grp -> grp.items.any { it.key == target } }
+            if (groupIdx != -1) {
+                val group = groups[groupIdx]
+                expandedSections[group.title] = true
+                val itemIdx = group.items.indexOfFirst { it.key == target }.coerceAtLeast(0)
+                val cardIndex = 2 + (groupIdx * 2)
+                val estimatedRowHeight = with(density) { 72.dp.roundToPx() }
+                val offsetPx = itemIdx * estimatedRowHeight
+                listState.animateScrollToItem(cardIndex, offsetPx)
+            }
+            navController.scrollToTargetKey = null
         }
     }
 
@@ -99,29 +149,40 @@ fun StylesSettingsScreen() {
     }
 
     val preferenceManager = LocalWaexPreferenceManager.current
-    var removeMetaAiHomeFab by remember {
+    var removeMetaAiHomeFab by remember(targetEpoch) {
         mutableStateOf(preferenceManager.getBoolean("metaai_remove_home_fab", true))
     }
-    var removeMetaAiEntryPoints by remember {
+    var removeMetaAiEntryPoints by remember(targetEpoch) {
         mutableStateOf(preferenceManager.getBoolean("metaai_remove_entry_points", true))
     }
-    var blockMetaAiChat by remember {
+    var blockMetaAiChat by remember(targetEpoch) {
         mutableStateOf(preferenceManager.getBoolean("metaai_block_chat", true))
+    }
+    var showTimestampFormatSheet by remember { mutableStateOf(false) }
+    var showModifyTextSheet by remember { mutableStateOf(false) }
+    var timestampFormat by remember(targetEpoch, typedValueRevision) {
+        mutableStateOf(preferenceManager.getString("timestamp_format", "HH:mm a") ?: "HH:mm a")
+    }
+    var timestampCustomPattern by remember(targetEpoch, typedValueRevision) {
+        mutableStateOf(preferenceManager.getString("timestamp_custom_pattern", "HH:mm a") ?: "HH:mm a")
+    }
+    var timestampCustomText by remember(targetEpoch, typedValueRevision) {
+        mutableStateOf(preferenceManager.getString("timestamp_custom_text", "\${t}") ?: "\${t}")
     }
     val stylesKeys = remember {
         listOf(
             "bubble_colors", "custom_theme", "custom_time_format", "custom_toolbar",
             "custom_view_dpi", "seen_tick_customization", "floating_bottom_bar",
-            "unlock_premium_customization", "custom_filters",
+            "unlock_premium_customization", "custom_filters", "custom_ab_props",
             "dotonline", "showonlinetext", "typing_online_toasts",
             "metaai", "channels_enhancements", "chat_filters", "hide_ui_tabs",
-            "instagram_status_layout", "status_style", "separate_groups_tabs", "quick_home_menu",
+            "instagram_status_layout", "native_igstatus", "status_style", "separate_groups_tabs", "quick_home_menu",
             "contact_blocked_verify",
             "disable_sensor_proximity"
         )
     }
 
-    val settingsState = remember {
+    val settingsState = remember(targetEpoch) {
         mutableStateMapOf<String, Boolean>().apply {
             stylesKeys.forEach { key ->
                 if (StyleNonBooleanPreferencePolicy.requiresDedicatedEditor(key)) {
@@ -134,7 +195,7 @@ fun StylesSettingsScreen() {
                         preferenceManager.getString("seentick", "0")
                     ))
                 } else {
-                    val defaultValue = false
+                    val defaultValue = key == "native_igstatus"
                     val canonicalKey = StyleBooleanAliasPolicy.canonicalKey(key)
                     val legacyDefault = if (canonicalKey == key) defaultValue
                         else preferenceManager.getBoolean(key, defaultValue)
@@ -171,31 +232,14 @@ fun StylesSettingsScreen() {
     val isPro = LocalIsPro.current
     val onActivatePro = LocalOnActivatePro.current
 
-    val appearanceGroups = remember {
-        FeatureCatalog.groupsFor(4, "appearance").map { StyleGroup(it.id, WaexIcons.Palette, it.items()) }
-    }
-    val layoutGroups = remember {
-        FeatureCatalog.groupsFor(4, "layout").map { group ->
-            val icon = when (group.id) {
-                "conversation_list_activity_presence" -> WaexIcons.Security
-                "home_layout_navigation" -> WaexIcons.GridView
-                else -> WaexIcons.Extension
-            }
-            StyleGroup(group.id, icon, group.items())
-        }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .onGloballyPositioned { containerCoordinates ->
-                containerY = containerCoordinates.positionInRoot().y
-            }
-            .padding(vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         // Tab switcher header
+        item(key = "tab_switcher") {
         Surface(
             shape = radius.mdShape,
             color = colors.surfaceDim,
@@ -268,45 +312,49 @@ fun StylesSettingsScreen() {
                 }
             }
         }
+        }
 
         // Render Style Groups
         val activeGroups = if (selectedTab == "appearance") appearanceGroups else layoutGroups
         activeGroups.forEach { group ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.pageMargin)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = group.icon,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Text(
-                        text = LocalizationHelper.getLocalizedSectionTitle(context, group.title),
-                        style = typography.labelSm,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onSurfaceVariant
-                    )
-                }
+            val isExpanded = expandedSections[group.title] ?: true
+            stickyHeader(key = "header_${group.title}") {
+                WaexCategoryHeader(
+                    title = LocalizationHelper.getLocalizedSectionTitle(context, group.title),
+                    icon = group.icon,
+                    isExpanded = isExpanded,
+                    onToggleExpand = {
+                        expandedSections[group.title] = !isExpanded
+                    }
+                )
+            }
 
-                Surface(
-                    shape = radius.bentoCardShape,
+            item(key = "card_${group.title}") {
+                AnimatedVisibility(
+                    visible = isExpanded,
+                    enter = expandVertically(tween(250)) + fadeIn(tween(250)),
+                    exit = shrinkVertically(tween(250)) + fadeOut(tween(200))
+                ) {
+                    Surface(
+                    shape = radius.cardShape,
                     color = colors.surfaceDim,
-                    border = BorderStroke(1.dp, colors.outlineVariant),
-                    modifier = Modifier.fillMaxWidth()
+                    border = BorderStroke(1.dp, colors.outlineVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing.pageMargin)
                 ) {
                     Column {
                         group.items.forEachIndexed { index, item ->
                             val isLocked = item.isPro && !isPro
                             val needsTypedEditor = StyleNonBooleanPreferencePolicy.requiresDedicatedEditor(item.key)
                             val isHighlighted = navController.highlightTargetKey == item.key
+                            val bringIntoViewRequester = remember { BringIntoViewRequester() }
+                            if (isHighlighted) {
+                                LaunchedEffect(Unit) {
+                                    delay(200)
+                                    bringIntoViewRequester.bringIntoView()
+                                }
+                            }
                             val highlightBgColor by animateColorAsState(
                                 targetValue = if (isHighlighted) colors.primary.copy(alpha = 0.15f) else Color.Transparent,
                                 animationSpec = tween(durationMillis = 300),
@@ -317,11 +365,8 @@ fun StylesSettingsScreen() {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .bringIntoViewRequester(bringIntoViewRequester)
                                     .background(highlightBgColor)
-                                    .onGloballyPositioned { coordinates ->
-                                        val y = coordinates.positionInRoot().y - containerY + scrollState.value
-                                        itemCoordinates[item.key] = y
-                                    }
                                     .clickable {
                                         if (isLocked) {
                                             onActivatePro()
@@ -393,6 +438,19 @@ fun StylesSettingsScreen() {
                                                 )
                                             }
                                         }
+                                        if (item.key == "custom_ab_props") {
+                                            IconButton(
+                                                onClick = { navController.navigateTo(Screen.CustomAbProps) },
+                                                modifier = Modifier.size(36.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = WaexIcons.Settings,
+                                                    contentDescription = "Configure Custom AB Properties",
+                                                    tint = colors.primary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
                                         if (needsTypedEditor) {
                                             Icon(
                                                 imageVector = WaexIcons.ChevronRight,
@@ -445,16 +503,17 @@ fun StylesSettingsScreen() {
                                     }
                                 )
                             }
-                            if (item.key == "custom_time_format") {
+                            if (item.key == "custom_time_format" && (settingsState[item.key] == true)) {
                                 HorizontalDivider(
                                     thickness = 1.dp,
                                     color = colors.outlineVariant.copy(alpha = 0.4f),
                                     modifier = Modifier.padding(start = 32.dp)
                                 )
+                                // Sub-pref 1: Timestamp format
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { typedEditorKey = "timestamp_time_format" }
+                                        .clickable { showTimestampFormatSheet = true }
                                         .padding(start = 32.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -463,15 +522,17 @@ fun StylesSettingsScreen() {
                                         verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         Text(
-                                            text = UiText.get(R.string.timestamp_time_format_title, "Time format"),
+                                            text = UiText.get(R.string.timestamp_format_title, "Timestamp format"),
                                             style = typography.bodyLg,
                                             fontWeight = FontWeight.Medium,
                                             color = colors.onSurface
                                         )
                                         Text(
-                                            text = if (preferenceManager.getBoolean("ampm", false))
-                                                UiText.get(R.string.timestamp_time_format_12_hour, "12-hour clock (3:45:30 PM)")
-                                            else UiText.get(R.string.timestamp_time_format_24_hour, "24-hour clock (15:45:30)"),
+                                            text = if (timestampFormat == "Custom Pattern") {
+                                                if (timestampCustomPattern.isNotBlank()) "Custom Pattern ($timestampCustomPattern)" else "Custom Pattern"
+                                            } else {
+                                                timestampFormat
+                                            },
                                             style = typography.bodyMd,
                                             color = colors.onSurfaceVariant,
                                             fontSize = 12.sp
@@ -480,21 +541,114 @@ fun StylesSettingsScreen() {
                                     Icon(
                                         imageVector = WaexIcons.ChevronRight,
                                         contentDescription = UiText.get(R.string.waex_ui_configure_1_s, "Configure %1\$s",
-                                            UiText.get(R.string.timestamp_time_format_title, "Time format")),
+                                            UiText.get(R.string.timestamp_format_title, "Timestamp format")),
+                                        tint = colors.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                // Custom pattern input field appears right after the format pref when Custom Pattern is selected
+                                if (timestampFormat == "Custom Pattern") {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 32.dp, end = 16.dp, bottom = 12.dp)
+                                    ) {
+                                        var patternInput by remember(timestampCustomPattern) { mutableStateOf(timestampCustomPattern) }
+                                        val isPatternValid = remember(patternInput) {
+                                            if (patternInput.isBlank()) false else try {
+                                                DateTimeFormatter.ofPattern(patternInput.trim())
+                                                true
+                                            } catch (t: Throwable) {
+                                                false
+                                            }
+                                        }
+                                        OutlinedTextField(
+                                            value = patternInput,
+                                            onValueChange = { input ->
+                                                patternInput = input
+                                                if (input.isNotBlank()) {
+                                                    try {
+                                                        DateTimeFormatter.ofPattern(input.trim())
+                                                        preferenceManager.putPublicString("timestamp_custom_pattern", input.trim())
+                                                        timestampCustomPattern = input.trim()
+                                                    } catch (ignored: Throwable) {}
+                                                }
+                                            },
+                                            label = { Text(UiText.get(R.string.timestamp_custom_pattern_label, "Custom Pattern")) },
+                                            placeholder = { Text(UiText.get(R.string.timestamp_custom_pattern_hint, "e.g. HH:mm a, dd/MM HH:mm:ss")) },
+                                            isError = !isPatternValid && patternInput.isNotEmpty(),
+                                            supportingText = {
+                                                if (!isPatternValid && patternInput.isNotEmpty()) {
+                                                    Text(UiText.get(R.string.timestamp_invalid_pattern, "Invalid date/time pattern"), color = colors.error)
+                                                } else if (isPatternValid) {
+                                                    val sample = remember(patternInput) {
+                                                        try {
+                                                            DateTimeFormatter.ofPattern(patternInput.trim(), Locale.getDefault())
+                                                                .withZone(ZoneId.systemDefault())
+                                                                .format(Instant.now())
+                                                        } catch (e: Throwable) { "" }
+                                                    }
+                                                    if (sample.isNotEmpty()) {
+                                                        Text("Preview: $sample", color = colors.primary)
+                                                    }
+                                                }
+                                            },
+                                            singleLine = true,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                }
+
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = colors.outlineVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.padding(start = 32.dp)
+                                )
+
+                                // Sub-pref 2: Modify text
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { showModifyTextSheet = true }
+                                        .padding(start = 32.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier.weight(1f),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = UiText.get(R.string.timestamp_modify_text_title, "Modify text"),
+                                            style = typography.bodyLg,
+                                            fontWeight = FontWeight.Medium,
+                                            color = colors.onSurface
+                                        )
+                                        Text(
+                                            text = timestampCustomText,
+                                            style = typography.bodyMd,
+                                            color = colors.onSurfaceVariant,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = WaexIcons.ChevronRight,
+                                        contentDescription = UiText.get(R.string.waex_ui_configure_1_s, "Configure %1\$s",
+                                            UiText.get(R.string.timestamp_modify_text_title, "Modify text")),
                                         tint = colors.primary,
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
                             if (index < group.items.lastIndex) {
-                                HorizontalDivider(thickness = 1.dp, color = colors.outlineVariant)
+                                HorizontalDivider(thickness = 0.8.dp, color = colors.outlineVariant.copy(alpha = 0.4f), modifier = Modifier.padding(horizontal = 16.dp))
                             }
                         }
                     }
                 }
+                }
             }
         }
-        Spacer(modifier = Modifier.height(100.dp))
     }
 
     typedEditorKey?.let { key ->
@@ -505,6 +659,47 @@ fun StylesSettingsScreen() {
             onSaved = {
                 typedValueRevision++
                 typedEditorKey = null
+            }
+        )
+    }
+
+    if (showTimestampFormatSheet) {
+        ChoiceValueEditorDialog(
+            title = UiText.get(R.string.timestamp_format_title, "Timestamp format"),
+            selectedValue = timestampFormat,
+            choices = listOf(
+                "HH:mm a" to "HH:mm a (default)",
+                "HH:mm:ss" to "HH:mm:ss",
+                "h:mm:ss a" to "h:mm:ss a",
+                "HH:mm:ss.SSS" to "HH:mm:ss.SSS",
+                "h:mm:ss.SSS a" to "h:mm:ss.SSS a",
+                "Custom Pattern" to "Custom Pattern"
+            ),
+            optionPreview = { value ->
+                val pattern = if (value == "Custom Pattern") timestampCustomPattern else value
+                formatTimestampPreview(pattern)
+            },
+            onDismiss = { showTimestampFormatSheet = false },
+            onSave = { selected ->
+                preferenceManager.putPublicString("timestamp_format", selected)
+                timestampFormat = selected
+                showTimestampFormatSheet = false
+                typedValueRevision++
+            }
+        )
+    }
+
+    if (showModifyTextSheet) {
+        ModifyTimestampTextSheet(
+            initialText = timestampCustomText,
+            selectedFormat = timestampFormat,
+            customPattern = timestampCustomPattern,
+            onDismiss = { showModifyTextSheet = false },
+            onSave = { savedText ->
+                preferenceManager.putPublicString("timestamp_custom_text", savedText)
+                timestampCustomText = savedText
+                showModifyTextSheet = false
+                typedValueRevision++
             }
         )
     }
@@ -553,16 +748,6 @@ private fun TypedStyleEditorDialog(
         }
     }
     when (key) {
-        "timestamp_time_format" -> ChoiceValueEditorDialog(
-            title = UiText.get(R.string.timestamp_time_format_title, "Time format"),
-            selectedValue = if (preferenceManager.getBoolean("ampm", false)) "12" else "24",
-            choices = listOf(
-                "12" to UiText.get(R.string.timestamp_time_format_12_hour, "12-hour clock (3:45:30 PM)"),
-                "24" to UiText.get(R.string.timestamp_time_format_24_hour, "24-hour clock (15:45:30)")
-            ),
-            onDismiss = onDismiss,
-            onSave = { completeSave(preferenceManager.putBooleans(mapOf("ampm" to (it == "12")))) }
-        )
         "custom_theme" -> TextValueEditorDialog(
             title = UiText.get(R.string.feat_custom_theme_title, "Custom Theme CSS"),
             description = UiText.get(R.string.waex_ui_style_whatsapp_views_using_ids_widget, "Style WhatsApp views using IDs, widget types, scoped activities, and common CSS properties. Restart WhatsApp after saving."),
@@ -651,7 +836,7 @@ private fun TextValueEditorDialog(
     val colors = WaexTheme.colors
     val radius = WaexTheme.radius
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(
+    WaexModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.surface,
@@ -697,12 +882,20 @@ private fun TextValueEditorDialog(
     }
 }
 
+private fun formatTimestampPreview(pattern: String): String {
+    return runCatching {
+        DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
+            .format(Instant.now().atZone(ZoneId.systemDefault()))
+    }.getOrElse { "—" }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChoiceValueEditorDialog(
     title: String,
     selectedValue: String,
     choices: List<Pair<String, String>>,
+    optionPreview: ((String) -> String)? = null,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit
 ) {
@@ -712,7 +905,7 @@ private fun ChoiceValueEditorDialog(
     var selected by remember(title, selectedValue) { mutableStateOf(selectedValue) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    ModalBottomSheet(
+    WaexModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.surface,
@@ -778,8 +971,19 @@ private fun ChoiceValueEditorDialog(
                             style = typography.bodyLg,
                             color = if (isSelected) colors.primary else colors.onSurface,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                            modifier = Modifier.padding(start = 4.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp)
                         )
+                        optionPreview?.let { preview ->
+                            Text(
+                                text = preview(value),
+                                style = typography.bodySm,
+                                color = colors.onSurfaceVariant,
+                                maxLines = 1,
+                                modifier = Modifier.padding(end = 12.dp)
+                            )
+                        }
                     }
                     if (index < choices.lastIndex) {
                         HorizontalDivider(
@@ -840,7 +1044,7 @@ private fun MultiChoiceValueEditorDialog(
     val selected = remember(title, selectedValues) { mutableStateListOf<String>().apply { addAll(selectedValues) } }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    ModalBottomSheet(
+    WaexModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = colors.surface,
@@ -946,6 +1150,178 @@ private fun MultiChoiceValueEditorDialog(
             TextButton(
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth().height(44.dp),
+                shape = radius.fullShape
+            ) {
+                Text(
+                    text = UiText.get(R.string.action_cancel, "Cancel"),
+                    fontWeight = FontWeight.Medium,
+                    color = colors.onSurfaceVariant,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModifyTimestampTextSheet(
+    initialText: String,
+    selectedFormat: String,
+    customPattern: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    val radius = WaexTheme.radius
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var textValue by remember(initialText) { mutableStateOf(initialText.ifEmpty { "\${t}" }) }
+
+    val effectivePattern = remember(selectedFormat, customPattern) {
+        if (selectedFormat == "Custom Pattern") {
+            customPattern.ifBlank { "HH:mm a" }
+        } else {
+            selectedFormat.ifBlank { "HH:mm a" }
+        }
+    }
+
+    val formattedTimestamp = remember(effectivePattern) {
+        try {
+            DateTimeFormatter.ofPattern(effectivePattern, Locale.getDefault())
+                .withZone(ZoneId.systemDefault())
+                .format(Instant.now())
+        } catch (e: Throwable) {
+            try {
+                DateTimeFormatter.ofPattern("HH:mm a", Locale.getDefault())
+                    .withZone(ZoneId.systemDefault())
+                    .format(Instant.now())
+            } catch (ignored: Throwable) {
+                "12:00 PM"
+            }
+        }
+    }
+
+    val livePreview = remember(textValue, formattedTimestamp) {
+        if (textValue.contains("\${t}")) {
+            textValue.replace("\${t}", formattedTimestamp)
+        } else {
+            textValue
+        }
+    }
+
+    WaexModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = colors.surface,
+        shape = radius.bottomSheetShape,
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(top = 10.dp, bottom = 6.dp)
+                    .size(width = 36.dp, height = 4.dp)
+                    .clip(CircleShape)
+                    .background(colors.outlineVariant.copy(alpha = 0.6f))
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Instructions on top of sheet
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = UiText.get(R.string.timestamp_modify_text_title, "Modify text"),
+                    style = typography.headlineMd,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = UiText.get(
+                        R.string.timestamp_modify_text_instructions,
+                        "Use \${t} as the timestamp variable according to your selected format. You can add any text before and after \${t}, or enter custom text."
+                    ),
+                    style = typography.bodyMd,
+                    color = colors.onSurfaceVariant
+                )
+            }
+
+            // Input field
+            OutlinedTextField(
+                value = textValue,
+                onValueChange = { textValue = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = false,
+                label = { Text("Timestamp Text") },
+                placeholder = { Text("\${t}") },
+                trailingIcon = {
+                    if (!textValue.contains("\${t}")) {
+                        TextButton(onClick = {
+                            textValue = if (textValue.isEmpty()) "\${t}" else "$textValue \${t}"
+                        }) {
+                            Text("+\${t}", color = colors.primary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            )
+
+            // Gap
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Preview under it with a gap
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colors.surfaceContainerHighest.copy(alpha = 0.5f))
+                    .border(1.dp, colors.outlineVariant.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = UiText.get(R.string.timestamp_modify_text_preview, "Preview"),
+                    style = typography.labelLg,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary
+                )
+                Text(
+                    text = livePreview.ifEmpty { "(empty)" },
+                    style = typography.bodyLg,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.onSurface
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Save button
+            Button(
+                onClick = { onSave(textValue) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = radius.fullShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.primary,
+                    contentColor = colors.onPrimary
+                )
+            ) {
+                Text(UiText.get(R.string.action_save, "Save"), fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            }
+
+            // Cancel button
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
                 shape = radius.fullShape
             ) {
                 Text(

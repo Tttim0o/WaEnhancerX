@@ -1,65 +1,52 @@
 [Added]
-- Added support for version 2.26.43.xx
-- Time Format (12/24 hours) for timestamp
-- In-App Screenshot / Screen Recording restrictions bypass
-- Send seen to specific Status
-  - Seen button in status view reply bar (Experimental)
-- Added module settings for Hooking method (Lightweight, Balanced, Maximum Capability, Customized)
+- Added support for versions upto 2.26.45.xx
+- Parallel Downloading: Multi-connection acceleration for downloading large photos, videos, and documents
+- Custom A/B Props support: Override WhatsApp AB properties
+- Search bar style
+- AI audio transcription with multiple models (Offline + Custom API)
+- Custom Timestamp
+- Device Default Emojis: Use device default system emojis (iOS, Samsung, Google) instead of WhatsApp's built-in emojis in both WhatsApp and WhatsApp Business
+- Config Mode: Universal, Target App Specific 
+
+[Fixes]
+- Fixed Unread chats counter not showing on Groups tab in latest version
+- Fixed Status tabs indicator position
+- Fixed Delete for me message deletion delay
+- Other privacy and performance bug fixes
 
 [Improvements]
-- Removed obsolete Facebook Grid and Compact List status layouts
-- Enhanced Download Profile Picture with optional "Save Duplicates" confirmation
-- Enhanced Download Status with optional "Save Duplicates" confirmation
-- Improved Floating bottom navigation customization
-- Hooks injection Optimized
-- Flexible removal of Meta AI
-  - Remove Home FAB 
-  - Remove Meta AI entry points
-  - Block Meta AI chat
-- Improved bootloader spoofer with support of play integrity to avoid WhatsApp Ban / Unverfied app issue (Experimental) 
-  
-
-[Fixed]
-- Send blue ticks
-- Blue ticks on reply
-- Remove Meta AI
+- Improved Module Status and Target App detection
+- Improved Restart WhatsApp button to not turn on Auto Rotate.
+- Send original quality images and videos
+- Improved Call Recording Module [Under Development]:
+    • Record calls from multiple WhatsApp variants
+    • Save calls from any WhatsApp with call recording support
+    • Link to original contacts and apps
+    • Improved UI
+    • More reliable detection
+- Improved module's UI
+- Improved chats pin logic
 
 
-[Feature: Floating bottom bar]
-- Horizontal Inner Padding
-- Selector type: Default, Oval
-- Selector Color
-- Hide Tab Labels (Icons Only)
-- Other improvements
+[Feature: AI Audio Transcription]
+- Local whisper models (Offline)
+- Custom API support (Web API)
+- Multiple models support
+- Download models locally
 
-[Feature: Hooking Method]
-- Hooking method is a new feature that allows you to hook WhatsApp in different ways. 
-- You can choose between 3 different hooking methods:
-  - Balanced: Hooking some features on Startup, some features on demand (lazy injecting) for a balance between battery consumption and compatibility.
-  - Maximum: Hooking every feature on Startup for maximum compatibility.
-  - Lightweight (Pro): Hooking minimal features on Startup and more features on demand (lazy injecting) for minimum battery consumption.
-  - Customized (Pro): You can customize the hooking method for each feature.
+[Feature: Custom Timestamp]
+- Preset time formats (HH:mm a, HH:mm:ss, HH:mm:ss.SSS, h:mm:ss a, h:mm:ss.SSS a)
+- Custom format patterns supporting date and time
+- Modify timestamp text with ${t} variable
+- Live preview for custom patterns and text templates
 
-[Feature: Bootloader Spoofer]
-- Introduced Play Integrity & Roadblock Bypass: Intercepts WhatsApp's aggressive device integrity checks and suppresses unofficial app verification roadblock screens dynamically.
-- Tested on latest WhatsApp beta release (2.26.43.2). If your environment requires strict hardware-backed attestation for SMS/registration verification, ensure your device passes Device Integrity (e.g., using a valid keybox via Bootloader Spoofer or tools like PlayIntegrityFix/TEESimulator).
-
-
-[Notes]
-![Upcoming WhatsApp floating bottom bar](https://raw.githubusercontent.com/WaEnhancerX/WaEnhancerX/main/samples/upcoming-floating-bar.jpeg)
-
-- Floating bar new features are inspired from WhatsApp's soon upcoming update of Floating bottom bar design.
-- You can enjoy the same experience before WhatsApp even launches in beta. 
-- Use these values to get a similar experince:
-  - Horizontal Inner Padding: 5dp
-  - Vertical Inner Padding: 0dp
-  - Selector type: Oval
-  - Selector Color: App Default or by your choice (with 30% opacity)
-  - Hide Tab Labels (Icons Only): True
-  - Icon Size: 26dp
-  - Shadow: Enabled
-  - Selected/Unselected Icon color: App Default or by your choice.
-
+[Feature: Config Mode]
+- Universal mode for sharing one configuration across all supported target apps.
+- Target App Specific mode for independent WhatsApp and WhatsApp Business preferences.
+- On first use, a target app inherits the current universal preferences as its starting configuration.
+- Existing target-app values are preserved when switching between universal and target-specific modes.
+- Newly scoped or installed target apps inherit universal values without pre-creating keys for every app.
+- Switching target apps in the settings UI refreshes preference controls while preserving the current tab and scroll position.
 
 [Community contribution]
-- Thanks to @TheKillerMax for valuable contributions in this update.
+- Thanks to @Tttim0o for valuable contributions in audio transcription.
