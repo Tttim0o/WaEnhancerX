@@ -1175,4 +1175,13 @@
     <string name="waex_ui_chat_import_groups" formatted="false">"आयात केवल एक-से-एक चैट के लिए काम करता है"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"आयात करने के लिए ऊपर अपना नाम चुनें"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"आयात करने के लिए कुछ भी नहीं. इस संस्करण से पहले किए गए निर्यात को फिर से निर्यात करने की आवश्यकता है।"</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX वेब: नए ब्राउज़र में साइन इन किया गया"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX वेब पेयरिंग कोड: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"%s द्वारा मांगा गया। 2 मिनट के लिए वैध. यदि यह आप नहीं थे, तो इसे अनदेखा करें।"</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX वेब: ब्राउज़र में चैट (प्रयोगात्मक)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"उसी Wi-Fi पर कंप्यूटर से अपनी चैट पढ़ें और लिखें। एक नए ब्राउज़र को एक कोड की आवश्यकता होती है जिसे यह फ़ोन एक अधिसूचना में दिखाता है। आप वेब पेज पर एक पासवर्ड जोड़ सकते हैं."</string>
+    <string name="waex_ui_web_address" formatted="false">"इस पते को अपने कंप्यूटर पर खोलें"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"पता देखने के लिए फ़ोन को Wi-Fi से कनेक्ट करें।"</string>
+    <string name="waex_ui_web_restart" formatted="false">"इसे बदलने के बाद WhatsApp को पुनः आरंभ करें। पेज के काम करने के लिए WhatsApp को चलना चाहिए।"</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"कनेक्शन एन्क्रिप्टेड नहीं है. इसका उपयोग केवल उस Wi-Fi पर करें जिस पर आपको भरोसा है। लॉक की गई चैट कभी नहीं दिखाई जातीं."</string>
 </resources>

@@ -1,0 +1,67 @@
+WAEX Web API
+============
+
+Base address: http://<phone-ip>:<port>   (only reachable from the phone's own Wi-Fi)
+The connection is plain HTTP. Use it only on a network you trust.
+
+Signing in
+----------
+Scripts use an API token. Create one in the web page: Settings > API tokens.
+Send it with every request:
+
+    Authorization: Bearer waex_...
+
+A token can read chats and media and send messages. It cannot change the password,
+sign browsers out or create other tokens.
+
+Example:
+
+    curl -H "Authorization: Bearer waex_..." http://192.168.1.50:8377/api/chats
+
+Answers are JSON. Errors look like {"error":"code"} with an HTTP status of 4xx or 5xx.
+Times are milliseconds since 1970. A chat is named by its JID, for example
+421900123456@s.whatsapp.net or 1203630xxxxxxx@g.us. Write the @ as %40 in addresses.
+Locked and hidden chats are never returned.
+
+Reading
+-------
+GET /api/status
+    {"app":"waex-web","signedIn":true,"passwordSet":false,"canSend":true}
+
+GET /api/chats?q=<part of a name>
+    {"chats":[{"jid","name","group","ts","unread","archived",
+               "lastFromMe","lastType","lastText","lastStatus"}]}   newest first, up to 500
+
+GET /api/chats/<jid>/messages?limit=60
+    The latest messages, oldest first. Up to 200 per request.
+    Older page:  &beforeSort=<sort>&beforeId=<id>   (sort and id of the oldest message you have)
+    Newer only:  &after=<id>
+    {"messages":[{"id","sort","fromMe","ts","type","text","status","sender","quote",
+                  "media":{"mime","name","size","duration","w","h","voice","available"},
+                  "thumb","starred","reactions"}],"canSend":true}
+    type: 0 text, 1 photo, 2 audio, 3 video, 4 contact, 5 location, 9 document, 13 gif,
+          15 deleted, 16 live location, 20 sticker, 42 view once, 46 poll
+    status (your own messages): 0 waiting, 4 sent, 5 delivered, 13 read
+
+GET /api/search?q=<text>&limit=50
+    {"results":[{"id","sort","jid","chat","fromMe","ts","text"}]}
+
+GET /api/updates?rev=<rev>
+    Waits up to 25 seconds until something changes in WhatsApp, then answers
+    {"rev":123,"canSend":true}. Call it without rev first, then pass the last rev back.
+
+GET /api/media/<message id>     the file itself (supports Range)
+GET /api/thumb/<message id>     small JPEG preview
+GET /api/avatar/<jid>           profile picture, 404 when there is none
+
+Writing
+-------
+POST /api/chats/<jid>/send      body: {"text":"Hello"}
+    {"ok":true,"stored":true}   stored tells whether WhatsApp already saved the message.
+    At most 8000 characters and 30 messages per minute.
+    503 send_unavailable: this WhatsApp version is not supported for direct sending.
+
+POST /api/chats/<jid>/open      body: {"text":"Hello"}
+    Opens the chat on the phone with the text filled in, for sending by hand.
+
+POST requests need "Content-Type: application/json" and a Content-Length.

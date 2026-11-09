@@ -1175,4 +1175,13 @@ Pas d'espace entre les messages : %4$d"</string>
     <string name="waex_ui_chat_import_groups" formatted="false">"L'importation fonctionne uniquement pour les discussions en tête-à-tête"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"Choisissez votre nom ci-dessus pour importer"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"Rien à importer. Les exportations effectuées avant cette version doivent être à nouveau exportées."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Web : nouveau navigateur connecté"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Code d'appairage Web : %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"Demandé par %s. Valable 2 minutes. Si ce n'était pas vous, ignorez-le."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Web : chats dans un navigateur (expérimental)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Lisez et écrivez vos discussions depuis un ordinateur sur le même Wi-Fi. Un nouveau navigateur a besoin d'un code que ce téléphone affiche dans une notification. Vous pouvez ajouter un mot de passe sur la page Web."</string>
+    <string name="waex_ui_web_address" formatted="false">"Ouvrez cette adresse sur votre ordinateur"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Connectez le téléphone à Wi-Fi pour voir l'adresse."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Redémarrez WhatsApp après avoir modifié cela. WhatsApp doit être en cours d'exécution pour que la page fonctionne."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"La connexion n'est pas cryptée. Utilisez-le uniquement sur un Wi-Fi en qui vous avez confiance. Les discussions verrouillées ne sont jamais affichées."</string>
 </resources>

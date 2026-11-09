@@ -1175,4 +1175,13 @@
     <string name="waex_ui_chat_import_groups" formatted="false">"يعمل الاستيراد للمحادثات الفردية فقط"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"اختر اسمك أعلاه للاستيراد"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"لا شيء للاستيراد. يجب تصدير عمليات التصدير التي تمت قبل هذا الإصدار مرة أخرى."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX الويب: تم تسجيل الدخول إلى متصفح جديد"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX رمز إقران الويب: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"تم السؤال بواسطة %s. صالحة لمدة دقيقتين. إذا لم يكن هذا أنت، تجاهله."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX الويب: المحادثات في المتصفح (تجريبية)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"قراءة وكتابة محادثاتك من جهاز كمبيوتر على نفس Wi-Fi. يحتاج المتصفح الجديد إلى رمز يعرضه هذا الهاتف في الإشعار. يمكنك إضافة كلمة مرور على صفحة الويب."</string>
+    <string name="waex_ui_web_address" formatted="false">"افتح هذا العنوان على جهاز الكمبيوتر الخاص بك"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"قم بتوصيل الهاتف بـ Wi-Fi لرؤية العنوان."</string>
+    <string name="waex_ui_web_restart" formatted="false">"أعد تشغيل WhatsApp بعد تغيير هذا. يجب تشغيل WhatsApp حتى تعمل الصفحة."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"الاتصال غير مشفر. استخدمه فقط على Wi-Fi الذي تثق به. لا يتم عرض الدردشات المقفلة أبدًا."</string>
 </resources>

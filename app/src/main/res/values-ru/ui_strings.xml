@@ -1175,4 +1175,13 @@
     <string name="waex_ui_chat_import_groups" formatted="false">"Импорт работает только для личных чатов."</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"Выберите свое имя выше для импорта"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"Нечего импортировать. Экспорт, сделанный до этой версии, необходимо экспортировать снова."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Интернет: вход в новый браузер"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Код веб-соединения: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"Запросил %s. Действует в течение 2 минут. Если это были не вы, игнорируйте это."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Интернет: чаты в браузере (экспериментально)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Читайте и пишите свои чаты с компьютера на том же Wi-Fi. Для нового браузера требуется код, который этот телефон показывает в уведомлении. Вы можете добавить пароль на веб-странице."</string>
+    <string name="waex_ui_web_address" formatted="false">"Откройте этот адрес на своем компьютере"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Подключите телефон к Wi-Fi, чтобы увидеть адрес."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Перезапустите WhatsApp после изменения. Чтобы страница работала, WhatsApp должен быть запущен."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"Соединение не шифруется. Используйте его только на том Wi-Fi, которому вы доверяете. Заблокированные чаты никогда не отображаются."</string>
 </resources>

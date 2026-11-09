@@ -1175,4 +1175,13 @@ Não há espaço entre mensagens: %4$d"</string>
     <string name="waex_ui_chat_import_groups" formatted="false">"A importação funciona apenas para bate-papos individuais"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"Escolha seu nome acima para importar"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"Nada para importar. As exportações feitas antes desta versão precisam ser exportadas novamente."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Web: novo navegador conectado"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Código de emparelhamento da Web: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"Solicitado por %s. Válido por 2 minutos. Se não foi você, ignore."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Web: bate-papos em um navegador (experimental)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Leia e escreva seus bate-papos de um computador no mesmo Wi-Fi. Um novo navegador precisa de um código que este telefone mostra em uma notificação. Você pode adicionar uma senha na página da web."</string>
+    <string name="waex_ui_web_address" formatted="false">"Abra este endereço no seu computador"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Conecte o telefone a Wi-Fi para ver o endereço."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Reinicie WhatsApp após alterar isso. WhatsApp deve estar em execução para que a página funcione."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"A conexão não é criptografada. Use-o apenas em um Wi-Fi em que você confia. Os bate-papos bloqueados nunca são mostrados."</string>
 </resources>

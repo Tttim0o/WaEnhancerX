@@ -1175,4 +1175,13 @@ Mesajlar arasında yer yok: %4$d"</string>
     <string name="waex_ui_chat_import_groups" formatted="false">"İçe aktarma yalnızca bire bir sohbetlerde çalışır"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"İçe aktarmak için yukarıda adınızı seçin"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"İthal edilecek bir şey yok. Bu sürümden önce yapılan dışa aktarmaların yeniden dışa aktarılması gerekiyor."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Web: yeni tarayıcıda oturum açıldı"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Web eşleştirme kodu: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"%s tarafından istendi. 2 dakika geçerlidir. Eğer bu sen değilsen görmezden gel."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Web: tarayıcıda sohbetler (deneysel)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Sohbetlerinizi aynı Wi-Fi üzerindeki bir bilgisayardan okuyun ve yazın. Yeni bir tarayıcının, bu telefonun bildirimde gösterdiği bir koda ihtiyacı var. Web sayfasına şifre ekleyebilirsiniz."</string>
+    <string name="waex_ui_web_address" formatted="false">"Bu adresi bilgisayarınızda açın"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Adresi görmek için telefonu Wi-Fi'ye bağlayın."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Bunu değiştirdikten sonra WhatsApp'yi yeniden başlatın. Sayfanın çalışması için WhatsApp çalışıyor olmalıdır."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"Bağlantı şifrelenmemiştir. Yalnızca güvendiğiniz bir Wi-Fi üzerinde kullanın. Kilitli sohbetler hiçbir zaman gösterilmez."</string>
 </resources>

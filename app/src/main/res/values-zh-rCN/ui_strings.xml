@@ -1175,4 +1175,13 @@
     <string name="waex_ui_chat_import_groups" formatted="false">"导入仅适用于一对一聊天"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"在上方选择您的姓名进行导入"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"没有什么可导入的。在此版本之前进行的导出需要再次导出。"</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Web：已登录新浏览器"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX 网络配对代码：%s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"由 %s 要求。有效期2分钟。如果这不是你，请忽略它。"</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Web：在浏览器中聊天（实验性）"</string>
+    <string name="waex_ui_web_desc" formatted="false">"从同一 Wi-Fi 上的计算机读取和写入您的聊天记录。新浏览器需要此手机在通知中显示的代码。您可以在网页上添加密码。"</string>
+    <string name="waex_ui_web_address" formatted="false">"在电脑上打开这个地址"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"将手机连接到 Wi-Fi 以查看地址。"</string>
+    <string name="waex_ui_web_restart" formatted="false">"更改后重新启动 WhatsApp。 WhatsApp 必须正在运行，页面才能正常工作。"</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"连接未加密。仅在您信任的 Wi-Fi 上使用它。锁定的聊天永远不会显示。"</string>
 </resources>
