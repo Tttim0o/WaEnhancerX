@@ -49,14 +49,17 @@ object UpdateCheckCoordinator {
         if (trigger == TRIGGER_WHATSAPP && !prefs.getBoolean("update_check_whatsapp_open", true)) return
 
         val now = System.currentTimeMillis()
-        if (!force && now - prefs.getLong("update_last_check", 0L) < intervalMillis(
+        // Test builds are published many times a day, so they check on every open.
+        val testBuild = isTestBuild(app)
+        if (!force && !testBuild && now - prefs.getLong("update_last_check", 0L) < intervalMillis(
                 prefs.getString("update_frequency", "daily") ?: "daily")) return
         if (!checking.compareAndSet(false, true)) return
 
         scope.launch {
             try {
                 val installed = app.packageManager.getPackageInfo(app.packageName, 0).versionName ?: "0"
-                val releases = ReleaseRepository.fetchReleases(app)
+                val releases = ReleaseRepository.fetchReleases(app, forceRefresh = force,
+                    maxCacheAgeMs = if (testBuild) TEST_BUILD_CACHE_MS else 3600_000L)
                 prefs.edit().putLong("update_last_check", now).apply()
                 val release = ReleaseRepository.findUpdate(releases, installed)
                 if (release == null) {
@@ -85,6 +88,14 @@ object UpdateCheckCoordinator {
                 checking.set(false)
             }
         }
+    }
+
+    private const val TEST_BUILD_CACHE_MS = 5L * 60L * 1000L
+
+    private fun isTestBuild(context: Context): Boolean = try {
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty().contains("-test")
+    } catch (_: Throwable) {
+        false
     }
 
     private fun clearAvailableUpdate(context: Context) {
