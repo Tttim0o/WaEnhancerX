@@ -78,15 +78,19 @@ object ReleaseRepository {
         return parseReleasesFromJson(cachedJson)
     }
 
-    suspend fun fetchReleases(context: Context? = null, forceRefresh: Boolean = false): List<WaexRelease> = withContext(Dispatchers.IO) {
+    suspend fun fetchReleases(
+        context: Context? = null,
+        forceRefresh: Boolean = false,
+        maxCacheAgeMs: Long = 3600_000L
+    ): List<WaexRelease> = withContext(Dispatchers.IO) {
         val cacheStore = context?.let { PreferenceStores.cacheStore(it, PreferenceStores.GITHUB_API_CACHE) }
         val cachedJson = cacheStore?.getString(PREF_KEY_RELEASES_JSON, null)
         val cachedList = if (cachedJson != null) parseReleasesFromJson(cachedJson) else emptyList()
 
         if (!forceRefresh && cachedList.isNotEmpty()) {
             val lastFetch = cacheStore?.getLong(PREF_KEY_RELEASES_LAST_FETCH, 0L) ?: 0L
-            // Use cache if under 1 hour old and not forcing refresh
-            if (System.currentTimeMillis() - lastFetch < 3600_000L) {
+            // Use the cache while it is fresh enough and no refresh is forced
+            if (System.currentTimeMillis() - lastFetch < maxCacheAgeMs) {
                 return@withContext cachedList
             }
         }
