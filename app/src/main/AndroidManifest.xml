@@ -60,6 +60,46 @@
         android:theme="@style/Theme.Waex">
 
         <service
+            android:name="com.waenhancer.app.tiles.GhostModeTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_waex_ghost_off"
+            android:label="@string/waex_ui_ghost_mode"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.waenhancer.app.tiles.FreezeLastSeenTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_waex_freeze_off"
+            android:label="@string/feat_freezelastseen_title"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.waenhancer.app.tiles.DndModeTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_waex_dnd_off"
+            android:label="@string/waex_ui_dnd_mode"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.waenhancer.app.tiles.RestartWhatsAppTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_waex_restart"
+            android:label="@string/waex_ui_restart_whatsapp"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
             android:name="com.waenhancer.core.transcription.server.TranscriptionServerService"
             android:exported="false"
             android:foregroundServiceType="specialUse">

@@ -1117,4 +1117,24 @@
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp stopped unexpectedly while WaEnhancer X was active. Copy the details and send them to whoever made this build."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"Call recording log"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"Steps and errors only. Phone numbers and audio are never logged."</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"Applies after the call, when WhatsApp restarts"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"Applies the next time you open WhatsApp"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"Quick replies"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"Type / in a chat to insert a saved reply"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"Restart WhatsApp after turning this on"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"Add reply"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"Shortcut"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"This shortcut already exists"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"Reply text"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"Save"</string>
+    <string name="waex_ui_chat_export" formatted="false">"Export chat"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Adds Export chat to a chat\'s ⋮ menu: HTML or text, saved to Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (looks like the chat)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"HTML with media files"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"Plain text (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"Exporting chat…"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"Chat export failed"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"Saved to %s"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"You"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"This message was deleted"</string>
 </resources>
