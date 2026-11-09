@@ -1128,7 +1128,14 @@
     <string name="waex_ui_quick_replies_text" formatted="false">"Reply text"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Save"</string>
     <string name="waex_ui_chat_export" formatted="false">"Export chat"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Adds Export chat to a chat\'s ⋮ menu: HTML or text, saved to Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Adds Export chat to ⋮ › WAEX in each chat and Export all chats on the home screen. HTML or text, saved to Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Export all chats"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Exported chats"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML). Nothing is written to WhatsApp."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Open file"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Your name in this chat:"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"No messages found in this file"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Could not read this file"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (looks like the chat)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML with media files"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Plain text (TXT)"</string>

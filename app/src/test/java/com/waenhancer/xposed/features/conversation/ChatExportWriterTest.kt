@@ -58,4 +58,22 @@ class ChatExportWriterTest {
         assertEquals("voice message", ChatExportWriter.mediaLabel(message(null, ChatExportWriter.TYPE_VOICE)))
         assertEquals(null, ChatExportWriter.mediaLabel(message("hi")))
     }
+
+    @Test
+    fun indexLinksEveryChat() {
+        val out = StringWriter()
+        ChatExportWriter.writeIndex(out, true, "All chats", listOf(
+            ChatExportWriter.IndexEntry("Ana & Ben", "001_Ana_Ben.html", 12, 0L),
+            ChatExportWriter.IndexEntry("Team", "002_Team.html", 3, 0L)
+        ), 0L, Locale.ROOT)
+        val html = out.toString()
+        assertTrue(html.contains("href=\"001_Ana_Ben.html\""))
+        assertTrue(html.contains("Ana &amp; Ben"))
+        assertTrue(html.contains("href=\"002_Team.html\""))
+
+        val txt = StringWriter()
+        ChatExportWriter.writeIndex(txt, false, "All chats", listOf(
+            ChatExportWriter.IndexEntry("Team", "002_Team.txt", 3, 0L)), 0L, Locale.ROOT)
+        assertTrue(txt.toString().contains("002_Team.txt  ·  Team  ·  3"))
+    }
 }

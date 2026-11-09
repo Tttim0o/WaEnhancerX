@@ -1143,7 +1143,6 @@
     <string name="waex_ui_quick_replies_text" formatted="false">"回复文字"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"保存"</string>
     <string name="waex_ui_chat_export" formatted="false">"导出聊天记录"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"将导出聊天添加到聊天的 ⋮ 菜单：HTML 或文本，保存到 Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML（看起来像聊天）"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"带有媒体文件的 HTML"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"纯文本 (TXT)"</string>
@@ -1152,4 +1151,12 @@
     <string name="waex_ui_chat_export_saved" formatted="false">"保存到 %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"你"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"此消息已被删除"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"添加将聊天导出到每个聊天中的 ⋮ › WAEX 以及导出主屏幕上的所有聊天。 HTML 或文本，保存到 Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"导出所有聊天记录"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"导出的聊天记录"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"打开由 WAEX 或 WhatsApp 导出的聊天（TXT、ZIP 或 HTML）。未向 WhatsApp 写入任何内容。"</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"打开文件"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"在此文件中找不到消息"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"无法读取该文件"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"您在此聊天中的名字："</string>
 </resources>

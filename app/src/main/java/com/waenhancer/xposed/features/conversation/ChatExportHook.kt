@@ -43,6 +43,7 @@ class ChatExportHook(context: Context, classLoader: ClassLoader, prefs: SharedPr
     private val running = AtomicBoolean(false)
 
     override fun hook() {
+        instance = this
         val hook = object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val activity = param.thisObject as? Activity ?: return
@@ -85,6 +86,8 @@ class ChatExportHook(context: Context, classLoader: ClassLoader, prefs: SharedPr
                 })
         }
     }
+
+    private fun exportEnabled(): Boolean = isEnabled(PREF_KEY, true)
 
     private fun addMenuItem(activity: Activity, menu: Menu) {
         if (!isEnabled(PREF_KEY, true) || menu.findItem(MENU_ITEM_ID) != null) return
@@ -170,68 +173,174 @@ class ChatExportHook(context: Context, classLoader: ClassLoader, prefs: SharedPr
 
     private fun export(app: Context, jid: String, title: String, html: Boolean, withMedia: Boolean): Result {
         val dbFile = MessageStore.findMsgstoreDbFile(app) ?: error("msgstore.db not found")
-        val stamp = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.ROOT).format(Date())
-        val baseName = safeName(title) + "_" + stamp
+        val baseName = safeName(title) + "_" + stamp()
         val folder = "WAEX/Exports" + if (withMedia) "/$baseName" else ""
-        val fileName = baseName + if (html) ".html" else ".txt"
         val mime = if (html) "text/html" else "text/plain"
-        val target = createOutput(app, folder, fileName, mime)
-        val isGroup = ContactNameResolver.isGroupJid(jid)
-        val names = HashMap<String, String>()
-        var mediaCopied = 0
-        var count = 0
-        SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+        val out = SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY).use { db ->
             val chatRows = chatRowIds(db, jid)
             if (chatRows.isEmpty()) error("chat not found")
-            val reactions = reactionsByMessage(db, chatRows)
-            target.stream.use { stream ->
-                val writer = ChatExportWriter(OutputStreamWriter(stream, Charsets.UTF_8).buffered(), html, title, isGroup)
-                writer.begin(System.currentTimeMillis())
-                db.rawQuery(messagesSql(db, chatRows), null).use { c ->
-                    while (c.moveToNext()) {
-                        val rowId = c.getLong(0)
-                        val fromMe = c.getInt(1) == 1
-                        var type = c.getInt(3)
-                        val filePath = c.getString(7)
-                        val mimeType = c.getString(8)
-                        if (type == ChatExportWriter.TYPE_AUDIO && (filePath?.contains("Voice Notes") == true
-                                || mimeType?.contains("opus") == true)) type = ChatExportWriter.TYPE_VOICE
-                        val senderJid = c.getString(5)
-                        val sender = when {
-                            fromMe -> UiText.get(R.string.waex_ui_chat_export_you, "You")
-                            isGroup && senderJid != null -> names.getOrPut(senderJid) { nameOf(app, senderJid) }
-                            else -> title
-                        }
-                        val mediaFile = filePath?.let { mediaFileOf(app, it) }
-                        var link: String? = null
-                        if (withMedia && html && mediaFile != null && mediaFile.canRead()) {
-                            link = copyMedia(app, folder, mediaFile)
-                            if (link != null) mediaCopied++
-                        }
-                        val text = when (type) {
-                            ChatExportWriter.TYPE_DELETED -> UiText.get(R.string.waex_ui_chat_export_deleted, "This message was deleted")
-                            else -> c.getString(4) ?: c.getString(9)
-                        }
-                        writer.add(ChatExportWriter.Message(
-                            timestamp = c.getLong(2),
-                            fromMe = fromMe,
-                            sender = sender,
-                            type = type,
-                            text = text,
-                            quote = c.getString(6),
-                            mediaName = c.getString(10) ?: filePath?.substringAfterLast('/'),
-                            mediaLink = link,
-                            reactions = reactions[rowId]
-                        ))
+            writeChat(app, db, chatRows, jid, title, html, withMedia, folder,
+                baseName + if (html) ".html" else ".txt", HashMap())
+        }
+        return Result(out.uri, "Download/$folder", mime, out.count, out.mediaCopied)
+    }
+
+    private class ChatOut(val uri: Uri, val count: Int, val mediaCopied: Int)
+
+    /** Writes one chat (all of its rows) to [folder]/[fileName] in Download. */
+    private fun writeChat(
+        app: Context, db: SQLiteDatabase, chatRows: List<Long>, jid: String, title: String,
+        html: Boolean, withMedia: Boolean, folder: String, fileName: String, names: HashMap<String, String>
+    ): ChatOut {
+        val target = createOutput(app, folder, fileName, if (html) "text/html" else "text/plain")
+        val isGroup = ContactNameResolver.isGroupJid(jid)
+        var mediaCopied = 0
+        var count: Int
+        val reactions = reactionsByMessage(db, chatRows)
+        target.stream.use { stream ->
+            val writer = ChatExportWriter(OutputStreamWriter(stream, Charsets.UTF_8).buffered(), html, title, isGroup)
+            writer.begin(System.currentTimeMillis())
+            db.rawQuery(messagesSql(db, chatRows), null).use { c ->
+                while (c.moveToNext()) {
+                    val rowId = c.getLong(0)
+                    val fromMe = c.getInt(1) == 1
+                    var type = c.getInt(3)
+                    val filePath = c.getString(7)
+                    val mimeType = c.getString(8)
+                    if (type == ChatExportWriter.TYPE_AUDIO && (filePath?.contains("Voice Notes") == true
+                            || mimeType?.contains("opus") == true)) type = ChatExportWriter.TYPE_VOICE
+                    val senderJid = c.getString(5)
+                    val sender = when {
+                        fromMe -> UiText.get(R.string.waex_ui_chat_export_you, "You")
+                        isGroup && senderJid != null -> names.getOrPut(senderJid) { nameOf(app, senderJid) }
+                        else -> title
                     }
+                    val mediaFile = filePath?.let { mediaFileOf(app, it) }
+                    var link: String? = null
+                    if (withMedia && html && mediaFile != null && mediaFile.canRead()) {
+                        link = copyMedia(app, folder, mediaFile)
+                        if (link != null) mediaCopied++
+                    }
+                    val text = when (type) {
+                        ChatExportWriter.TYPE_DELETED -> UiText.get(R.string.waex_ui_chat_export_deleted, "This message was deleted")
+                        else -> c.getString(4) ?: c.getString(9)
+                    }
+                    writer.add(ChatExportWriter.Message(
+                        timestamp = c.getLong(2),
+                        fromMe = fromMe,
+                        sender = sender,
+                        type = type,
+                        text = text,
+                        quote = c.getString(6),
+                        mediaName = c.getString(10) ?: filePath?.substringAfterLast('/'),
+                        mediaLink = link,
+                        reactions = reactions[rowId]
+                    ))
                 }
-                writer.end()
-                count = writer.count
             }
+            writer.end()
+            count = writer.count
         }
         target.finish()
-        return Result(target.uri, "Download/$folder", mime, count, mediaCopied)
+        return ChatOut(target.uri, count, mediaCopied)
     }
+
+    // ─── Exporting every chat ───────────────────────────────────────────
+
+    private class ChatRef(val jid: String, val rows: MutableList<Long>, var subject: String?, var last: Long)
+
+    /** Every chat with messages, newest first; a contact's phone and LID chats are merged. */
+    private fun allChats(db: SQLiteDatabase): List<ChatRef> {
+        val chat = columns(db, "chat")
+        val subject = if ("subject" in chat) "c.subject" else "NULL"
+        val last = "(SELECT MAX(m.timestamp) FROM message m WHERE m.chat_row_id = c._id AND m.timestamp > 0)"
+        val withMap = """
+            SELECT c._id, COALESCE(pj.raw_string, j.raw_string), $subject, $last
+            FROM chat c JOIN jid j ON j._id = c.jid_row_id
+            LEFT JOIN jid_map jm ON jm.lid_row_id = j._id LEFT JOIN jid pj ON pj._id = jm.jid_row_id
+        """.trimIndent()
+        val plain = "SELECT c._id, j.raw_string, $subject, $last FROM chat c JOIN jid j ON j._id = c.jid_row_id"
+        val byJid = LinkedHashMap<String, ChatRef>()
+        val cursor = try { db.rawQuery(withMap, null) } catch (_: Throwable) { db.rawQuery(plain, null) }
+        cursor.use { c ->
+            while (c.moveToNext()) {
+                val jid = c.getString(1) ?: continue
+                if (c.isNull(3) || jid == "status@broadcast") continue
+                val ref = byJid.getOrPut(jid) { ChatRef(jid, ArrayList(), null, 0) }
+                ref.rows.add(c.getLong(0))
+                if (ref.subject.isNullOrBlank()) ref.subject = c.getString(2)
+                ref.last = maxOf(ref.last, c.getLong(3))
+            }
+        }
+        return byJid.values.sortedByDescending { it.last }
+    }
+
+    private fun startAll(activity: Activity, html: Boolean) {
+        if (!running.compareAndSet(false, true)) return
+        val app = activity.applicationContext
+        Toast.makeText(activity, UiText.get(R.string.waex_ui_chat_export_running, "Exporting chat…"),
+            Toast.LENGTH_SHORT).show()
+        EXECUTOR.execute {
+            val started = System.currentTimeMillis()
+            try {
+                val dbFile = MessageStore.findMsgstoreDbFile(app) ?: error("msgstore.db not found")
+                val folder = "WAEX/Exports/All_" + stamp()
+                val entries = ArrayList<ChatExportWriter.IndexEntry>()
+                val names = HashMap<String, String>()
+                var messages = 0
+                SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                    allChats(db).forEachIndexed { i, chat ->
+                        try {
+                            val title = chat.subject?.takeIf { it.isNotBlank() } ?: nameOf(app, chat.jid)
+                            val fileName = "%03d_%s.%s".format(Locale.ROOT, i + 1, safeName(title), if (html) "html" else "txt")
+                            val out = writeChat(app, db, chat.rows, chat.jid, title, html, false, folder, fileName, names)
+                            messages += out.count
+                            entries.add(ChatExportWriter.IndexEntry(title, fileName, out.count, chat.last))
+                        } catch (t: Throwable) {
+                            XposedBridge.log("$TAG Skipped one chat: ${t.javaClass.simpleName}")
+                        }
+                    }
+                }
+                if (entries.isEmpty()) error("no chats")
+                val indexName = if (html) "index.html" else "index.txt"
+                val index = createOutput(app, folder, indexName, if (html) "text/html" else "text/plain")
+                index.stream.use { stream ->
+                    val w = OutputStreamWriter(stream, Charsets.UTF_8).buffered()
+                    ChatExportWriter.writeIndex(w, html, UiText.get(R.string.waex_ui_chat_export_all, "Export all chats"),
+                        entries, System.currentTimeMillis())
+                }
+                index.finish()
+                XposedBridge.log("$TAG Exported ${entries.size} chats, $messages messages, " +
+                    "in ${System.currentTimeMillis() - started} ms")
+                activity.runOnUiThread {
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_chat_export_saved, "Saved to %s",
+                        "Download/$folder"), Toast.LENGTH_LONG).show()
+                }
+            } catch (t: Throwable) {
+                XposedBridge.log("$TAG Export of all chats failed: ${t.javaClass.simpleName}")
+                activity.runOnUiThread {
+                    Toast.makeText(activity, UiText.get(R.string.waex_ui_chat_export_failed,
+                        "Chat export failed"), Toast.LENGTH_LONG).show()
+                }
+            } finally {
+                running.set(false)
+            }
+        }
+    }
+
+    private fun askAllFormat(activity: Activity) {
+        val options = arrayOf(
+            UiText.get(R.string.waex_ui_chat_export_html, "HTML (looks like the chat)"),
+            UiText.get(R.string.waex_ui_chat_export_txt, "Plain text (TXT)")
+        )
+        AlertDialog.Builder(activity)
+            .setTitle(UiText.get(R.string.waex_ui_chat_export_all, "Export all chats"))
+            .setItems(options) { _, which -> startAll(activity, html = which == 0) }
+            .setNegativeButton(UiText.get(R.string.action_cancel, "Cancel"), null)
+            .show()
+    }
+
+    private fun stamp(): String = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.ROOT).format(Date())
 
     /** The chat's rows; a contact can have one chat under its phone JID and one under its LID. */
     private fun chatRowIds(db: SQLiteDatabase, jid: String): List<Long> {
@@ -379,6 +488,30 @@ class ChatExportHook(context: Context, classLoader: ClassLoader, prefs: SharedPr
         private const val TAG = "[WAEX][ChatExport]"
         const val PREF_KEY = "chat_export"
         private const val MENU_ITEM_ID = 0x57414558 // 'WAEX'
+        const val MENU_ITEM_ALL_ID = 0x57414559
         private val EXECUTOR = Executors.newSingleThreadExecutor()
+        @Volatile private var instance: ChatExportHook? = null
+
+        /** Whether the home screen's WAEX menu should offer "Export all chats". */
+        @JvmStatic
+        fun isExportAllAvailable(): Boolean = instance?.exportEnabled() == true
+
+        /** Adds "Export all chats" to the home screen's WAEX menu. */
+        @JvmStatic
+        fun appendExportAll(target: Menu, activity: Activity) {
+            val hook = instance ?: return
+            if (!hook.exportEnabled() || target.findItem(MENU_ITEM_ALL_ID) != null) return
+            val item = target.add(Menu.NONE, MENU_ITEM_ALL_ID, Menu.NONE,
+                UiText.get(R.string.waex_ui_chat_export_all, "Export all chats"))
+            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+            item.setOnMenuItemClickListener {
+                try {
+                    hook.askAllFormat(activity)
+                } catch (t: Throwable) {
+                    XposedBridge.log("$TAG Dialog failed: ${t.javaClass.simpleName}")
+                }
+                true
+            }
+        }
     }
 }

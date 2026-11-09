@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.view.Menu;
+import com.waenhancer.xposed.features.conversation.ChatExportHook;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
@@ -455,6 +456,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
         menu.removeItem(MENU_ID_SETTINGS);
         menu.removeItem(MENU_ID_ARCHIVED);
         menu.removeItem(MENU_ID_LOCKED);
+        menu.removeItem(ChatExportHook.MENU_ITEM_ALL_ID);
     }
 
     /** Grouped mode: all WAEX items nested inside a single "WAEX" submenu entry in the 3-dots menu. */
@@ -579,6 +581,9 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
 
     /** Always place recovery actions in overflow, not as conspicuous toolbar icons. */
     private void appendRecoveryEntries(Menu target, Activity activity) {
+        try {
+            ChatExportHook.appendExportAll(target, activity);
+        } catch (Throwable ignored) {}
         if (isArchivedHidden() && isArchiveMenuEnabled()) {
             MenuItem item = target.add(Menu.NONE, MENU_ID_ARCHIVED, Menu.NONE, UiText.get(R.string.waex_ui_open_archived_chats_label, "Open archived chats"));
             item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
@@ -637,6 +642,7 @@ public class HomeScreenHeaderActionsHook extends BaseFeature {
     /** Returns true if at least one injected item should be visible. */
     private boolean hasAnyActiveItem() {
         return hasNormalWaexAction()
+                || ChatExportHook.isExportAllAvailable()
                 || (isArchivedHidden() && isArchiveMenuEnabled())
                 || (isHideLockedChatsEnabled() && isLockedMenuEnabled());
     }

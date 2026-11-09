@@ -156,6 +156,11 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="com.waenhancer.app.viewer.ChatViewerActivity"
+            android:label="@string/waex_ui_chat_viewer"
+            android:exported="false" />
+
+        <activity
             android:name="com.waenhancer.app.MainActivity"
             android:screenOrientation="portrait"
             android:exported="true">
