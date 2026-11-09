@@ -67,12 +67,12 @@ public class QuickRepliesHook extends BaseFeature {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override public void afterTextChanged(Editable s) {
-                guard(() -> onTextChanged(field, s));
+                guard(() -> showMatches(field, s));
             }
         });
     }
 
-    private void onTextChanged(EditText field, Editable text) {
+    private void showMatches(EditText field, Editable text) {
         if (disabled.get() || !isEnabled(QuickReplies.ENABLED_KEY, true)) {
             dismiss();
             return;
