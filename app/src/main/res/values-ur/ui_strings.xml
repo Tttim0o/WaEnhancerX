@@ -1125,4 +1125,31 @@
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp غیر متوقع طور پر رک گیا جب WaEnhancer X فعال تھا۔ تفصیلات کاپی کریں اور انہیں بھیجیں جس نے بھی یہ عمارت بنائی ہے۔"</string>
     <string name="waex_ui_call_recording_log" formatted="false">"کال ریکارڈنگ لاگ"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"صرف اقدامات اور غلطیاں۔ فون نمبرز اور آڈیو کبھی لاگ ان نہیں ہوتے ہیں۔"</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX سروس تک نہیں پہنچ سکا۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔"</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"درخواست میں کافی وقت لگا۔ اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔"</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub شرح کی حد سے تجاوز کر گئی۔"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API حد تک پہنچ گئی۔ ریفریش کرنے کے لیے کھینچیں یا چند منٹوں میں دوبارہ کوشش کریں۔"</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"مقامی آئی جی اسٹیٹس"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"حذف شدہ پیغام کے بطور دکھائیں۔"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"حذف شدہ پیغامات کو WhatsApp کے مقامی حذف شدہ پیغام کی ترتیب کا استعمال کرتے ہوئے دکھائیں۔"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"کال کے بعد لاگو ہوتا ہے، جب WhatsApp دوبارہ شروع ہوتا ہے۔"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"اگلی بار جب آپ WhatsApp کھولتے ہیں تو لاگو ہوتا ہے"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"فوری جوابات"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"محفوظ کردہ جواب داخل کرنے کے لیے چیٹ میں / ٹائپ کریں۔"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"اسے آن کرنے کے بعد WhatsApp کو دوبارہ شروع کریں۔"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"جواب شامل کریں۔"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"شارٹ کٹ"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"یہ شارٹ کٹ پہلے سے موجود ہے۔"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"متن کا جواب دیں۔"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"محفوظ کریں۔"</string>
+    <string name="waex_ui_chat_export" formatted="false">"چیٹ برآمد کریں۔"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"ایکسپورٹ چیٹ کو چیٹ کے ⋮ مینو میں شامل کرتا ہے: HTML یا متن، ڈاؤن لوڈ/WAEX/Exports میں محفوظ"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (چیٹ کی طرح لگتا ہے)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"میڈیا فائلوں کے ساتھ ایچ ٹی ایم ایل"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"سادہ متن (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"چیٹ برآمد ہو رہی ہے…"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"چیٹ ایکسپورٹ ناکام ہو گئی۔"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"%s میں محفوظ کیا گیا"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"آپ"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"یہ پیغام حذف کر دیا گیا تھا۔"</string>
 </resources>

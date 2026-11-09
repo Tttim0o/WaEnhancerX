@@ -1125,4 +1125,31 @@ Reiniciar WhatsApp para aplicar as alterações?"</string>
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp parou inesperadamente enquanto o WaEnhancer X estava ativo. Copie os detalhes e envie para quem fez esta construção."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"Registro de gravação de chamadas"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"Apenas etapas e erros. Números de telefone e áudio nunca são registrados."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX não conseguiu acessar o serviço. Verifique sua conexão e tente novamente."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"A solicitação demorou muito. Verifique sua conexão e tente novamente."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub Limite de taxa excedido"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API limite atingido. Puxe para atualizar ou tente novamente em alguns minutos."</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"Status IG nativo"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"Mostrar como mensagem excluída"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"Exibir mensagens excluídas usando o layout nativo de mensagens excluídas de WhatsApp"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"Aplica-se após a chamada, quando WhatsApp reinicia"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"Aplica-se na próxima vez que você abrir WhatsApp"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"Respostas rápidas"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"Digite / em um bate-papo para inserir uma resposta salva"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"Reinicie WhatsApp depois de ativar isso"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"Adicionar resposta"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"Atalho"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"Este atalho já existe"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"Texto de resposta"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"Salvar"</string>
+    <string name="waex_ui_chat_export" formatted="false">"Exportar bate-papo"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Adiciona Exportar bate-papo ao menu ⋮ de um bate-papo: HTML ou texto, salvo em Download/WAEX/Exportações"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (parece o chat)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"HTML com arquivos de mídia"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"Texto simples (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"Exportando bate-papo…"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"Falha na exportação do bate-papo"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"Salvo em %s"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"Você"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"Esta mensagem foi excluída"</string>
 </resources>

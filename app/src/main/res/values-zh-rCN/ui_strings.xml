@@ -1125,4 +1125,31 @@
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"当 WaEnhancer X 处于活动状态时，WhatsApp 意外停止。复制详细信息并将其发送给构建此版本的人员。"</string>
     <string name="waex_ui_call_recording_log" formatted="false">"通话录音日志"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"仅步骤和错误。电话号码和音频永远不会被记录。"</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX 无法访问该服务。检查您的连接并重试。"</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"该请求花费的时间太长。检查您的连接并重试。"</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub 超出速率限制"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API 已达到限制。拉动刷新或几分钟后重试。"</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"本机 IG 状态"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"显示为已删除的消息"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"使用 WhatsApp 的本机已删除消息布局显示已删除消息"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"在调用后、WhatsApp 重新启动时应用"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"下次打开 WhatsApp 时应用"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"快速回复"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"在聊天中输入 / 以插入已保存的回复"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"打开此功能后重新启动 WhatsApp"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"添加回复"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"快捷方式"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"该快捷方式已存在"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"回复文字"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"保存"</string>
+    <string name="waex_ui_chat_export" formatted="false">"导出聊天记录"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"将导出聊天添加到聊天的 ⋮ 菜单：HTML 或文本，保存到 Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML（看起来像聊天）"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"带有媒体文件的 HTML"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"纯文本 (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"正在导出聊天记录..."</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"聊天导出失败"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"保存到 %s"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"你"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"此消息已被删除"</string>
 </resources>

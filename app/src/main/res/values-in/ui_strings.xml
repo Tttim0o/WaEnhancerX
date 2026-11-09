@@ -1125,4 +1125,31 @@ Mulai ulang WhatsApp untuk menerapkan perubahan?"</string>
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp berhenti tiba-tiba saat WaEnhancer X aktif. Salin detailnya dan kirimkan ke siapa pun yang membuat bangunan ini."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"Log rekaman panggilan"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"Hanya langkah dan kesalahan. Nomor telepon dan audio tidak pernah dicatat."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX tidak dapat menghubungi layanan tersebut. Periksa koneksi Anda dan coba lagi."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"Permintaan itu memakan waktu terlalu lama. Periksa koneksi Anda dan coba lagi."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub Batas Nilai Terlampaui"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"Batas GitHub API tercapai. Tarik untuk menyegarkan atau coba lagi dalam beberapa menit."</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"Status IGS asli"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"Tampilkan sebagai Pesan yang Dihapus"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"Tampilkan pesan yang dihapus menggunakan tata letak pesan asli yang dihapus dari WhatsApp"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"Berlaku setelah panggilan, ketika WhatsApp dimulai ulang"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"Berlaku saat berikutnya Anda membuka WhatsApp"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"Balasan cepat"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"Ketik / dalam obrolan untuk menyisipkan balasan yang disimpan"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"Mulai ulang WhatsApp setelah menyalakannya"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"Tambahkan balasan"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"Jalan pintas"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"Pintasan ini sudah ada"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"Teks balasan"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"Simpan"</string>
+    <string name="waex_ui_chat_export" formatted="false">"Ekspor obrolan"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Menambahkan obrolan Ekspor ke menu ⋮ obrolan: HTML atau teks, disimpan ke Unduh/WAEX/Ekspor"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (seperti obrolan)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"HTML dengan file media"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"Teks biasa (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"Mengekspor obrolan…"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"Ekspor obrolan gagal"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"Disimpan ke %s"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"kamu"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"Pesan ini telah dihapus"</string>
 </resources>
