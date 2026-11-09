@@ -158,8 +158,8 @@ public class DownloadViewOnceHook extends BaseFeature {
             return;
         }
 
-        MenuItem item = menu.add(Menu.NONE, MENU_ID_DOWNLOAD, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        MenuItem item = com.waenhancer.xposed.utils.WaexMenu.of(menu).add(Menu.NONE, MENU_ID_DOWNLOAD, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 
         Drawable icon = MenuIconLoader.load(activity, "ic_waex_download");
         if (icon != null) {
@@ -247,8 +247,8 @@ public class DownloadViewOnceHook extends BaseFeature {
                         }
 
                         final Object targetMessage = fmessageObj;
-                        MenuItem item = menu.add(Menu.NONE, MENU_ID_DOWNLOAD, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
-                        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                        MenuItem item = com.waenhancer.xposed.utils.WaexMenu.of(menu).add(Menu.NONE, MENU_ID_DOWNLOAD, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
+                        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
 
                         Drawable icon = MenuIconLoader.load(context, "ic_waex_download");
                         if (icon != null) {
