@@ -1154,9 +1154,25 @@ Reiniciar WhatsApp para aplicar as alterações?"</string>
     <string name="waex_ui_chat_export_desc" formatted="false">"Adiciona Exportar bate-papo para ⋮ › WAEX em cada bate-papo e Exportar todos os bate-papos na tela inicial. HTML ou texto, salvo em Download/WAEX/Exportações"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Exportar todos os bate-papos"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Bate-papos exportados"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"Abra um chat exportado por WAEX ou por WhatsApp (TXT, ZIP ou HTML). Nada é gravado em WhatsApp."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Abrir arquivo"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"Nenhuma mensagem encontrada neste arquivo"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"Não foi possível ler este arquivo"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Seu nome neste chat:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Abra um chat exportado por WAEX ou por WhatsApp (TXT, ZIP ou HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"Importar para WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d mensagens de texto podem ser importadas"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Trabalhando… WhatsApp está fechado enquanto isso."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Importação experimental"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp será fechado e será feito backup de seu banco de dados de mensagens. Em seguida, mensagens de texto %1$d são adicionadas a %2$s. Eles permanecem apenas neste telefone: não são enviados, não são sincronizados com dispositivos vinculados e não podem ser pesquisados. As mensagens que já estão no chat ou mais recentes que a última mensagem são ignoradas. Se algo falhar, o backup será restaurado."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Adicionado: %1$d
+Já no chat: %2$d
+Mais recente que a última mensagem do chat: %3$d
+Não há espaço entre mensagens: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Desfazer (restaurar backup)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Backup %s restaurado"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"Falha na importação"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"Adicionar as mensagens a qual chat?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"A importação funciona apenas para bate-papos individuais"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"Escolha seu nome acima para importar"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"Nada para importar. As exportações feitas antes desta versão precisam ser exportadas novamente."</string>
 </resources>

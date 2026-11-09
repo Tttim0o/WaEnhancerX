@@ -1154,9 +1154,25 @@
     <string name="waex_ui_chat_export_desc" formatted="false">"ایکسپورٹ چیٹ کو ہر چیٹ میں ⋮ › WAEX میں شامل کرتا ہے اور ہوم اسکرین پر تمام چیٹس ایکسپورٹ کرتا ہے۔ HTML یا متن، ڈاؤن لوڈ/WAEX/Exports میں محفوظ کیا گیا۔"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"تمام چیٹس برآمد کریں۔"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"ایکسپورٹ شدہ چیٹس"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX یا WhatsApp (TXT، ZIP یا HTML) کے ذریعے برآمد کردہ چیٹ کھولیں۔ WhatsApp پر کچھ نہیں لکھا گیا ہے۔"</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"فائل کھولیں۔"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"اس فائل میں کوئی پیغام نہیں ملا"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"اس فائل کو پڑھا نہیں جا سکا"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"اس چیٹ میں آپ کا نام:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX یا WhatsApp (TXT، ZIP یا HTML) کے ذریعے برآمد کردہ چیٹ کھولیں۔"</string>
+    <string name="waex_ui_chat_import" formatted="false">"WhatsApp میں درآمد کریں"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d ٹیکسٹ پیغامات درآمد کیے جا سکتے ہیں۔"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"کام کر رہا ہے… WhatsApp اس دوران بند ہے۔"</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"تجرباتی درآمد"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp بند کر دیا جائے گا اور اس کا میسج ڈیٹا بیس بیک اپ ہو جائے گا۔ پھر %1$d ٹیکسٹ پیغامات کو %2$s میں شامل کیا جاتا ہے۔ وہ صرف اس فون پر رہتے ہیں: وہ نہیں بھیجے جاتے، منسلک آلات سے مطابقت پذیر نہیں ہوتے اور تلاش کے قابل نہیں ہوتے۔ چیٹ میں پہلے سے موجود یا اس کے آخری پیغام سے نئے پیغامات کو چھوڑ دیا جاتا ہے۔ اگر کچھ ناکام ہوجاتا ہے تو، بیک اپ بحال ہوجاتا ہے۔"</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"شامل کیا گیا: %1$d
+پہلے سے ہی چیٹ میں ہے: %2$d
+چیٹ کے آخری پیغام سے نیا: %3$d
+پیغامات کے درمیان کوئی گنجائش نہیں: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"کالعدم کریں (بیک اپ بحال کریں)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"بیک اپ %s بحال ہو گیا۔"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"درآمد ناکام ہو گیا۔"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"پیغامات کو کس چیٹ میں شامل کریں؟"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"درآمد صرف ون ٹو ون چیٹس کے لیے کام کرتا ہے۔"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"درآمد کرنے کے لیے اوپر اپنا نام منتخب کریں۔"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"درآمد کرنے کے لیے کچھ نہیں ہے۔ اس ورژن سے پہلے کی گئی برآمدات کو دوبارہ برآمد کرنے کی ضرورت ہے۔"</string>
 </resources>

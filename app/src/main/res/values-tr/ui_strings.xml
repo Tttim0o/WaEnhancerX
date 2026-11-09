@@ -1154,9 +1154,25 @@ Değişiklikleri uygulamak için WhatsApp yeniden başlatılsın mı?"</string>
     <string name="waex_ui_chat_export_desc" formatted="false">"Her sohbete Sohbeti Dışa Aktar'ı ⋮ › WAEX'ye ekler ve ana ekrana Tüm sohbetleri Dışa Aktar'ı ekler. HTML veya metin, İndir/WAEX/Exports'a kaydedildi"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Tüm sohbetleri dışa aktar"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Dışa aktarılan sohbetler"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX veya WhatsApp (TXT, ZIP veya HTML) tarafından dışa aktarılan bir sohbeti açın. WhatsApp'ye hiçbir şey yazılmaz."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Dosyayı aç"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"Bu dosyada mesaj bulunamadı"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"Bu dosya okunamadı"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Bu sohbetteki adınız:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX veya WhatsApp (TXT, ZIP veya HTML) tarafından dışa aktarılan bir sohbeti açın."</string>
+    <string name="waex_ui_chat_import" formatted="false">"WhatsApp'ye aktar"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d metin mesajları içe aktarılabilir"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Çalışıyor… WhatsApp bu arada kapalı."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Deneysel içe aktarma"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp kapatılacak ve mesaj veritabanı yedeklenecek. Daha sonra %1$d kısa mesajları %2$s'ye eklenir. Yalnızca bu telefonda kalırlar: gönderilmezler, bağlı cihazlarla senkronize edilmezler ve aranamazlar. Zaten sohbette bulunan veya son mesajından daha yeni olan mesajlar atlanır. Herhangi bir sorun olursa yedekleme geri yüklenir."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Eklendi: %1$d
+Zaten sohbette: %2$d
+Sohbetin son mesajından daha yeni: %3$d
+Mesajlar arasında yer yok: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Geri al (yedeklemeyi geri yükle)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Yedekleme %s geri yüklendi"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"İçe aktarma başarısız oldu"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"Mesajlar hangi sohbete eklensin?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"İçe aktarma yalnızca bire bir sohbetlerde çalışır"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"İçe aktarmak için yukarıda adınızı seçin"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"İthal edilecek bir şey yok. Bu sürümden önce yapılan dışa aktarmaların yeniden dışa aktarılması gerekiyor."</string>
 </resources>

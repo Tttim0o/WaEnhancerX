@@ -1131,7 +1131,20 @@
     <string name="waex_ui_chat_export_desc" formatted="false">"Adds Export chat to ⋮ › WAEX in each chat and Export all chats on the home screen. HTML or text, saved to Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Export all chats"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Exported chats"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML). Nothing is written to WhatsApp."</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"Import into WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d text messages can be imported"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Working… WhatsApp is closed meanwhile."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Experimental import"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp will be closed and its message database backed up. Then %1$d text messages are added to %2$s. They stay on this phone only: they are not sent, not synced to linked devices and not searchable. Messages already in the chat or newer than its last message are skipped. If anything fails, the backup is restored."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Added: %1$d\nAlready in the chat: %2$d\nNewer than the chat\'s last message: %3$d\nNo room between messages: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Undo (restore backup)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Backup %s restored"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"Import failed"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"Add the messages to which chat?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"Import works for one-to-one chats only"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"Choose your name above to import"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"Nothing to import. Exports made before this version need to be exported again."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Open file"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Your name in this chat:"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"No messages found in this file"</string>

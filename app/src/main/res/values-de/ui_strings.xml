@@ -1154,9 +1154,25 @@ WhatsApp neu starten, um die Änderungen zu übernehmen?"</string>
     <string name="waex_ui_chat_export_desc" formatted="false">"Fügt „Chat exportieren nach ⋮ › WAEX“ in jedem Chat und „Alle Chats exportieren“ auf dem Startbildschirm hinzu. HTML oder Text, gespeichert unter Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Alle Chats exportieren"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Exportierte Chats"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"Öffnen Sie einen von WAEX oder WhatsApp exportierten Chat (TXT, ZIP oder HTML). Es wird nichts nach WhatsApp geschrieben."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Datei öffnen"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"In dieser Datei wurden keine Nachrichten gefunden"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"Diese Datei konnte nicht gelesen werden"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Ihr Name in diesem Chat:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Öffnen Sie einen von WAEX oder WhatsApp exportierten Chat (TXT, ZIP oder HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"Importieren in WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d Textnachrichten können importiert werden"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Funktioniert… WhatsApp ist mittlerweile geschlossen."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Experimenteller Import"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp wird geschlossen und seine Nachrichtendatenbank gesichert. Dann werden %1$d Textnachrichten zu %2$s hinzugefügt. Sie bleiben nur auf diesem Telefon: Sie werden nicht gesendet, nicht mit verknüpften Geräten synchronisiert und sind nicht durchsuchbar. Nachrichten, die sich bereits im Chat befinden oder neuer als die letzte Nachricht sind, werden übersprungen. Wenn etwas fehlschlägt, wird das Backup wiederhergestellt."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Hinzugefügt: %1$d
+Bereits im Chat: %2$d
+Neuer als die letzte Nachricht des Chats: %3$d
+Kein Platz zwischen Nachrichten: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Rückgängig machen (Backup wiederherstellen)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Sicherung %s wiederhergestellt"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"Der Import ist fehlgeschlagen"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"Zu welchem Chat die Nachrichten hinzufügen?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"Der Import funktioniert nur für Einzelchats"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"Wählen Sie oben Ihren Namen zum Importieren aus"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"Nichts zu importieren. Exporte, die vor dieser Version durchgeführt wurden, müssen erneut exportiert werden."</string>
 </resources>

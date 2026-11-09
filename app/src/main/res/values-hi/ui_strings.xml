@@ -1154,9 +1154,25 @@
     <string name="waex_ui_chat_export_desc" formatted="false">"प्रत्येक चैट में ⋮ › WAEX पर एक्सपोर्ट चैट जोड़ता है और सभी चैट को होम स्क्रीन पर एक्सपोर्ट करता है। HTML या पाठ, डाउनलोड/WAEX/निर्यात में सहेजा गया"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"सभी चैट निर्यात करें"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"निर्यातित चैट"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX या WhatsApp (TXT, ZIP या HTML) द्वारा निर्यात की गई चैट खोलें। WhatsApp को कुछ भी नहीं लिखा गया है।"</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"फ़ाइल खोलें"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"इस फ़ाइल में कोई संदेश नहीं मिला"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"इस फ़ाइल को पढ़ा नहीं जा सका"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"इस चैट में आपका नाम:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX या WhatsApp (TXT, ZIP या HTML) द्वारा निर्यात की गई चैट खोलें।"</string>
+    <string name="waex_ui_chat_import" formatted="false">"WhatsApp में आयात करें"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d टेक्स्ट संदेश आयात किए जा सकते हैं"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"काम कर रहा है… WhatsApp इस बीच बंद है।"</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"प्रायोगिक आयात"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp को बंद कर दिया जाएगा और इसके संदेश डेटाबेस का बैकअप लिया जाएगा। फिर %1$d टेक्स्ट संदेश %2$s में जोड़े जाते हैं। वे केवल इस फ़ोन पर ही रहते हैं: वे भेजे नहीं जाते, लिंक किए गए डिवाइसों से समन्वयित नहीं होते और खोजने योग्य नहीं होते। चैट में पहले से मौजूद या आखिरी संदेश से नए संदेशों को छोड़ दिया जाता है। यदि कुछ भी विफल हो जाता है, तो बैकअप बहाल हो जाता है।"</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"जोड़ा गया: %1$d
+पहले से ही चैट में: %2$d
+चैट के अंतिम संदेश से नया: %3$d
+संदेशों के बीच कोई जगह नहीं: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"पूर्ववत करें (बैकअप पुनर्स्थापित करें)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"बैकअप %s पुनर्स्थापित किया गया"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"आयात विफल"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"संदेशों को किस चैट में जोड़ें?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"आयात केवल एक-से-एक चैट के लिए काम करता है"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"आयात करने के लिए ऊपर अपना नाम चुनें"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"आयात करने के लिए कुछ भी नहीं. इस संस्करण से पहले किए गए निर्यात को फिर से निर्यात करने की आवश्यकता है।"</string>
 </resources>

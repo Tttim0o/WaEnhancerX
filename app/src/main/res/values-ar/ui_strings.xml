@@ -1154,9 +1154,25 @@
     <string name="waex_ui_chat_export_desc" formatted="false">"إضافة تصدير الدردشة إلى ⋮ › WAEX في كل دردشة وتصدير جميع الدردشات على الشاشة الرئيسية. HTML أو نص، محفوظ في التنزيل/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"تصدير كافة الدردشات"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"الدردشات المصدرة"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"افتح محادثة تم تصديرها بواسطة WAEX أو بواسطة WhatsApp (TXT أو ZIP أو HTML). لم تتم كتابة أي شيء إلى WhatsApp."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"افتح الملف"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"لم يتم العثور على رسائل في هذا الملف"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"لا يمكن قراءة هذا الملف"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"اسمك في هذه الدردشة:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"افتح محادثة تم تصديرها بواسطة WAEX أو بواسطة WhatsApp (TXT أو ZIP أو HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"الاستيراد إلى WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"يمكن استيراد الرسائل النصية %d"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"جارٍ العمل... WhatsApp مغلق في هذه الأثناء."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"الاستيراد التجريبي"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"سيتم إغلاق WhatsApp وسيتم عمل نسخة احتياطية من قاعدة بيانات الرسائل الخاصة به. ثم تتم إضافة الرسائل النصية %1$d إلى %2$s. وهي تبقى على هذا الهاتف فقط: لا يتم إرسالها ولا تتم مزامنتها مع الأجهزة المرتبطة ولا يمكن البحث فيها. يتم تخطي الرسائل الموجودة بالفعل في الدردشة أو الأحدث من رسالتها الأخيرة. إذا فشل أي شيء، تتم استعادة النسخة الاحتياطية."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"تمت الإضافة: %1$d
+موجود بالفعل في الدردشة: %2$d
+أحدث من آخر رسالة في الدردشة: %3$d
+لا يوجد مكان بين الرسائل: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"تراجع (استعادة النسخة الاحتياطية)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"تمت استعادة النسخة الاحتياطية %s"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"فشل الاستيراد"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"إضافة الرسائل إلى أي دردشة؟"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"يعمل الاستيراد للمحادثات الفردية فقط"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"اختر اسمك أعلاه للاستيراد"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"لا شيء للاستيراد. يجب تصدير عمليات التصدير التي تمت قبل هذا الإصدار مرة أخرى."</string>
 </resources>
