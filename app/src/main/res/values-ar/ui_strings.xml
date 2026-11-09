@@ -1125,4 +1125,31 @@
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"توقف WhatsApp بشكل غير متوقع أثناء نشاط WaEnhancer X. انسخ التفاصيل وأرسلها إلى من قام بهذا البناء."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"سجل تسجيل المكالمات"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"الخطوات والأخطاء فقط. لا يتم تسجيل أرقام الهواتف والصوت أبدًا."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX لم يتمكن من الوصول إلى الخدمة. تحقق من اتصالك وحاول مرة أخرى."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"استغرق الطلب وقتا طويلا. تحقق من اتصالك وحاول مرة أخرى."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub تم تجاوز حد السعر"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API تم الوصول إلى الحد الأقصى. اسحب للتحديث أو حاول مرة أخرى خلال بضع دقائق."</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"حالة IGS الأصلية"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"إظهار كرسالة محذوفة"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"عرض الرسائل المحذوفة باستخدام تخطيط الرسالة المحذوفة الأصلي لـ WhatsApp"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"ينطبق بعد المكالمة، عند إعادة تشغيل WhatsApp"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"ينطبق في المرة التالية التي تفتح فيها WhatsApp"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"ردود سريعة"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"اكتب / في الدردشة لإدراج رد محفوظ"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"أعد تشغيل WhatsApp بعد تشغيله"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"أضف الرد"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"الاختصار"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"هذا الاختصار موجود بالفعل"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"الرد النصي"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"حفظ"</string>
+    <string name="waex_ui_chat_export" formatted="false">"تصدير الدردشة"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"إضافة تصدير الدردشة إلى قائمة ⋮ الخاصة بالدردشة: HTML أو نص، محفوظ في التنزيل/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (يشبه الدردشة)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"HTML مع ملفات الوسائط"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"نص عادي (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"جارٍ تصدير الدردشة..."</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"فشل تصدير الدردشة"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"تم الحفظ في %s"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"أنت"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"تم حذف هذه الرسالة"</string>
 </resources>

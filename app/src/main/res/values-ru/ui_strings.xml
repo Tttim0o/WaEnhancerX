@@ -1125,4 +1125,31 @@
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp неожиданно остановился, пока WaEnhancer X был активен. Скопируйте детали и отправьте их тому, кто сделал эту сборку."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"Журнал записи звонков"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"Только шаги и ошибки. Номера телефонов и аудио никогда не регистрируются."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX не удалось связаться со службой. Проверьте подключение и повторите попытку."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"Запрос занял слишком много времени. Проверьте подключение и повторите попытку."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub Превышен лимит скорости"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API достигнут предел. Потяните, чтобы обновить, или повторите попытку через несколько минут."</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"Родной IGStatus"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"Показать как удаленное сообщение"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"Отображать удаленные сообщения, используя собственный макет удаленных сообщений WhatsApp."</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"Применяется после вызова, когда WhatsApp перезапускается."</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"Применится при следующем открытии WhatsApp."</string>
+    <string name="waex_ui_quick_replies" formatted="false">"Быстрые ответы"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"Введите / в чате, чтобы вставить сохраненный ответ."</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"Перезапустите WhatsApp после включения."</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"Добавить ответ"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"Ярлык"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"Этот ярлык уже существует"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"Текст ответа"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"Сохранить"</string>
+    <string name="waex_ui_chat_export" formatted="false">"Экспортировать чат"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Добавляет Экспорт чата в меню ⋮ чата: HTML или текст, сохраненный в папке Download/WAEX/Exports."</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (выглядит как чат)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"HTML с медиа-файлами"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"Обычный текст (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"Экспорт чата…"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"Не удалось экспортировать чат"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"Сохранено в %s."</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"ты"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"Это сообщение было удалено"</string>
 </resources>

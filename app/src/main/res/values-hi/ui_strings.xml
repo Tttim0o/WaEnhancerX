@@ -1125,4 +1125,31 @@
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp WaEnhancer X के सक्रिय होने पर अप्रत्याशित रूप से बंद हो गया। विवरण कॉपी करें और इसे जिसने भी बनाया है उसे भेजें।"</string>
     <string name="waex_ui_call_recording_log" formatted="false">"कॉल रिकॉर्डिंग लॉग"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"केवल चरण और त्रुटियाँ। फ़ोन नंबर और ऑडियो कभी लॉग नहीं किए जाते."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX सेवा तक नहीं पहुंच सका। अपना कनेक्शन जांचें और पुनः प्रयास करें।"</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"अनुरोध में बहुत लंबा समय लगा. अपना कनेक्शन जांचें और पुनः प्रयास करें।"</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub दर सीमा पार हो गई"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API सीमा पूरी हो गई। ताज़ा करने के लिए खींचें या कुछ मिनटों में पुनः प्रयास करें।"</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"मूल IGStatus"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"हटाए गए संदेश के रूप में दिखाएँ"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"WhatsApp के मूल हटाए गए संदेश लेआउट का उपयोग करके हटाए गए संदेशों को प्रदर्शित करें"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"कॉल के बाद लागू होता है, जब WhatsApp पुनरारंभ होता है"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"अगली बार जब आप खोलें तो लागू होता है WhatsApp"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"त्वरित उत्तर"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"सहेजे गए उत्तर को सम्मिलित करने के लिए चैट में / टाइप करें"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"इसे चालू करने के बाद WhatsApp को पुनः आरंभ करें"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"उत्तर जोड़ें"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"शॉर्टकट"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"यह शॉर्टकट पहले से मौजूद है"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"उत्तर पाठ"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"सहेजें"</string>
+    <string name="waex_ui_chat_export" formatted="false">"चैट निर्यात करें"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"एक्सपोर्ट चैट को चैट के ⋮ मेनू में जोड़ता है: HTML या टेक्स्ट, डाउनलोड/WAEX/Exports में सहेजा गया"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (चैट जैसा दिखता है)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"मीडिया फ़ाइलों के साथ HTML"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"सादा पाठ (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"चैट निर्यात कर रहा है..."</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"चैट निर्यात विफल रहा"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"%s में सहेजा गया"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"आप"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"यह संदेश हटा दिया गया"</string>
 </resources>

@@ -1125,4 +1125,31 @@ Değişiklikleri uygulamak için WhatsApp yeniden başlatılsın mı?"</string>
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp WaEnhancer X etkinken beklenmedik bir şekilde durdu. Ayrıntıları kopyalayın ve bu yapıyı yapan kişiye gönderin."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"Çağrı kayıt günlüğü"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"Yalnızca adımlar ve hatalar. Telefon numaraları ve ses hiçbir zaman günlüğe kaydedilmez."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX hizmete ulaşamadı. Bağlantınızı kontrol edip tekrar deneyin."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"Talep çok uzun sürdü. Bağlantınızı kontrol edip tekrar deneyin."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub Oran Sınırı Aşıldı"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API sınırına ulaşıldı. Yenilemek için çekin veya birkaç dakika sonra tekrar deneyin."</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"Yerel IG Durumu"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"Silinmiş Mesaj Olarak Göster"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"WhatsApp'nin yerel silinmiş mesaj düzenini kullanarak silinmiş mesajları görüntüleyin"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"Çağrıdan sonra WhatsApp yeniden başlatıldığında uygulanır"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"WhatsApp'yi bir sonraki açışınızda geçerli olur"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"Hızlı yanıtlar"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"Kayıtlı bir yanıt eklemek için sohbete / yazın"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"Bunu açtıktan sonra WhatsApp'yi yeniden başlatın"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"Yanıt ekle"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"Kısayol"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"Bu kısayol zaten mevcut"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"Yanıt metni"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"Kaydet"</string>
+    <string name="waex_ui_chat_export" formatted="false">"Sohbeti dışa aktar"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Sohbeti sohbetin ⋮ menüsüne aktarır: HTML veya metin, İndir/WAEX/Exports'a kaydedildi"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (sohbet gibi görünüyor)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"Medya dosyaları içeren HTML"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"Düz metin (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"Sohbet dışa aktarılıyor…"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"Sohbet dışa aktarımı başarısız oldu"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"%s'ye kaydedildi"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"sen"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"Bu mesaj silindi"</string>
 </resources>

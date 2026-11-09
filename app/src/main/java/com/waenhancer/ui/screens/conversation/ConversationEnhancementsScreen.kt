@@ -360,10 +360,27 @@ fun ConversationEnhancementsScreen(targetEpoch: Int = 0) {
                         checked = stateMap["copy_status_text"] ?: false,
                         onCheckedChange = { onToggle("copy_status_text", it) },
                         icon = WaexIcons.Folder,
+                        showDivider = true
+                    )
+                    var chatExport by remember(targetEpoch) {
+                        mutableStateOf(preferenceManager.getBoolean("chat_export", true))
+                    }
+                    WaexSwitchPreference(
+                        title = UiText.get(R.string.waex_ui_chat_export, "Export chat"),
+                        description = UiText.get(R.string.waex_ui_chat_export_desc,
+                            "Adds Export chat to a chat's ⋮ menu: HTML or text, saved to Download/WAEX/Exports"),
+                        checked = chatExport,
+                        onCheckedChange = {
+                            chatExport = it
+                            preferenceManager.putBoolean("chat_export", it)
+                        },
+                        icon = WaexIcons.Download,
                         showDivider = false
                     )
                 }
             }
+
+            QuickRepliesSection(targetEpoch)
         }
     }
 }

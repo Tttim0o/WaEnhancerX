@@ -429,6 +429,13 @@ public final class FeatureRegistry {
         registerFeature(VoiceDictationHook.class, "Media",
                 () -> new VoiceDictationHook(context, classLoader, prefs));
 
+        registerFeature(com.waenhancer.xposed.features.conversation.QuickRepliesHook.class, "Conversation",
+                () -> new com.waenhancer.xposed.features.conversation.QuickRepliesHook(context, classLoader, prefs));
+
+        registerFeature(com.waenhancer.xposed.features.conversation.ChatExportHook.class, "Conversation",
+                () -> prefs.getBoolean(com.waenhancer.xposed.features.conversation.ChatExportHook.PREF_KEY, true),
+                () -> new com.waenhancer.xposed.features.conversation.ChatExportHook(context, classLoader, prefs));
+
         try {
             AudioToVoiceStatusFeature.install(context, classLoader, prefs);
             features.add(new FeatureEntry("Audio to Voice Status", "AudioToVoiceStatusFeature", "Media", "ACTIVE"));

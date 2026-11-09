@@ -1125,4 +1125,31 @@ Redémarrer WhatsApp pour appliquer les modifications ?"</string>
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp s'est arrêté de manière inattendue alors que WaEnhancer X était actif. Copiez les détails et envoyez-les à celui qui a réalisé cette version."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"Journal d'enregistrement des appels"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"Étapes et erreurs uniquement. Les numéros de téléphone et l'audio ne sont jamais enregistrés."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX n'a pas pu accéder au service. Vérifiez votre connexion et réessayez."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"La demande a pris trop de temps. Vérifiez votre connexion et réessayez."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub Limite de débit dépassée"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API limite atteinte. Tirez pour actualiser ou réessayez dans quelques minutes."</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"Statut IG natif"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"Afficher comme message supprimé"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"Afficher les messages supprimés à l'aide de la présentation native des messages supprimés de WhatsApp"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"S'applique après l'appel, au redémarrage de WhatsApp"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"S'applique la prochaine fois que vous ouvrirez WhatsApp"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"Réponses rapides"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"Tapez / dans un chat pour insérer une réponse enregistrée"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"Redémarrez WhatsApp après l'avoir activé"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"Ajouter une réponse"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"Raccourci"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"Ce raccourci existe déjà"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"Texte de réponse"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"Enregistrer"</string>
+    <string name="waex_ui_chat_export" formatted="false">"Exporter le chat"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Ajoute Exporter le chat au menu ⋮ d'un chat : HTML ou texte, enregistré dans Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (ressemble au chat)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"HTML avec fichiers multimédias"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"Texte brut (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"Exportation du chat…"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"Échec de l'exportation du chat"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"Enregistré dans %s"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"Vous"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"Ce message a été supprimé"</string>
 </resources>

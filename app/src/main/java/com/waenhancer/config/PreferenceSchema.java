@@ -301,6 +301,10 @@ public final class PreferenceSchema {
         add(entries, "menuwicon", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "message_bomber", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "message_device_source", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "quick_replies_enabled", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        // Read by the message field hook in WhatsApp, so it has to be in the public store.
+        add(entries, "quick_replies", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "chat_export", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "metaai", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "metaai_remove_home_fab", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "metaai_remove_entry_points", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

@@ -1125,4 +1125,31 @@ Znova zaženite WhatsApp, da uporabite spremembe?"</string>
     <string name="waex_ui_whatsapp_stopped_unexpectedly_while_wa" formatted="false">"WhatsApp se je nepričakovano ustavil, medtem ko je bil WaEnhancer X aktiven. Kopirajte podrobnosti in jih pošljite tistemu, ki je naredil to zgradbo."</string>
     <string name="waex_ui_call_recording_log" formatted="false">"Dnevnik snemanja klicev"</string>
     <string name="waex_ui_steps_and_errors_only_phone_numbers_an" formatted="false">"Samo koraki in napake. Telefonske številke in zvok se nikoli ne beležijo."</string>
+    <string name="waex_ui_network_unreachable_message" formatted="false">"WAEX ni mogel doseči storitve. Preverite povezavo in poskusite znova."</string>
+    <string name="waex_ui_network_timeout_message" formatted="false">"Zahteva je trajala predolgo. Preverite povezavo in poskusite znova."</string>
+    <string name="waex_ui_github_rate_limited" formatted="false">"GitHub Omejitev hitrosti presežena"</string>
+    <string name="waex_ui_github_rate_limited_desc" formatted="false">"GitHub API omejitev je dosežena. Povlecite za osvežitev ali poskusite znova čez nekaj minut."</string>
+    <string name="waex_ui_native_igstatus" formatted="false">"Izvorni IGStatus"</string>
+    <string name="waex_ui_show_as_deleted" formatted="false">"Pokaži kot izbrisano sporočilo"</string>
+    <string name="waex_ui_show_as_deleted_desc" formatted="false">"Prikaži izbrisana sporočila z izvorno postavitvijo izbrisanih sporočil WhatsApp"</string>
+    <string name="waex_ui_tile_applies_after_call" formatted="false">"Velja po klicu, ko se WhatsApp znova zažene"</string>
+    <string name="waex_ui_tile_applies_on_next_open" formatted="false">"Velja naslednjič, ko odprete WhatsApp"</string>
+    <string name="waex_ui_quick_replies" formatted="false">"Hitri odgovori"</string>
+    <string name="waex_ui_quick_replies_desc" formatted="false">"V klepet vnesite /, da vstavite shranjen odgovor"</string>
+    <string name="waex_ui_quick_replies_hint" formatted="false">"Po vklopu znova zaženite WhatsApp"</string>
+    <string name="waex_ui_quick_replies_add" formatted="false">"Dodaj odgovor"</string>
+    <string name="waex_ui_quick_replies_shortcut" formatted="false">"Bližnjica"</string>
+    <string name="waex_ui_quick_replies_duplicate" formatted="false">"Ta bližnjica že obstaja"</string>
+    <string name="waex_ui_quick_replies_text" formatted="false">"Besedilo odgovora"</string>
+    <string name="waex_ui_quick_replies_save" formatted="false">"Shrani"</string>
+    <string name="waex_ui_chat_export" formatted="false">"Izvozi klepet"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Doda Izvozi klepet v meni ⋮ klepeta: HTML ali besedilo, shranjeno v Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_html" formatted="false">"HTML (izgleda kot klepet)"</string>
+    <string name="waex_ui_chat_export_html_media" formatted="false">"HTML z medijskimi datotekami"</string>
+    <string name="waex_ui_chat_export_txt" formatted="false">"Navadno besedilo (TXT)"</string>
+    <string name="waex_ui_chat_export_running" formatted="false">"Izvažanje klepeta …"</string>
+    <string name="waex_ui_chat_export_failed" formatted="false">"Izvoz klepeta ni uspel"</string>
+    <string name="waex_ui_chat_export_saved" formatted="false">"Shranjeno v %s"</string>
+    <string name="waex_ui_chat_export_you" formatted="false">"Ti"</string>
+    <string name="waex_ui_chat_export_deleted" formatted="false">"To sporočilo je bilo izbrisano"</string>
 </resources>

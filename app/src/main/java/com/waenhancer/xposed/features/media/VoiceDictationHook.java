@@ -124,7 +124,7 @@ public final class VoiceDictationHook extends BaseFeature {
     }
 
     @Nullable
-    private static EditText findMessageField(Activity activity) {
+    public static EditText findMessageField(Activity activity) {
         View decor = activity.getWindow().getDecorView();
         int id = activity.getResources().getIdentifier("entry", "id", activity.getPackageName());
         View byId = id != 0 ? decor.findViewById(id) : null;
