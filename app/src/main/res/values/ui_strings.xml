@@ -1157,4 +1157,13 @@
     <string name="waex_ui_chat_export_saved" formatted="false">"Saved to %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"You"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"This message was deleted"</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Web: new browser signed in"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Web pairing code: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"Asked for by %s. Valid for 2 minutes. If this was not you, ignore it."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Web: chats in a browser (experimental)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Read and write your chats from a computer on the same Wi-Fi. A new browser needs a code that this phone shows in a notification. You can add a password on the web page."</string>
+    <string name="waex_ui_web_address" formatted="false">"Open this address on your computer"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Connect the phone to Wi-Fi to see the address."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Restart WhatsApp after changing this. WhatsApp must be running for the page to work."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"The connection is not encrypted. Use it only on a Wi-Fi you trust. Locked chats are never shown."</string>
 </resources>

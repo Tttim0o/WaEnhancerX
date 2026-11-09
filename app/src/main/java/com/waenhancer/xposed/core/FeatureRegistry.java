@@ -468,6 +468,10 @@ public final class FeatureRegistry {
         registerFeature(TaskerIntegrationHook.class, "Automation",
                 () -> new TaskerIntegrationHook(context, classLoader, prefs));
 
+        registerFeature(com.waenhancer.xposed.features.web.WebServerHook.class, "Automation",
+                () -> prefs.getBoolean(com.waenhancer.xposed.features.web.WebServerHook.PREF_KEY, false),
+                () -> new com.waenhancer.xposed.features.web.WebServerHook(context, classLoader, prefs));
+
         registerFeature(ChatBubbleColorsHook.class, "Customization",
                 () -> new ChatBubbleColorsHook(context, classLoader, prefs));
 

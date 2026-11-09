@@ -1175,4 +1175,13 @@
     <string name="waex_ui_chat_import_groups" formatted="false">"درآمد صرف ون ٹو ون چیٹس کے لیے کام کرتا ہے۔"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"درآمد کرنے کے لیے اوپر اپنا نام منتخب کریں۔"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"درآمد کرنے کے لیے کچھ نہیں ہے۔ اس ورژن سے پہلے کی گئی برآمدات کو دوبارہ برآمد کرنے کی ضرورت ہے۔"</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX ویب: نیا براؤزر سائن ان ہوا۔"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX ویب جوڑا بنانے کا کوڈ: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"%s کے ذریعہ طلب کیا گیا۔ 2 منٹ کے لیے درست۔ اگر یہ آپ نہیں تھے تو اسے نظر انداز کریں۔"</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX ویب: براؤزر میں چیٹس (تجرباتی)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"اسی Wi-Fi پر کمپیوٹر سے اپنی چیٹس پڑھیں اور لکھیں۔ ایک نئے براؤزر کو ایک کوڈ کی ضرورت ہے جو یہ فون ایک اطلاع میں دکھاتا ہے۔ آپ ویب صفحہ پر پاس ورڈ شامل کر سکتے ہیں۔"</string>
+    <string name="waex_ui_web_address" formatted="false">"اس ایڈریس کو اپنے کمپیوٹر پر کھولیں۔"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"پتہ دیکھنے کے لیے فون کو Wi-Fi سے جوڑیں۔"</string>
+    <string name="waex_ui_web_restart" formatted="false">"اسے تبدیل کرنے کے بعد WhatsApp کو دوبارہ شروع کریں۔ صفحہ کے کام کرنے کے لیے WhatsApp کا چلنا ضروری ہے۔"</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"کنکشن کو خفیہ نہیں کیا گیا ہے۔ اسے صرف اس Wi-Fi پر استعمال کریں جس پر آپ اعتماد کرتے ہیں۔ مقفل چیٹس کبھی نہیں دکھائے جاتے ہیں۔"</string>
 </resources>

@@ -1175,4 +1175,13 @@ Tidak ada ruang antar pesan: %4$d"</string>
     <string name="waex_ui_chat_import_groups" formatted="false">"Impor hanya berfungsi untuk obrolan satu lawan satu"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"Pilih nama Anda di atas untuk diimpor"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"Tidak ada yang perlu diimpor. Ekspor yang dilakukan sebelum versi ini perlu diekspor lagi."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Web: browser baru masuk"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Kode pemasangan web: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"Diminta oleh %s. Berlaku selama 2 menit. Jika ini bukan Anda, abaikan saja."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Web: obrolan di browser (eksperimental)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Baca dan tulis obrolan Anda dari komputer di Wi-Fi yang sama. Browser baru memerlukan kode yang ditampilkan ponsel ini dalam notifikasi. Anda dapat menambahkan kata sandi di halaman web."</string>
+    <string name="waex_ui_web_address" formatted="false">"Buka alamat ini di komputer Anda"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Hubungkan telepon ke Wi-Fi untuk melihat alamatnya."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Mulai ulang WhatsApp setelah mengubahnya. WhatsApp harus dijalankan agar halaman dapat berfungsi."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"Koneksi tidak dienkripsi. Gunakan hanya di Wi-Fi yang Anda percayai. Obrolan yang terkunci tidak pernah ditampilkan."</string>
 </resources>

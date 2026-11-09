@@ -1159,4 +1159,13 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_chat_import_groups" formatted="false">"La importación funciona solo para chats uno a uno"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"Elija su nombre arriba para importar"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"Nada que importar. Las exportaciones realizadas antes de esta versión deben exportarse nuevamente."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Web: nuevo navegador iniciado sesión"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Código de emparejamiento web: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"Solicitado por %s. Válido por 2 minutos. Si no fuiste tú, ignóralo."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Web: chats en un navegador (experimental)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Lee y escribe tus chats desde una computadora en el mismo Wi-Fi. Un nuevo navegador necesita un código que este teléfono muestra en una notificación. Puede agregar una contraseña en la página web."</string>
+    <string name="waex_ui_web_address" formatted="false">"Abra esta dirección en su computadora"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Conecte el teléfono a Wi-Fi para ver la dirección."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Reinicie WhatsApp después de cambiar esto. WhatsApp debe estar ejecutándose para que la página funcione."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"La conexión no está cifrada. Úselo sólo en un Wi-Fi de confianza. Los chats bloqueados nunca se muestran."</string>
 </resources>

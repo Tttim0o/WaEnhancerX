@@ -1175,4 +1175,13 @@ Med sporočili ni prostora: %4$d"</string>
     <string name="waex_ui_chat_import_groups" formatted="false">"Uvoz deluje samo za klepete ena na ena"</string>
     <string name="waex_ui_chat_import_need_me" formatted="false">"Za uvoz izberite svoje ime zgoraj"</string>
     <string name="waex_ui_chat_import_none" formatted="false">"Nothing to import. Izvoze, opravljene pred to različico, je treba znova izvoziti."</string>
+    <string name="waex_ui_web_signed_in_title" formatted="false">"WAEX Splet: prijavljen nov brskalnik"</string>
+    <string name="waex_ui_web_code_title" formatted="false">"WAEX Koda spletnega seznanjanja: %s"</string>
+    <string name="waex_ui_web_code_text" formatted="false">"Zahteval %s. Velja 2 minuti. Če to niste bili vi, ignorirajte."</string>
+    <string name="waex_ui_web_title" formatted="false">"WAEX Splet: klepeti v brskalniku (poskusno)"</string>
+    <string name="waex_ui_web_desc" formatted="false">"Berite in pišite svoje klepete iz računalnika na istem Wi-Fi. Nov brskalnik potrebuje kodo, ki jo ta telefon prikaže v obvestilu. Na spletni strani lahko dodate geslo."</string>
+    <string name="waex_ui_web_address" formatted="false">"Odprite ta naslov v računalniku"</string>
+    <string name="waex_ui_web_no_wifi" formatted="false">"Za ogled naslova povežite telefon z Wi-Fi."</string>
+    <string name="waex_ui_web_restart" formatted="false">"Po spremembi tega znova zaženite WhatsApp. WhatsApp mora delovati, da stran deluje."</string>
+    <string name="waex_ui_web_plain_http" formatted="false">"Povezava ni šifrirana. Uporabite ga samo na Wi-Fi, ki mu zaupate. Zaklenjeni klepeti niso nikoli prikazani."</string>
 </resources>

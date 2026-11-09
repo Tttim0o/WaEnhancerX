@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>WAEX Web</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<noscript>WAEX Web needs JavaScript.</noscript>
+
+<main id="login" class="login" hidden>
+  <div class="card">
+    <div class="logo">WAEX <span>Web</span></div>
+    <p id="loginIntro" class="muted"></p>
+    <div id="loginStep1">
+      <button id="askCode" class="primary wide"></button>
+    </div>
+    <form id="loginStep2" hidden autocomplete="off">
+      <label id="codeLabel" for="code"></label>
+      <input id="code" inputmode="numeric" maxlength="7" autocomplete="one-time-code" placeholder="000 000">
+      <div id="passwordRow" hidden>
+        <label id="passwordLabel" for="password"></label>
+        <input id="password" type="password" autocomplete="current-password">
+      </div>
+      <button id="confirmCode" class="primary wide" type="submit"></button>
+      <button id="newCode" class="link" type="button"></button>
+    </form>
+    <p id="loginError" class="error" role="alert"></p>
+    <p id="loginNote" class="muted small"></p>
+  </div>
+</main>
+
+<div id="app" class="app" hidden>
+  <aside id="side" class="side">
+    <header class="bar">
+      <div class="logo small">WAEX <span>Web</span></div>
+      <span class="grow"></span>
+      <button id="openSettings" class="icon" aria-label="Settings">⚙</button>
+    </header>
+    <div class="searchbox">
+      <input id="search" type="search" autocomplete="off">
+    </div>
+    <div id="tabs" class="tabs">
+      <button data-tab="all" class="on"></button>
+      <button data-tab="unread"></button>
+      <button data-tab="groups"></button>
+      <button data-tab="archived"></button>
+    </div>
+    <div id="chats" class="chats" role="list"></div>
+  </aside>
+
+  <section id="pane" class="pane">
+    <div id="empty" class="empty">
+      <div class="logo">WAEX <span>Web</span></div>
+      <p id="emptyText" class="muted"></p>
+    </div>
+    <div id="chat" class="chat" hidden>
+      <header class="bar">
+        <button id="back" class="icon back" aria-label="Back">←</button>
+        <div id="chatAvatar" class="avatar"></div>
+        <div class="grow titlebox">
+          <div id="chatName" class="name"></div>
+          <div id="chatSub" class="muted small"></div>
+        </div>
+      </header>
+      <div id="messages" class="messages"></div>
+      <button id="toLatest" class="tolatest" hidden>↓</button>
+      <footer class="composer">
+        <textarea id="text" rows="1" maxlength="8000"></textarea>
+        <button id="send" class="primary round" aria-label="Send">➤</button>
+      </footer>
+      <div id="sendNote" class="sendnote" hidden></div>
+    </div>
+  </section>
+</div>
+
+<div id="viewer" class="viewer" hidden><img id="viewerImg" alt=""><a id="viewerSave" class="primary" download></a></div>
+
+<dialog id="settings" class="settings">
+  <header class="bar">
+    <div id="settingsTitle" class="name grow"></div>
+    <button id="closeSettings" class="icon" aria-label="Close">✕</button>
+  </header>
+  <div id="settingsBody" class="settingsbody"></div>
+</dialog>
+
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
