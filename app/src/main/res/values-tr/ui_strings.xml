@@ -1143,7 +1143,6 @@ Değişiklikleri uygulamak için WhatsApp yeniden başlatılsın mı?"</string>
     <string name="waex_ui_quick_replies_text" formatted="false">"Yanıt metni"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Kaydet"</string>
     <string name="waex_ui_chat_export" formatted="false">"Sohbeti dışa aktar"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Sohbeti sohbetin ⋮ menüsüne aktarır: HTML veya metin, İndir/WAEX/Exports'a kaydedildi"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (sohbet gibi görünüyor)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"Medya dosyaları içeren HTML"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Düz metin (TXT)"</string>
@@ -1152,4 +1151,12 @@ Değişiklikleri uygulamak için WhatsApp yeniden başlatılsın mı?"</string>
     <string name="waex_ui_chat_export_saved" formatted="false">"%s'ye kaydedildi"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"sen"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"Bu mesaj silindi"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Her sohbete Sohbeti Dışa Aktar'ı ⋮ › WAEX'ye ekler ve ana ekrana Tüm sohbetleri Dışa Aktar'ı ekler. HTML veya metin, İndir/WAEX/Exports'a kaydedildi"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Tüm sohbetleri dışa aktar"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Dışa aktarılan sohbetler"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX veya WhatsApp (TXT, ZIP veya HTML) tarafından dışa aktarılan bir sohbeti açın. WhatsApp'ye hiçbir şey yazılmaz."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Dosyayı aç"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"Bu dosyada mesaj bulunamadı"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Bu dosya okunamadı"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Bu sohbetteki adınız:"</string>
 </resources>

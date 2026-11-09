@@ -1143,7 +1143,6 @@
     <string name="waex_ui_quick_replies_text" formatted="false">"Текст ответа"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Сохранить"</string>
     <string name="waex_ui_chat_export" formatted="false">"Экспортировать чат"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Добавляет Экспорт чата в меню ⋮ чата: HTML или текст, сохраненный в папке Download/WAEX/Exports."</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (выглядит как чат)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML с медиа-файлами"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Обычный текст (TXT)"</string>
@@ -1152,4 +1151,12 @@
     <string name="waex_ui_chat_export_saved" formatted="false">"Сохранено в %s."</string>
     <string name="waex_ui_chat_export_you" formatted="false">"ты"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"Это сообщение было удалено"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Добавляет экспорт чата в ⋮ › WAEX в каждом чате и экспорт всех чатов на главном экране. HTML или текст, сохраненный в папке Download/WAEX/Exports."</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Экспортировать все чаты"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Экспортированные чаты"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Откройте чат, экспортированный WAEX или WhatsApp (TXT, ZIP или HTML). В WhatsApp ничего не записывается."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Открыть файл"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"В этом файле сообщений не найдено"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Не удалось прочитать этот файл"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Ваше имя в этом чате:"</string>
 </resources>

@@ -375,6 +375,18 @@ fun ConversationEnhancementsScreen(targetEpoch: Int = 0) {
                             preferenceManager.putBoolean("chat_export", it)
                         },
                         icon = WaexIcons.Download,
+                        showDivider = true
+                    )
+                    val viewerContext = androidx.compose.ui.platform.LocalContext.current
+                    com.waenhancer.ui.components.WaexPreferenceItem(
+                        title = UiText.get(R.string.waex_ui_chat_viewer, "Exported chats"),
+                        description = UiText.get(R.string.waex_ui_chat_viewer_desc,
+                            "Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML). Nothing is written to WhatsApp."),
+                        icon = WaexIcons.Download,
+                        onClick = {
+                            viewerContext.startActivity(android.content.Intent(viewerContext,
+                                com.waenhancer.app.viewer.ChatViewerActivity::class.java))
+                        },
                         showDivider = false
                     )
                 }

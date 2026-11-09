@@ -1143,7 +1143,6 @@
     <string name="waex_ui_quick_replies_text" formatted="false">"उत्तर पाठ"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"सहेजें"</string>
     <string name="waex_ui_chat_export" formatted="false">"चैट निर्यात करें"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"एक्सपोर्ट चैट को चैट के ⋮ मेनू में जोड़ता है: HTML या टेक्स्ट, डाउनलोड/WAEX/Exports में सहेजा गया"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (चैट जैसा दिखता है)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"मीडिया फ़ाइलों के साथ HTML"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"सादा पाठ (TXT)"</string>
@@ -1152,4 +1151,12 @@
     <string name="waex_ui_chat_export_saved" formatted="false">"%s में सहेजा गया"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"आप"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"यह संदेश हटा दिया गया"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"प्रत्येक चैट में ⋮ › WAEX पर एक्सपोर्ट चैट जोड़ता है और सभी चैट को होम स्क्रीन पर एक्सपोर्ट करता है। HTML या पाठ, डाउनलोड/WAEX/निर्यात में सहेजा गया"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"सभी चैट निर्यात करें"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"निर्यातित चैट"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX या WhatsApp (TXT, ZIP या HTML) द्वारा निर्यात की गई चैट खोलें। WhatsApp को कुछ भी नहीं लिखा गया है।"</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"फ़ाइल खोलें"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"इस फ़ाइल में कोई संदेश नहीं मिला"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"इस फ़ाइल को पढ़ा नहीं जा सका"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"इस चैट में आपका नाम:"</string>
 </resources>

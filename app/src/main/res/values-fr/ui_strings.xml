@@ -1143,7 +1143,6 @@ Redémarrer WhatsApp pour appliquer les modifications ?"</string>
     <string name="waex_ui_quick_replies_text" formatted="false">"Texte de réponse"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Enregistrer"</string>
     <string name="waex_ui_chat_export" formatted="false">"Exporter le chat"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Ajoute Exporter le chat au menu ⋮ d'un chat : HTML ou texte, enregistré dans Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (ressemble au chat)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML avec fichiers multimédias"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Texte brut (TXT)"</string>
@@ -1152,4 +1151,12 @@ Redémarrer WhatsApp pour appliquer les modifications ?"</string>
     <string name="waex_ui_chat_export_saved" formatted="false">"Enregistré dans %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"Vous"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"Ce message a été supprimé"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Ajoute Exporter le chat vers ⋮ › WAEX dans chaque chat et Exporter tous les chats sur l'écran d'accueil. HTML ou texte, enregistré dans Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Exporter toutes les discussions"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Discussions exportées"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Ouvrez un chat exporté par WAEX ou par WhatsApp (TXT, ZIP ou HTML). Rien n'est écrit dans WhatsApp."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Ouvrir le fichier"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"Aucun message trouvé dans ce fichier"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Impossible de lire ce fichier"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Votre nom dans ce chat :"</string>
 </resources>

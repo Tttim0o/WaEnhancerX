@@ -121,7 +121,45 @@ img,video{max-width:100%;border-radius:6px;display:block;margin-bottom:4px}audio
         }
     }
 
+    /** One chat in the index of an "export all chats" folder. */
+    class IndexEntry(val title: String, val file: String, val count: Int, val lastTimestamp: Long)
+
     companion object {
+        /** Writes the list of exported chats, each linking to its file in the same folder. */
+        @JvmStatic
+        fun writeIndex(out: Writer, html: Boolean, title: String, entries: List<IndexEntry>,
+                       exportedAt: Long, locale: Locale = Locale.getDefault()) {
+            val full = SimpleDateFormat("dd.MM.yyyy HH:mm", locale)
+            if (!html) {
+                out.write("$title\n")
+                out.write("Exported with WAEX, ${full.format(Date(exportedAt))}\n\n")
+                for (e in entries) {
+                    out.write("${e.file}  ·  ${e.title}  ·  ${e.count}  ·  ${full.format(Date(e.lastTimestamp))}\n")
+                }
+                out.flush()
+                return
+            }
+            out.write("""<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)}</title><style>
+:root{--bg:#fff;--fg:#111b21;--muted:#667781;--line:#e9edef}
+@media(prefers-color-scheme:dark){:root{--bg:#111b21;--fg:#e9edef;--muted:#8696a0;--line:#222d34}}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,sans-serif}
+header{position:sticky;top:0;background:#008069;color:#fff;padding:12px 16px;font-weight:600}
+header small{display:block;font-weight:400;opacity:.8}
+main{max-width:760px;margin:0 auto}
+a{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);color:inherit;text-decoration:none}
+a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}a small{color:var(--muted);white-space:nowrap}
+</style></head><body><header>${esc(title)}<small>${entries.size} · Exported with WAEX · ${esc(full.format(Date(exportedAt)))}</small></header><main>
+""")
+            for (e in entries) {
+                out.write("<a href=\"${escAttr(e.file)}\"><span>${esc(e.title)}</span>" +
+                    "<small>${e.count} · ${esc(full.format(Date(e.lastTimestamp)))}</small></a>\n")
+            }
+            out.write("</main></body></html>\n")
+            out.flush()
+        }
+
         // WhatsApp message_type values.
         const val TYPE_TEXT = 0
         const val TYPE_IMAGE = 1

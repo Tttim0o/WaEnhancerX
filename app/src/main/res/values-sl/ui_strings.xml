@@ -1143,7 +1143,6 @@ Znova zaženite WhatsApp, da uporabite spremembe?"</string>
     <string name="waex_ui_quick_replies_text" formatted="false">"Besedilo odgovora"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Shrani"</string>
     <string name="waex_ui_chat_export" formatted="false">"Izvozi klepet"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Doda Izvozi klepet v meni ⋮ klepeta: HTML ali besedilo, shranjeno v Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (izgleda kot klepet)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML z medijskimi datotekami"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Navadno besedilo (TXT)"</string>
@@ -1152,4 +1151,12 @@ Znova zaženite WhatsApp, da uporabite spremembe?"</string>
     <string name="waex_ui_chat_export_saved" formatted="false">"Shranjeno v %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"Ti"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"To sporočilo je bilo izbrisano"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Doda Izvozi klepet v ⋮ › WAEX v vsakem klepetu in Izvozi vse klepete na začetni zaslon. HTML ali besedilo, shranjeno v Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Izvozi vse klepete"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Izvoženi klepeti"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Odprite klepet, ki ga je izvozil WAEX ali WhatsApp (TXT, ZIP ali HTML). Nič ni zapisano v WhatsApp."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Odpri datoteko"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"V tej datoteki ni bilo najdenih sporočil"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Te datoteke ni bilo mogoče prebrati"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Vaše ime v tem klepetu:"</string>
 </resources>

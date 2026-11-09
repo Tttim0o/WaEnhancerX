@@ -1143,7 +1143,6 @@ Reiniciar WhatsApp para aplicar as alterações?"</string>
     <string name="waex_ui_quick_replies_text" formatted="false">"Texto de resposta"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Salvar"</string>
     <string name="waex_ui_chat_export" formatted="false">"Exportar bate-papo"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Adiciona Exportar bate-papo ao menu ⋮ de um bate-papo: HTML ou texto, salvo em Download/WAEX/Exportações"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (parece o chat)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML com arquivos de mídia"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Texto simples (TXT)"</string>
@@ -1152,4 +1151,12 @@ Reiniciar WhatsApp para aplicar as alterações?"</string>
     <string name="waex_ui_chat_export_saved" formatted="false">"Salvo em %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"Você"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"Esta mensagem foi excluída"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Adiciona Exportar bate-papo para ⋮ › WAEX em cada bate-papo e Exportar todos os bate-papos na tela inicial. HTML ou texto, salvo em Download/WAEX/Exportações"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Exportar todos os bate-papos"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Bate-papos exportados"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Abra um chat exportado por WAEX ou por WhatsApp (TXT, ZIP ou HTML). Nada é gravado em WhatsApp."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Abrir arquivo"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"Nenhuma mensagem encontrada neste arquivo"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Não foi possível ler este arquivo"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Seu nome neste chat:"</string>
 </resources>

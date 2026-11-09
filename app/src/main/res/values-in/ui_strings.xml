@@ -1143,7 +1143,6 @@ Mulai ulang WhatsApp untuk menerapkan perubahan?"</string>
     <string name="waex_ui_quick_replies_text" formatted="false">"Teks balasan"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Simpan"</string>
     <string name="waex_ui_chat_export" formatted="false">"Ekspor obrolan"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Menambahkan obrolan Ekspor ke menu ⋮ obrolan: HTML atau teks, disimpan ke Unduh/WAEX/Ekspor"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (seperti obrolan)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML dengan file media"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Teks biasa (TXT)"</string>
@@ -1152,4 +1151,12 @@ Mulai ulang WhatsApp untuk menerapkan perubahan?"</string>
     <string name="waex_ui_chat_export_saved" formatted="false">"Disimpan ke %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"kamu"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"Pesan ini telah dihapus"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Menambahkan Ekspor obrolan ke ⋮ › WAEX di setiap obrolan dan Ekspor semua obrolan di layar beranda. HTML atau teks, disimpan ke Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Ekspor semua obrolan"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Obrolan yang diekspor"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Buka obrolan yang diekspor oleh WAEX atau oleh WhatsApp (TXT, ZIP atau HTML). Tidak ada yang ditulis ke WhatsApp."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Buka berkas"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"Tidak ada pesan yang ditemukan dalam file ini"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Tidak dapat membaca file ini"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Nama Anda dalam obrolan ini:"</string>
 </resources>

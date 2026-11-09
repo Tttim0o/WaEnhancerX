@@ -1143,7 +1143,6 @@
     <string name="waex_ui_quick_replies_text" formatted="false">"متن کا جواب دیں۔"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"محفوظ کریں۔"</string>
     <string name="waex_ui_chat_export" formatted="false">"چیٹ برآمد کریں۔"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"ایکسپورٹ چیٹ کو چیٹ کے ⋮ مینو میں شامل کرتا ہے: HTML یا متن، ڈاؤن لوڈ/WAEX/Exports میں محفوظ"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (چیٹ کی طرح لگتا ہے)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"میڈیا فائلوں کے ساتھ ایچ ٹی ایم ایل"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"سادہ متن (TXT)"</string>
@@ -1152,4 +1151,12 @@
     <string name="waex_ui_chat_export_saved" formatted="false">"%s میں محفوظ کیا گیا"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"آپ"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"یہ پیغام حذف کر دیا گیا تھا۔"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"ایکسپورٹ چیٹ کو ہر چیٹ میں ⋮ › WAEX میں شامل کرتا ہے اور ہوم اسکرین پر تمام چیٹس ایکسپورٹ کرتا ہے۔ HTML یا متن، ڈاؤن لوڈ/WAEX/Exports میں محفوظ کیا گیا۔"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"تمام چیٹس برآمد کریں۔"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"ایکسپورٹ شدہ چیٹس"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"WAEX یا WhatsApp (TXT، ZIP یا HTML) کے ذریعے برآمد کردہ چیٹ کھولیں۔ WhatsApp پر کچھ نہیں لکھا گیا ہے۔"</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"فائل کھولیں۔"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"اس فائل میں کوئی پیغام نہیں ملا"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"اس فائل کو پڑھا نہیں جا سکا"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"اس چیٹ میں آپ کا نام:"</string>
 </resources>

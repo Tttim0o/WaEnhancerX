@@ -1143,7 +1143,6 @@
     <string name="waex_ui_quick_replies_text" formatted="false">"الرد النصي"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"حفظ"</string>
     <string name="waex_ui_chat_export" formatted="false">"تصدير الدردشة"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"إضافة تصدير الدردشة إلى قائمة ⋮ الخاصة بالدردشة: HTML أو نص، محفوظ في التنزيل/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (يشبه الدردشة)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML مع ملفات الوسائط"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"نص عادي (TXT)"</string>
@@ -1152,4 +1151,12 @@
     <string name="waex_ui_chat_export_saved" formatted="false">"تم الحفظ في %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"أنت"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"تم حذف هذه الرسالة"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"إضافة تصدير الدردشة إلى ⋮ › WAEX في كل دردشة وتصدير جميع الدردشات على الشاشة الرئيسية. HTML أو نص، محفوظ في التنزيل/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"تصدير كافة الدردشات"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"الدردشات المصدرة"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"افتح محادثة تم تصديرها بواسطة WAEX أو بواسطة WhatsApp (TXT أو ZIP أو HTML). لم تتم كتابة أي شيء إلى WhatsApp."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"افتح الملف"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"لم يتم العثور على رسائل في هذا الملف"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"لا يمكن قراءة هذا الملف"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"اسمك في هذه الدردشة:"</string>
 </resources>

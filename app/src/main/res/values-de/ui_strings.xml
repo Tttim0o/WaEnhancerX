@@ -1143,7 +1143,6 @@ WhatsApp neu starten, um die Änderungen zu übernehmen?"</string>
     <string name="waex_ui_quick_replies_text" formatted="false">"Antworttext"</string>
     <string name="waex_ui_quick_replies_save" formatted="false">"Speichern"</string>
     <string name="waex_ui_chat_export" formatted="false">"Chat exportieren"</string>
-    <string name="waex_ui_chat_export_desc" formatted="false">"Fügt „Chat exportieren“ zum ⋮-Menü eines Chats hinzu: HTML oder Text, gespeichert unter Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_html" formatted="false">"HTML (sieht aus wie der Chat)"</string>
     <string name="waex_ui_chat_export_html_media" formatted="false">"HTML mit Mediendateien"</string>
     <string name="waex_ui_chat_export_txt" formatted="false">"Klartext (TXT)"</string>
@@ -1152,4 +1151,12 @@ WhatsApp neu starten, um die Änderungen zu übernehmen?"</string>
     <string name="waex_ui_chat_export_saved" formatted="false">"Gespeichert unter %s"</string>
     <string name="waex_ui_chat_export_you" formatted="false">"Du"</string>
     <string name="waex_ui_chat_export_deleted" formatted="false">"Diese Nachricht wurde gelöscht"</string>
+    <string name="waex_ui_chat_export_desc" formatted="false">"Fügt „Chat exportieren nach ⋮ › WAEX“ in jedem Chat und „Alle Chats exportieren“ auf dem Startbildschirm hinzu. HTML oder Text, gespeichert unter Download/WAEX/Exports"</string>
+    <string name="waex_ui_chat_export_all" formatted="false">"Alle Chats exportieren"</string>
+    <string name="waex_ui_chat_viewer" formatted="false">"Exportierte Chats"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Öffnen Sie einen von WAEX oder WhatsApp exportierten Chat (TXT, ZIP oder HTML). Es wird nichts nach WhatsApp geschrieben."</string>
+    <string name="waex_ui_chat_viewer_open" formatted="false">"Datei öffnen"</string>
+    <string name="waex_ui_chat_viewer_empty" formatted="false">"In dieser Datei wurden keine Nachrichten gefunden"</string>
+    <string name="waex_ui_chat_viewer_error" formatted="false">"Diese Datei konnte nicht gelesen werden"</string>
+    <string name="waex_ui_chat_viewer_me" formatted="false">"Ihr Name in diesem Chat:"</string>
 </resources>
