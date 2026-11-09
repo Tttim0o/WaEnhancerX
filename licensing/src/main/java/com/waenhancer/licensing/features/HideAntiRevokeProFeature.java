@@ -20,9 +20,26 @@ public final class HideAntiRevokeProFeature {
         String getMessageKeyId(Object message);
         long getRevokedTimestamp(String keyId);
         boolean isAntiRevokeAvailable();
+        void resolveNativeRevokedModel(Object message);
     }
 
     private HideAntiRevokeProFeature() {}
+
+    public static boolean isEnabled(SharedPreferences prefs) { return false; }
+
+    public static boolean isRevealed(String keyId) { return false; }
+
+    public static void attachRecyclerAdapterItemHooks(Object adapter, ClassLoader classLoader,
+                                                      SharedPreferences prefs, MessageBridge bridge) {}
+
+    public static void renderRecyclerBoundDeletedRow(ViewGroup row, Object message, String keyId,
+                                                     long deletedTs) {}
+
+    public static Object extractKeyObjectFromFMessage(Object message) { return null; }
+
+    public static void setResolvedRevokedMessageModelClass(Class<?> model) {}
+
+    public static void resetDeletedMessageLayout(ViewGroup row) {}
 
     public static void install(ClassLoader classLoader, SharedPreferences prefs, HostBridge bridge) {}
 
