@@ -50,11 +50,11 @@ public final class BootloaderSpooferFeature {
 
     public static String getManagedKeyboxXml(Context context) { return ""; }
 
-    public static long getLastUpdated(Context context) { return 0L; }
+    public static String getLastUpdated(Context context) { return ""; }
 
     public static String getLastError(Context context) { return UNAVAILABLE; }
 
-    public static long syncDefaultKeybox(Context context) {
+    public static String syncDefaultKeybox(Context context) {
         throw new IllegalStateException(UNAVAILABLE);
     }
 
