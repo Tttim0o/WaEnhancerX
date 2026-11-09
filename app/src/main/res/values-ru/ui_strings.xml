@@ -1154,9 +1154,25 @@
     <string name="waex_ui_chat_export_desc" formatted="false">"Добавляет экспорт чата в ⋮ › WAEX в каждом чате и экспорт всех чатов на главном экране. HTML или текст, сохраненный в папке Download/WAEX/Exports."</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Экспортировать все чаты"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Экспортированные чаты"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"Откройте чат, экспортированный WAEX или WhatsApp (TXT, ZIP или HTML). В WhatsApp ничего не записывается."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Открыть файл"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"В этом файле сообщений не найдено"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"Не удалось прочитать этот файл"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Ваше имя в этом чате:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Откройте чат, экспортированный WAEX или WhatsApp (TXT, ZIP или HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"Импортировать в WhatsApp."</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"Текстовые сообщения %d можно импортировать."</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Работаем… WhatsApp тем временем закрыт."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Экспериментальный импорт"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp будет закрыт, а его база данных сообщений создана. Затем текстовые сообщения %1$d добавляются в %2$s. Они остаются только на этом телефоне: они не отправляются, не синхронизируются со связанными устройствами и не доступны для поиска. Сообщения, уже находящиеся в чате или более новые, чем его последнее сообщение, пропускаются. Если что-то не получается, резервная копия восстанавливается."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Добавлено: %1$d
+Уже в чате: %2$d
+Новее, чем последнее сообщение в чате: %3$d.
+Нет места между сообщениями: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Отменить (восстановить резервную копию)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Резервная копия %s восстановлена."</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"Импорт не удался"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"В какой чат добавлять сообщения?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"Импорт работает только для личных чатов."</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"Выберите свое имя выше для импорта"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"Нечего импортировать. Экспорт, сделанный до этой версии, необходимо экспортировать снова."</string>
 </resources>

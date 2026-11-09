@@ -381,7 +381,7 @@ fun ConversationEnhancementsScreen(targetEpoch: Int = 0) {
                     com.waenhancer.ui.components.WaexPreferenceItem(
                         title = UiText.get(R.string.waex_ui_chat_viewer, "Exported chats"),
                         description = UiText.get(R.string.waex_ui_chat_viewer_desc,
-                            "Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML). Nothing is written to WhatsApp."),
+                            "Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML)."),
                         icon = WaexIcons.Download,
                         onClick = {
                             viewerContext.startActivity(android.content.Intent(viewerContext,

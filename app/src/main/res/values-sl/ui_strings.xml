@@ -1154,9 +1154,25 @@ Znova zaženite WhatsApp, da uporabite spremembe?"</string>
     <string name="waex_ui_chat_export_desc" formatted="false">"Doda Izvozi klepet v ⋮ › WAEX v vsakem klepetu in Izvozi vse klepete na začetni zaslon. HTML ali besedilo, shranjeno v Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Izvozi vse klepete"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Izvoženi klepeti"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"Odprite klepet, ki ga je izvozil WAEX ali WhatsApp (TXT, ZIP ali HTML). Nič ni zapisano v WhatsApp."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Odpri datoteko"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"V tej datoteki ni bilo najdenih sporočil"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"Te datoteke ni bilo mogoče prebrati"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Vaše ime v tem klepetu:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Odprite klepet, ki ga je izvozil WAEX ali WhatsApp (TXT, ZIP ali HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"Uvozi v WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d besedilna sporočila je mogoče uvoziti"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Deluje ... WhatsApp je medtem zaprt."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Experimental import"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp bo zaprt in njegova baza sporočil varnostno kopirana. Nato se besedilna sporočila %1$d dodajo v %2$s. Ostajajo samo na tem telefonu: niso poslani, niso sinhronizirani s povezanimi napravami in jih ni mogoče iskati. Sporočila, ki so že v klepetu ali novejša od zadnjega sporočila, so preskočena. Če karkoli ne uspe, se varnostna kopija obnovi."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Added: %1$d
+Že v klepetu: %2$d
+Novejše od zadnjega sporočila klepeta: %3$d
+Med sporočili ni prostora: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Undo (restore backup)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Varnostna kopija %s obnovljena"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"Import failed"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"V kateri klepet dodati sporočila?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"Uvoz deluje samo za klepete ena na ena"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"Za uvoz izberite svoje ime zgoraj"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"Nothing to import. Izvoze, opravljene pred to različico, je treba znova izvoziti."</string>
 </resources>

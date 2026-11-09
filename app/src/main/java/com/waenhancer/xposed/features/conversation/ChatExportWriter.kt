@@ -72,13 +72,14 @@ img,video{max-width:100%;border-radius:6px;display:block;margin-bottom:4px}audio
                 out.write("<div class=\"sys\">${esc(m.text ?: "")}</div>\n")
                 return
             }
-            out.write(if (m.fromMe) "<div class=\"m me\"><div class=\"b\">" else "<div class=\"m\"><div class=\"b\">")
+            // data-ts and the "c" span let WAEX read the chat back for import.
+            out.write("<div class=\"m${if (m.fromMe) " me" else ""}\" data-ts=\"${m.timestamp}\"><div class=\"b\">")
             if (isGroup && !m.fromMe) out.write("<div class=\"s\">${esc(m.sender)}</div>")
             m.quote?.takeIf { it.isNotBlank() }?.let { out.write("<div class=\"q\">${esc(it)}</div>") }
             writeHtmlMedia(m)
             when {
                 m.type == TYPE_DELETED -> out.write("<span class=\"x\">${esc(m.text ?: "Deleted message")}</span>")
-                !m.text.isNullOrEmpty() -> out.write(esc(m.text))
+                !m.text.isNullOrEmpty() -> out.write("<span class=\"c\">${esc(m.text)}</span>")
             }
             out.write("<span class=\"t\">${timeFormat.format(Date(m.timestamp))}</span>")
             m.reactions?.takeIf { it.isNotBlank() }?.let { out.write("<div class=\"r\">${esc(it)}</div>") }

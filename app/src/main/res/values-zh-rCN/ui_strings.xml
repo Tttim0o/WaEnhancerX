@@ -1154,9 +1154,25 @@
     <string name="waex_ui_chat_export_desc" formatted="false">"添加将聊天导出到每个聊天中的 ⋮ › WAEX 以及导出主屏幕上的所有聊天。 HTML 或文本，保存到 Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"导出所有聊天记录"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"导出的聊天记录"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"打开由 WAEX 或 WhatsApp 导出的聊天（TXT、ZIP 或 HTML）。未向 WhatsApp 写入任何内容。"</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"打开文件"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"在此文件中找不到消息"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"无法读取该文件"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"您在此聊天中的名字："</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"打开由 WAEX 或 WhatsApp 导出的聊天（TXT、ZIP 或 HTML）。"</string>
+    <string name="waex_ui_chat_import" formatted="false">"导入到 WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d 短信可以导入"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"正在工作... WhatsApp 同时关闭。"</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"实验导入"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp 将被关闭并备份其消息数据库。然后 %1$d 短信将添加到 %2$s 中。它们仅保留在这部手机上：它们不会被发送，不会同步到链接的设备，也无法搜索。聊天中已有的消息或比上一条消息更新的消息将被跳过。如果出现任何问题，备份将被恢复。"</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"添加：%1$d
+已在聊天中：%2$d
+比聊天的最后一条消息更新：%3$d
+消息之间没有空间：%4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"撤消（恢复备份）"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"备份 %s 已恢复"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"导入失败"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"将消息添加到哪个聊天？"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"导入仅适用于一对一聊天"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"在上方选择您的姓名进行导入"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"没有什么可导入的。在此版本之前进行的导出需要再次导出。"</string>
 </resources>

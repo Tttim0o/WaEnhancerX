@@ -15,7 +15,7 @@ object ChatTranscriptParser {
         val text: String
     )
 
-    class Chat(val title: String?, val messages: List<Message>) {
+    class Chat(val title: String?, val messages: List<Message>, val fromWaex: Boolean = false) {
         /** Senders, most active first. */
         val senders: List<String>
             get() = messages.mapNotNull { it.sender }.groupingBy { it }.eachCount()
@@ -78,7 +78,7 @@ object ChatTranscriptParser {
             }
         }
         flush()
-        return Chat(title, messages.map { it.trimmed() })
+        return Chat(title, messages.map { it.trimmed() }, waex)
     }
 
     /** "Name: text" becomes a message from Name; anything else is a system line. */

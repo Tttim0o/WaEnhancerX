@@ -1138,9 +1138,25 @@
     <string name="waex_ui_chat_export_desc" formatted="false">"Agrega Exportar chat a ⋮ › WAEX en cada chat y Exportar todos los chats en la pantalla de inicio. HTML o texto, guardado en Descargar/WAEX/Exportaciones"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Exportar todos los chats"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Chats exportados"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"Abra un chat exportado por WAEX o por WhatsApp (TXT, ZIP o HTML). No se escribe nada en WhatsApp."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Abrir archivo"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"No se encontraron mensajes en este archivo."</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"No se pudo leer este archivo"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Tu nombre en este chat:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Abra un chat exportado por WAEX o por WhatsApp (TXT, ZIP o HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"Importar a WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d se pueden importar mensajes de texto"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Trabajando… WhatsApp está cerrado mientras tanto."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Importación experimental"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp se cerrará y se realizará una copia de seguridad de su base de datos de mensajes. Luego, los mensajes de texto %1$d se agregan a %2$s. Permanecen únicamente en este teléfono: no se envían, no se sincronizan con los dispositivos vinculados y no se pueden buscar. Se omiten los mensajes que ya están en el chat o que son más recientes que el último mensaje. Si algo falla, se restaura la copia de seguridad."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Añadido: %1$d
+Ya en el chat: %2$d
+Más reciente que el último mensaje del chat: %3$d
+No hay espacio entre mensajes: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Deshacer (restaurar copia de seguridad)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Copia de seguridad %s restaurada"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"Importación fallida"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"¿Agregar los mensajes a qué chat?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"La importación funciona solo para chats uno a uno"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"Elija su nombre arriba para importar"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"Nada que importar. Las exportaciones realizadas antes de esta versión deben exportarse nuevamente."</string>
 </resources>

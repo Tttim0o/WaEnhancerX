@@ -209,7 +209,7 @@ private fun ChatViewerScreen(initial: Uri?) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(
                         if (busy) "…" else UiText.get(R.string.waex_ui_chat_viewer_desc,
-                            "Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML). Nothing is written to WhatsApp."),
+                            "Open a chat exported by WAEX or by WhatsApp (TXT, ZIP or HTML)."),
                         color = colors.onSurfaceVariant
                     )
                     if (!busy) Button(onClick = pick) {
@@ -220,7 +220,13 @@ private fun ChatViewerScreen(initial: Uri?) {
             is Loaded.Failed -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(l.message, color = colors.error)
             }
-            is Loaded.Html -> AndroidView(
+            is Loaded.Html -> Column(Modifier.fillMaxSize()) {
+                val importable = remember(l) { ImportSource.fromWaexHtml(l.html) }
+                val group = remember(l) { l.html.contains("<div class=\"s\">") }
+                ImportBar(importable, importBlockReason(group, false, importable.size),
+                    suggestedName = l.name.substringBeforeLast('_').substringBeforeLast('_')
+                        .substringAfter('_').replace('_', ' '))
+                AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
                     WebView(ctx).apply {
@@ -231,7 +237,14 @@ private fun ChatViewerScreen(initial: Uri?) {
                 },
                 update = { it.loadDataWithBaseURL(null, l.html, "text/html", "utf-8", null) }
             )
-            is Loaded.Text -> TranscriptView(l.chat, me) { me = it }
+            }
+            is Loaded.Text -> Column(Modifier.fillMaxSize()) {
+                val group = l.chat.senders.size > 2
+                val importable = remember(l, me) { me?.let { ImportSource.fromTranscript(l.chat, it) } }
+                ImportBar(importable, importBlockReason(group, me == null, importable?.size),
+                    suggestedName = l.chat.title ?: l.chat.senders.firstOrNull { it != me })
+                TranscriptView(l.chat, me) { me = it }
+            }
         }
     }
 }

@@ -1154,9 +1154,25 @@ Mulai ulang WhatsApp untuk menerapkan perubahan?"</string>
     <string name="waex_ui_chat_export_desc" formatted="false">"Menambahkan Ekspor obrolan ke ⋮ › WAEX di setiap obrolan dan Ekspor semua obrolan di layar beranda. HTML atau teks, disimpan ke Download/WAEX/Exports"</string>
     <string name="waex_ui_chat_export_all" formatted="false">"Ekspor semua obrolan"</string>
     <string name="waex_ui_chat_viewer" formatted="false">"Obrolan yang diekspor"</string>
-    <string name="waex_ui_chat_viewer_desc" formatted="false">"Buka obrolan yang diekspor oleh WAEX atau oleh WhatsApp (TXT, ZIP atau HTML). Tidak ada yang ditulis ke WhatsApp."</string>
     <string name="waex_ui_chat_viewer_open" formatted="false">"Buka berkas"</string>
     <string name="waex_ui_chat_viewer_empty" formatted="false">"Tidak ada pesan yang ditemukan dalam file ini"</string>
     <string name="waex_ui_chat_viewer_error" formatted="false">"Tidak dapat membaca file ini"</string>
     <string name="waex_ui_chat_viewer_me" formatted="false">"Nama Anda dalam obrolan ini:"</string>
+    <string name="waex_ui_chat_viewer_desc" formatted="false">"Buka obrolan yang diekspor oleh WAEX atau oleh WhatsApp (TXT, ZIP atau HTML)."</string>
+    <string name="waex_ui_chat_import" formatted="false">"Impor ke WhatsApp"</string>
+    <string name="waex_ui_chat_import_count" formatted="false">"%d pesan teks dapat diimpor"</string>
+    <string name="waex_ui_chat_import_working" formatted="false">"Bekerja… WhatsApp sementara itu ditutup."</string>
+    <string name="waex_ui_chat_import_confirm_title" formatted="false">"Impor eksperimental"</string>
+    <string name="waex_ui_chat_import_confirm" formatted="false">"WhatsApp akan ditutup dan database pesannya dicadangkan. Kemudian pesan teks %1$d ditambahkan ke %2$s. Data tersebut hanya ada di ponsel ini: tidak dikirim, tidak disinkronkan ke perangkat tertaut, dan tidak dapat dicari. Pesan yang sudah ada dalam obrolan atau lebih baru dari pesan terakhirnya akan dilewati. Jika ada yang gagal, cadangan akan dipulihkan."</string>
+    <string name="waex_ui_chat_import_result" formatted="false">"Ditambahkan: %1$d
+Sudah di chat : %2$d
+Lebih baru dari pesan terakhir obrolan: %3$d
+Tidak ada ruang antar pesan: %4$d"</string>
+    <string name="waex_ui_chat_import_undo" formatted="false">"Batalkan (pulihkan cadangan)"</string>
+    <string name="waex_ui_chat_import_restored" formatted="false">"Cadangan %s dipulihkan"</string>
+    <string name="waex_ui_chat_import_failed" formatted="false">"Impor gagal"</string>
+    <string name="waex_ui_chat_import_pick" formatted="false">"Tambahkan pesan ke obrolan mana?"</string>
+    <string name="waex_ui_chat_import_groups" formatted="false">"Impor hanya berfungsi untuk obrolan satu lawan satu"</string>
+    <string name="waex_ui_chat_import_need_me" formatted="false">"Pilih nama Anda di atas untuk diimpor"</string>
+    <string name="waex_ui_chat_import_none" formatted="false">"Tidak ada yang perlu diimpor. Ekspor yang dilakukan sebelum versi ini perlu diekspor lagi."</string>
 </resources>
