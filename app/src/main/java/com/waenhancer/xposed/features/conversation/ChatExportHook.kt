@@ -315,6 +315,14 @@ class ChatExportHook(context: Context, classLoader: ClassLoader, prefs: SharedPr
                 activity.runOnUiThread {
                     Toast.makeText(activity, UiText.get(R.string.waex_ui_chat_export_saved, "Saved to %s",
                         "Download/$folder"), Toast.LENGTH_LONG).show()
+                    // Opens the index so the result is visible right away.
+                    try {
+                        val view = Intent(Intent.ACTION_VIEW)
+                            .setDataAndType(index.uri, if (html) "text/html" else "text/plain")
+                            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        activity.startActivity(Intent.createChooser(view, null))
+                    } catch (_: Throwable) {
+                    }
                 }
             } catch (t: Throwable) {
                 XposedBridge.log("$TAG Export of all chats failed: ${t.javaClass.simpleName}")
