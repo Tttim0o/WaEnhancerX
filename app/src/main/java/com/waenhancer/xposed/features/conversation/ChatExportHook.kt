@@ -88,7 +88,7 @@ class ChatExportHook(context: Context, classLoader: ClassLoader, prefs: SharedPr
 
     private fun addMenuItem(activity: Activity, menu: Menu) {
         if (!isEnabled(PREF_KEY, true) || menu.findItem(MENU_ITEM_ID) != null) return
-        val item = menu.add(Menu.NONE, MENU_ITEM_ID, Menu.NONE,
+        val item = com.waenhancer.xposed.utils.WaexMenu.of(menu).add(Menu.NONE, MENU_ITEM_ID, Menu.NONE,
             UiText.get(R.string.waex_ui_chat_export, "Export chat"))
         item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
         item.setOnMenuItemClickListener {

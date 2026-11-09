@@ -197,14 +197,14 @@ public final class ProfilePhotoDownloadHook extends BaseFeature {
             return;
         }
 
-        MenuItem item = menu.add(Menu.NONE, MENU_ID, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
+        MenuItem item = com.waenhancer.xposed.utils.WaexMenu.of(menu).add(Menu.NONE, MENU_ID, Menu.NONE, UiText.get(R.string.waex_ui_download, "Download"));
         Drawable icon = MenuIconLoader.load(activity, "ic_waex_download");
         if (icon != null) {
             item.setIcon(icon);
         } else {
             item.setIcon(android.R.drawable.stat_sys_download_done);
         }
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         item.setOnMenuItemClickListener(ignored -> {
             if (!isEnabled("download_profile", false) || activity.isFinishing()
                     || activity.isDestroyed() || !saveInFlight.compareAndSet(false, true)) return true;
