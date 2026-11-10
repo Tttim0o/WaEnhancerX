@@ -477,7 +477,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             sendTimes.addLast(now)
         }
         val before = data.maxMessageId()
-        if (!WebSender.sendText(chat.sendJid, text, quoted)) return sendError()
+        if (!WebSender.sendText(data.sendTarget(chat), text, quoted)) return sendError()
         // WhatsApp stores the message a moment later; wait briefly so the page can say it worked.
         var stored = false
         for (i in 0 until 20) {

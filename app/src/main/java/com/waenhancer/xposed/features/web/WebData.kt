@@ -64,8 +64,10 @@ class WebData(private val app: Context) {
         var lastType = 0
         var lastText: String? = null
         var lastStatus = 0
-        /** JID of the most recently used row; messages are sent to this one. */
+        /** JID of the most recently used row. */
         var sendJid: String = jid
+        /** The contact's LID chat, when there is one; newer WhatsApp only accepts messages there. */
+        var lidJid: String? = null
     }
 
     private fun notLocked(alias: String): String {
@@ -103,6 +105,7 @@ class WebData(private val app: Context) {
                 if (sort <= 0 || jid == "status@broadcast" || !JID.matches(jid)) continue
                 val ref = byJid.getOrPut(jid) { Chat(jid) }
                 ref.rows.add(c.getLong(0))
+                c.getString(2)?.takeIf { it.endsWith("@lid") }?.let { ref.lidJid = it }
                 if (ref.subject.isNullOrBlank()) ref.subject = c.getString(3)
                 ref.unread += maxOf(0, c.getInt(6))
                 if (c.getInt(5) == 1) ref.archived = true
@@ -144,6 +147,24 @@ class WebData(private val app: Context) {
 
     /** The chat for [jid], or null when it does not exist or is locked. */
     fun chat(jid: String): Chat? = if (!JID.matches(jid)) null else chats().firstOrNull { it.jid == jid }
+
+    /**
+     * Where a message for [chat] goes. WhatsApp moved one-to-one chats to LID addresses and refuses
+     * to create a chat for a phone number ("disallow creating PN chat"), so the LID wins when known.
+     */
+    fun sendTarget(chat: Chat): String {
+        chat.lidJid?.let { return it }
+        if (!chat.sendJid.endsWith("@s.whatsapp.net") || !hasJidMap()) return chat.sendJid
+        return try {
+            db().rawQuery(
+                "SELECT l.raw_string FROM jid p JOIN jid_map m ON m.jid_row_id = p._id " +
+                    "JOIN jid l ON l._id = m.lid_row_id WHERE p.raw_string = ? LIMIT 1",
+                arrayOf(chat.sendJid)
+            ).use { c -> if (c.moveToFirst()) c.getString(0)?.takeIf { JID.matches(it) } else null } ?: chat.sendJid
+        } catch (_: Throwable) {
+            chat.sendJid
+        }
+    }
 
     fun nameOf(jid: String, subject: String? = null): String {
         if (!subject.isNullOrBlank()) return subject
