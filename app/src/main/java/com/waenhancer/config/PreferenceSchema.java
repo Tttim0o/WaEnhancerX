@@ -464,6 +464,10 @@ public final class PreferenceSchema {
         add(entries, "separate_groups_tabs", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "statusdowload", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "video_preview_muted", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "web_access", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "web_access_port", Type.INT, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "web_merge_accounts", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "web_wifi_only", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
 
         ENTRIES = Collections.unmodifiableMap(entries);
 

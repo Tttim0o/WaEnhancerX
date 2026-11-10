@@ -68,9 +68,14 @@ fun WebAccessSection() {
     val typography = WaexTheme.typography
     val radius = WaexTheme.radius
 
-    var enabled by remember { mutableStateOf(preferenceManager.getBoolean(WebServerHook.PREF_KEY, false)) }
-    var portText by remember {
-        mutableStateOf(preferenceManager.getInt(WebServerHook.PREF_PORT, WebServerHook.DEFAULT_PORT).toString())
+    // With "Per Target App" settings this screen edits one app (WhatsApp or WhatsApp Business).
+    val epoch = preferenceManager.targetEpoch
+    val target = preferenceManager.targetPackage
+    val packages = if (target in WebAdmin.PACKAGES) listOf(target!!) else WebAdmin.PACKAGES
+    var enabled by remember(epoch) { mutableStateOf(preferenceManager.getBoolean(WebServerHook.PREF_KEY, false)) }
+    var portText by remember(epoch) {
+        mutableStateOf(preferenceManager.getInt(WebServerHook.PREF_PORT,
+            if (target == WebAdmin.BUSINESS) WebServerHook.DEFAULT_PORT + 1 else WebServerHook.DEFAULT_PORT).toString())
     }
     var addresses by remember { mutableStateOf(emptyList<String>()) }
 
@@ -134,9 +139,9 @@ fun WebAccessSection() {
             }
         }
 
-        HomeWifi()
+        HomeWifi(epoch)
+        if (target == null || target == WebAdmin.WHATSAPP) MergeAccounts(epoch)
 
-        val port = portText.toIntOrNull()?.takeIf { it in 1024..65535 } ?: WebServerHook.DEFAULT_PORT
         if (addresses.isEmpty()) {
             Text(
                 text = UiText.get(R.string.waex_ui_web_no_wifi, "Connect the phone to Wi-Fi to see the address."),
@@ -147,10 +152,13 @@ fun WebAccessSection() {
                 text = UiText.get(R.string.waex_ui_web_address, "Open this address on your computer"),
                 style = typography.labelSm, color = colors.onSurfaceVariant
             )
-            addresses.forEach { ip ->
+            val appPorts = packages.filter { WebKeepAliveService.enabled(context, it) }
+                .ifEmpty { packages.take(1) }.map { pkg -> pkg to WebKeepAliveService.port(context, pkg) }
+            for (ip in addresses) for ((pkg, port) in appPorts) {
                 val url = "http://$ip:$port"
+                val label = if (appPorts.size > 1) (if (pkg == WebAdmin.BUSINESS) "WhatsApp Business: " else "WhatsApp: ") else ""
                 Text(
-                    text = url, fontFamily = FontFamily.Monospace, fontSize = 15.sp, color = colors.primary,
+                    text = label + url, fontFamily = FontFamily.Monospace, fontSize = 15.sp, color = colors.primary,
                     modifier = Modifier.clickable {
                         context.getSystemService(ClipboardManager::class.java)
                             ?.setPrimaryClip(ClipData.newPlainText("WAEX Web", url))
@@ -159,7 +167,8 @@ fun WebAccessSection() {
                 )
             }
         }
-        WebDevices()
+        val running = packages.filter { packages.size == 1 || WebKeepAliveService.enabled(context, it) }.ifEmpty { packages.take(1) }
+        for (pkg in running) WebDevices(pkg, if (running.size > 1) pkg else null)
         Text(
             text = UiText.get(R.string.waex_ui_web_restart,
                 "Restart WhatsApp after changing this. WhatsApp must be running for the page to work."),
@@ -176,7 +185,7 @@ fun WebAccessSection() {
 /** Who is signed in to WAEX Web, the code a new browser is waiting for, and the password. */
 @Suppress("UNCHECKED_CAST")
 @Composable
-private fun WebDevices() {
+private fun WebDevices(pkg: String, heading: String?) {
     val context = LocalContext.current
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
@@ -187,7 +196,7 @@ private fun WebDevices() {
     var password by remember { mutableStateOf("") }
 
     suspend fun refresh() {
-        state = withContext(Dispatchers.IO) { WebAdmin.state(context) }
+        state = withContext(Dispatchers.IO) { WebAdmin.state(context, pkg) }
         asked = true
     }
     fun act(block: () -> Unit) {
@@ -203,6 +212,11 @@ private fun WebDevices() {
         }
     }
 
+    if (heading != null) Text(
+        text = if (heading == WebAdmin.BUSINESS) "WhatsApp Business" else "WhatsApp",
+        style = typography.bodyMd, fontWeight = FontWeight.Bold, color = colors.onSurface,
+        modifier = Modifier.padding(top = 8.dp)
+    )
     val current = state
     if (current == null) {
         if (asked) Text(
@@ -260,12 +274,12 @@ private fun WebDevices() {
                     style = typography.labelSm, color = colors.onSurfaceVariant
                 )
             }
-            TextButton(onClick = { act { WebAdmin.signOut(context, session["id"] as? String ?: "") } }) {
+            TextButton(onClick = { act { WebAdmin.signOut(context, pkg, session["id"] as? String ?: "") } }) {
                 Text(UiText.get(R.string.waex_ui_web_sign_out, "Sign out"), color = colors.error)
             }
         }
     }
-    if (sessions.size > 1) TextButton(onClick = { act { WebAdmin.signOut(context, null) } }) {
+    if (sessions.size > 1) TextButton(onClick = { act { WebAdmin.signOut(context, pkg, null) } }) {
         Text(UiText.get(R.string.waex_ui_web_sign_out_all, "Sign out all browsers"), color = colors.error)
     }
 
@@ -280,7 +294,7 @@ private fun WebDevices() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = token["name"] as? String ?: "API", style = typography.bodyMd, color = colors.onSurface,
                     modifier = Modifier.weight(1f))
-                TextButton(onClick = { act { WebAdmin.deleteToken(context, token["id"] as? String ?: "") } }) {
+                TextButton(onClick = { act { WebAdmin.deleteToken(context, pkg, token["id"] as? String ?: "") } }) {
                     Text(UiText.get(R.string.waex_ui_web_delete, "Delete"), color = colors.error)
                 }
             }
@@ -319,10 +333,10 @@ private fun WebDevices() {
             onClick = {
                 val value = password
                 password = ""
-                act { WebAdmin.setPassword(context, value) }
+                act { WebAdmin.setPassword(context, pkg, value) }
             }
         ) { Text(UiText.get(R.string.waex_ui_web_password_save, "Set password")) }
-        if (passwordSet) TextButton(onClick = { act { WebAdmin.setPassword(context, null) } }) {
+        if (passwordSet) TextButton(onClick = { act { WebAdmin.setPassword(context, pkg, null) } }) {
             Text(UiText.get(R.string.waex_ui_web_password_remove, "Remove"), color = colors.error)
         }
     }
@@ -330,14 +344,14 @@ private fun WebDevices() {
 
 /** "Only on home Wi-Fi": the page opens by itself on the listed networks and closes elsewhere. */
 @Composable
-private fun HomeWifi() {
+private fun HomeWifi(epoch: Int) {
     val context = LocalContext.current
     val preferenceManager = LocalWaexPreferenceManager.current
     val colors = WaexTheme.colors
     val typography = WaexTheme.typography
     val radius = WaexTheme.radius
 
-    var wifiOnly by remember { mutableStateOf(preferenceManager.getBoolean(WebServerHook.PREF_WIFI_ONLY, false)) }
+    var wifiOnly by remember(epoch) { mutableStateOf(preferenceManager.getBoolean(WebServerHook.PREF_WIFI_ONLY, false)) }
     var networks by remember { mutableStateOf(WebWifi.networks(context)) }
     var current by remember { mutableStateOf<String?>(null) }
     var location by remember { mutableStateOf(WebWifi.hasLocation(context)) }
@@ -465,5 +479,33 @@ private fun HomeWifi() {
             typed = ""
             WebKeepAliveService.apply(context)
         }) { Text(UiText.get(R.string.waex_ui_web_wifi_add, "Add")) }
+    }
+}
+
+/** Shows the chats of every WhatsApp account on the phone together in WAEX Web (not Business). */
+@Composable
+private fun MergeAccounts(epoch: Int) {
+    val context = LocalContext.current
+    val preferenceManager = LocalWaexPreferenceManager.current
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    var merge by remember(epoch) { mutableStateOf(preferenceManager.getBoolean(WebServerHook.PREF_MERGE, false)) }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = UiText.get(R.string.waex_ui_web_merge, "Merge the inboxes of all WhatsApp accounts"),
+                style = typography.bodyMd, fontWeight = FontWeight.SemiBold, color = colors.onSurface
+            )
+            Text(
+                text = UiText.get(R.string.waex_ui_web_merge_desc,
+                    "For people with more than one account in WhatsApp (not Business). The web shows all chats together and lets you choose the account to send from. Accounts not in use show what they had when last in use. Restart WhatsApp after changing this."),
+                style = typography.labelSm, color = colors.onSurfaceVariant
+            )
+        }
+        Switch(checked = merge, onCheckedChange = {
+            merge = it
+            preferenceManager.putBoolean(WebServerHook.PREF_MERGE, it)
+            WebKeepAliveService.apply(context)
+        })
     }
 }

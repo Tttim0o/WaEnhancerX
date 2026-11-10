@@ -1217,4 +1217,8 @@
     <string name="waex_ui_web_wifi_empty" formatted="false">"还没有家庭网络。"</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi 名称"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"添加"</string>
+    <string name="waex_ui_web_merge" formatted="false">"合并所有 WhatsApp 帐户的收件箱"</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"适用于在 WhatsApp（非企业）中拥有多个帐户的人士。网络会同时显示所有聊天内容，并让您选择要发送的帐户。未使用的帐户显示上次使用时的帐户。更改后重新启动 WhatsApp。"</string>
+    <string name="waex_ui_web_switch_title" formatted="false">"切换WhatsApp账户"</string>
+    <string name="waex_ui_web_switch_text" formatted="false">"点击以切换到 %s，如 WAEX Web 中所示。"</string>
 </resources>

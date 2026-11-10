@@ -1217,4 +1217,8 @@ Tidak ada ruang antar pesan: %4$d"</string>
     <string name="waex_ui_web_wifi_empty" formatted="false">"Belum ada jaringan rumah."</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi nama"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Tambahkan"</string>
+    <string name="waex_ui_web_merge" formatted="false">"Gabungkan kotak masuk semua akun WhatsApp"</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"Bagi yang mempunyai lebih dari satu akun di WhatsApp (bukan Bisnis). Web menampilkan semua obrolan secara bersamaan dan memungkinkan Anda memilih akun yang akan digunakan untuk mengirim. Akun yang tidak digunakan menunjukkan apa yang dimilikinya saat terakhir kali digunakan. Mulai ulang WhatsApp setelah mengubahnya."</string>
+    <string name="waex_ui_web_switch_title" formatted="false">"Ganti akun WhatsApp"</string>
+    <string name="waex_ui_web_switch_text" formatted="false">"Ketuk untuk beralih ke %s, seperti yang diminta di WAEX Web."</string>
 </resources>

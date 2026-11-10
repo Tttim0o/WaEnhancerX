@@ -64,27 +64,92 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     @Volatile private var port = DEFAULT_PORT
     /** With "only on home Wi-Fi", the WAEX app opens the page once the phone is on such a network. */
     @Volatile private var active = true
+    private lateinit var accounts: WebAccounts
+    @Volatile private var merge = false
+    /** Readers for accounts that are not in use, by account id. */
+    private val otherData = java.util.concurrent.ConcurrentHashMap<String, WebData>()
+
+    /** The reader for an account id from the browser; the account in use when none is given. */
+    private fun dataFor(request: WebRequest): WebData? {
+        val id = request.query["account"]?.takeIf { it.isNotEmpty() } ?: return data
+        val account = accounts.byId(id) ?: return null
+        if (account.active) return data
+        return otherData.getOrPut(account.id) { WebData(app, account) }
+    }
 
     override fun hook() {
         if (!isEnabled(PREF_KEY, false)) return
         app = context.applicationContext ?: context
         active = !isEnabled(PREF_WIFI_ONLY, false)
         data = WebData(app)
-        val store = app.getSharedPreferences("waex_web", Context.MODE_PRIVATE)
-        auth = WebAuth(object : WebStore {
-            override fun get(key: String): String? = store.getString(key, null)
-            override fun put(key: String, value: String?) {
-                store.edit().apply { if (value == null) remove(key) else putString(key, value) }.apply()
-            }
-        })
-        port = try {
-            prefs.getInt(PREF_PORT, DEFAULT_PORT)
-        } catch (_: Throwable) {
-            getStringPref(PREF_PORT, null)?.toIntOrNull() ?: DEFAULT_PORT
-        }.takeIf { it in 1024..65535 } ?: DEFAULT_PORT
+        accounts = WebAccounts(app)
+        // Merging the inboxes of several accounts is for WhatsApp only, not WhatsApp Business.
+        merge = app.packageName == "com.whatsapp" && isEnabled(PREF_MERGE, false)
+        auth = WebAuth(FileStore(File(app.applicationInfo.dataDir, "waex_web_state.json"),
+            app.getSharedPreferences("waex_web", Context.MODE_PRIVATE)))
+        port = portFor(app.packageName)
 
         WebSender.prepare(context, classLoader)
         Thread({ serve() }, "waex-web").apply { isDaemon = true }.start()
+    }
+
+    /**
+     * Sign-ins, tokens and the password, kept in one small file in WhatsApp's main data folder.
+     * WhatsApp's own settings files belong to the account in use, so a browser would be signed out
+     * every time the phone switches accounts; this file stays the same for all of them.
+     * Older versions kept the same values in [legacy]; they are moved over once.
+     */
+    private class FileStore(private val file: File, legacy: android.content.SharedPreferences) : WebStore {
+        private val values = LinkedHashMap<String, String>()
+
+        init {
+            val loaded = try {
+                if (file.isFile) org.json.JSONObject(file.readText()) else null
+            } catch (_: Throwable) {
+                null
+            }
+            if (loaded != null) {
+                for (key in loaded.keys()) loaded.optString(key, null)?.let { values[key] = it }
+            } else {
+                for ((key, value) in legacy.all) if (value is String) values[key] = value
+                save()
+            }
+        }
+
+        @Synchronized override fun get(key: String): String? = values[key]
+
+        @Synchronized override fun put(key: String, value: String?) {
+            if (value == null) values.remove(key) else values[key] = value
+            save()
+        }
+
+        private fun save() {
+            try {
+                val json = org.json.JSONObject()
+                for ((key, value) in values) json.put(key, value)
+                val tmp = File(file.parentFile, file.name + ".tmp")
+                tmp.writeText(json.toString())
+                if (!tmp.renameTo(file)) { file.writeText(json.toString()); tmp.delete() }
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
+    /**
+     * WhatsApp and WhatsApp Business each run a server, so they need different ports. A port set
+     * for one app ("Per Target App" settings) is used as is; a shared one is moved up by one for
+     * WhatsApp Business.
+     */
+    private fun portFor(pkg: String): Int {
+        val business = pkg == "com.whatsapp.w4b"
+        fun read(key: String): Int? = if (!prefs.contains(key)) null else try {
+            prefs.getInt(key, 0)
+        } catch (_: Throwable) {
+            prefs.getString(key, null)?.toIntOrNull()
+        }
+        val chosen = read("$pkg:$PREF_PORT") ?: read(PREF_PORT)?.let { if (business) it + 1 else it }
+        val fallback = if (business) DEFAULT_PORT + 1 else DEFAULT_PORT
+        return chosen?.takeIf { it in 1024..65535 } ?: fallback
     }
 
     // ─── Server loop ────────────────────────────────────────────────────
@@ -272,7 +337,8 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 "app" to "waex-web",
                 "signedIn" to (caller != null),
                 "passwordSet" to auth.passwordSet(),
-                "canSend" to (caller != null && WebSender.available)
+                "canSend" to (caller != null && WebSender.available),
+                "account" to (if (caller != null) accounts.active()?.id else null)
             ))
             "docs" -> return asset(listOf("api.txt"))
             "pair" -> return if (post) pair(request, path, peerIp) else WebResponse.error(405, "method")
@@ -285,8 +351,9 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 request.query["limit"]?.toIntOrNull()?.coerceIn(1, 200) ?: 50))
             "updates" -> updates(request)
             "media" -> media(request, path.getOrNull(1)?.toLongOrNull())
-            "thumb" -> thumb(path.getOrNull(1)?.toLongOrNull())
-            "avatar" -> avatar(path.getOrNull(1))
+            "thumb" -> thumb(request, path.getOrNull(1)?.toLongOrNull())
+            "avatar" -> avatar(request, path.getOrNull(1))
+            "accounts" -> accountsRoute(request, path, post)
             "logout" -> if (!post) WebResponse.error(405, "method") else {
                 caller.session?.let { auth.revokeSession(it.id) }
                 WebResponse.json("{\"ok\":true}").header("Set-Cookie", cookie("", 0))
@@ -461,10 +528,13 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     // ─── Chats and messages ─────────────────────────────────────────────
 
     private fun chats(request: WebRequest, path: List<String>, post: Boolean): WebResponse {
-        val jid = path.getOrNull(1) ?: return WebResponse.json(data.chatsJson(request.query["q"]))
-        val chat = data.chat(jid) ?: return WebResponse.error(404, "chat_not_found")
+        val jid = path.getOrNull(1) ?: return chatList(request)
+        val source = dataFor(request) ?: return WebResponse.error(404, "account_not_found")
+        val chat = source.chat(jid) ?: return WebResponse.error(404, "chat_not_found")
+        // Another account's chats can be read; writing needs that account to be in use.
+        if (post && source !== data) return WebResponse.error(409, "account_inactive")
         return when (path.getOrNull(2)) {
-            "messages" -> WebResponse.json(data.messagesJson(chat,
+            "messages" -> WebResponse.json(source.messagesJson(chat,
                 request.query["beforeSort"]?.toLongOrNull(), request.query["beforeId"]?.toLongOrNull(),
                 request.query["after"]?.toLongOrNull(),
                 request.query["limit"]?.toIntOrNull() ?: 60))
@@ -473,6 +543,38 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             "open" -> if (post) openOnPhone(request, chat) else WebResponse.error(405, "method")
             else -> WebResponse.error(404, "not_found")
         }
+    }
+
+    /** The chat list; with the merged inbox, the chats of every account, newest first. */
+    private fun chatList(request: WebRequest): WebResponse {
+        val query = request.query["q"]
+        val all = if (merge) accounts.list().filter { !it.loggedOut } else emptyList()
+        if (all.size < 2) return WebResponse.json(data.chatsJson(query))
+        val items = ArrayList<Pair<Long, String>>()
+        for (account in all) {
+            val source = if (account.active) data else otherData.getOrPut(account.id) { WebData(app, account) }
+            try { items.addAll(source.chatItems(query, account.id to account.name)) } catch (_: Throwable) {}
+        }
+        items.sortByDescending { it.first }
+        return WebResponse.json(items.joinToString(",", "{\"chats\":[", "]}") { it.second })
+    }
+
+    /** GET: the accounts on this phone. POST /api/accounts/switch {id}: switch WhatsApp to one. */
+    private fun accountsRoute(request: WebRequest, path: List<String>, post: Boolean): WebResponse {
+        if (path.getOrNull(1) == "switch") {
+            if (!post) return WebResponse.error(405, "method")
+            val id = WebJson.parseObject(request.bodyText())["id"] as? String
+            val account = accounts.byId(id) ?: return WebResponse.error(404, "account_not_found")
+            if (account.active) return WebResponse.json("{\"ok\":true,\"already\":true}")
+            if (account.loggedOut) return WebResponse.error(409, "account_logged_out")
+            XposedBridge.log("$TAG account switch requested")
+            return if (accounts.switchTo(account)) WebResponse.json("{\"ok\":true}")
+            else WebResponse.error(503, "cannot_switch")
+        }
+        val list = accounts.list().map {
+            linkedMapOf("id" to it.id, "name" to it.name, "phone" to it.phone, "active" to it.active, "loggedOut" to it.loggedOut)
+        }
+        return WebResponse.json(WebJson.obj("accounts" to list, "merged" to merge, "app" to app.packageName))
     }
 
     private fun send(request: WebRequest, chat: WebData.Chat): WebResponse {
@@ -562,7 +664,8 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     // ─── Media ──────────────────────────────────────────────────────────
 
     private fun media(request: WebRequest, id: Long?): WebResponse {
-        val media = id?.let(data::media) ?: return WebResponse.error(404, "not_found")
+        val source = dataFor(request) ?: return WebResponse.error(404, "not_found")
+        val media = id?.let(source::media) ?: return WebResponse.error(404, "not_found")
         val size = media.file.length()
         val inline = INLINE_TYPES.any { media.mime.startsWith(it) }
         val type = if (inline) media.mime else "application/octet-stream"
@@ -597,13 +700,15 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         }
     }
 
-    private fun thumb(id: Long?): WebResponse {
-        val bytes = id?.let(data::thumbnail) ?: return WebResponse.error(404, "not_found")
+    private fun thumb(request: WebRequest, id: Long?): WebResponse {
+        val source = dataFor(request) ?: return WebResponse.error(404, "not_found")
+        val bytes = id?.let(source::thumbnail) ?: return WebResponse.error(404, "not_found")
         return WebResponse(200, "image/jpeg", bytes).header("Cache-Control", "private, max-age=86400")
     }
 
-    private fun avatar(jid: String?): WebResponse {
-        val file = jid?.let(data::avatar) ?: return WebResponse.error(404, "not_found")
+    private fun avatar(request: WebRequest, jid: String?): WebResponse {
+        val source = dataFor(request) ?: return WebResponse.error(404, "not_found")
+        val file = jid?.let(source::avatar) ?: return WebResponse.error(404, "not_found")
         return WebResponse(200, "image/jpeg", file.readBytes()).header("Cache-Control", "private, max-age=600")
     }
 
@@ -612,6 +717,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         const val PREF_KEY = "web_access"
         const val PREF_PORT = "web_access_port"
         const val PREF_WIFI_ONLY = "web_wifi_only"
+        const val PREF_MERGE = "web_merge_accounts"
         const val DEFAULT_PORT = 8377
         private const val CHANNEL = "waex_web"
         private const val NOTIFY_CODE = 0x57454201

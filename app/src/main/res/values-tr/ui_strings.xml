@@ -1217,4 +1217,8 @@ Mesajlar arasında yer yok: %4$d"</string>
     <string name="waex_ui_web_wifi_empty" formatted="false">"Henüz ev ağı yok."</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi adı"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Ekle"</string>
+    <string name="waex_ui_web_merge" formatted="false">"Tüm WhatsApp hesaplarının gelen kutularını birleştir"</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"WhatsApp'de (İşletme değil) birden fazla hesabı olan kişiler için. Web, tüm sohbetleri bir arada gösterir ve gönderilecek hesabı seçmenize olanak tanır. Kullanılmayan hesaplar, en son kullanıldıkları sırada sahip oldukları şeyleri gösterir. Bunu değiştirdikten sonra WhatsApp'yi yeniden başlatın."</string>
+    <string name="waex_ui_web_switch_title" formatted="false">"WhatsApp hesabını değiştir"</string>
+    <string name="waex_ui_web_switch_text" formatted="false">"WAEX Web'de sorulduğu gibi %s'ye geçmek için dokunun."</string>
 </resources>

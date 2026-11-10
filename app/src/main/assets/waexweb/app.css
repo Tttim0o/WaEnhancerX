@@ -710,3 +710,33 @@ input[type="checkbox"]:focus-visible { box-shadow: none; outline: 2px solid var(
   .msg, .card, .settings, .tabs button, .row.on { border: 1px solid CanvasText; }
   .chat::after { display: none; }
 }
+
+/* Kept by anti-revoke: the sender deleted it, WAEX still shows it. */
+.msg.revoked { box-shadow: inset 3px 0 0 color-mix(in srgb, #e5484d 70%, transparent); }
+.msg .revokednote { color: #d13d42; font-size: .8em; margin-top: 2px; }
+:root[data-theme="dark"] .msg .revokednote, :root[data-theme="black"] .msg .revokednote,
+:root[data-theme="ocean"] .msg .revokednote { color: #ff8589; }
+.msg .note.once { font-size: .8em; font-style: normal; margin-bottom: 4px; }
+
+/* Accounts: switcher, menu, tags in the merged inbox, "Send as". */
+.acctbtn { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: inherit; font-size: .82em;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent); background: transparent; color: inherit;
+  border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.acctbtn:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+.side { position: relative; }
+.acctmenu { position: absolute; top: 56px; right: 12px; z-index: 30; min-width: 220px; display: flex; flex-direction: column;
+  background: var(--panel, #fff); color: inherit; border-radius: 12px; padding: 6px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.28); border: 1px solid color-mix(in srgb, currentColor 12%, transparent); }
+.acctmenu button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; font: inherit;
+  background: transparent; color: inherit; border: 0; border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.acctmenu button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+.acctmenu button.on b::after { content: " ✓"; color: var(--accent); }
+.acctmenu small { opacity: .7; }
+.row .acct { display: inline-block; font-size: .72em; font-weight: 500; padding: 1px 6px; border-radius: 999px; vertical-align: middle;
+  background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.row .acct.idle { background: color-mix(in srgb, currentColor 10%, transparent); opacity: .85; }
+.sendas { display: flex; align-items: center; gap: 8px; padding: 6px 16px; font-size: .82em; background: var(--panel); }
+.sendas span { white-space: nowrap; opacity: .8; }
+.sendas select { width: auto; max-width: 60%; min-height: 0; height: auto; font: inherit; background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 8px; padding: 2px 6px; }
+.sendas select option { color: #111; }

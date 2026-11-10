@@ -1217,4 +1217,8 @@
     <string name="waex_ui_web_wifi_empty" formatted="false">"لا توجد شبكة منزلية حتى الآن."</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi الاسم"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"أضف"</string>
+    <string name="waex_ui_web_merge" formatted="false">"دمج صناديق البريد الوارد لجميع حسابات WhatsApp"</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"للأشخاص الذين لديهم أكثر من حساب واحد في WhatsApp (وليس الأعمال). يعرض الويب جميع الدردشات معًا ويتيح لك اختيار الحساب الذي تريد الإرسال منه. تُظهر الحسابات غير المستخدمة ما كان لديها عند آخر استخدام. أعد تشغيل WhatsApp بعد تغيير هذا."</string>
+    <string name="waex_ui_web_switch_title" formatted="false">"قم بتبديل حساب WhatsApp"</string>
+    <string name="waex_ui_web_switch_text" formatted="false">"انقر للتبديل إلى %s، كما هو مطلوب في WAEX الويب."</string>
 </resources>
