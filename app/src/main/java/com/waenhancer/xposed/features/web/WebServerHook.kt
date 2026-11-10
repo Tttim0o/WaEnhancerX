@@ -465,15 +465,15 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     private fun send(request: WebRequest, chat: WebData.Chat): WebResponse {
         val body = WebJson.parseObject(request.bodyText())
         val text = (body["text"] as? String)?.trim().orEmpty()
-        if (text.isEmpty() || text.length > MAX_TEXT) return WebResponse.error(400, "text_length")
-        if (!WebSender.available) return WebResponse.error(503, "send_unavailable")
+        if (text.isEmpty() || text.length > MAX_TEXT) return sendRefused(400, "text_length")
+        if (!WebSender.available) return sendRefused(503, "send_unavailable")
         val quoted = (body["replyTo"] as? Double)?.toLong()?.let {
-            data.messageKey(chat, it) ?: return WebResponse.error(404, "message_not_found")
+            data.messageKey(chat, it) ?: return sendRefused(404, "message_not_found")
         }
         synchronized(sendTimes) {
             val now = System.currentTimeMillis()
             while (sendTimes.isNotEmpty() && now - sendTimes.first() > 60_000) sendTimes.removeFirst()
-            if (sendTimes.size >= MAX_SENDS_PER_MINUTE) return WebResponse.error(429, "slow_down")
+            if (sendTimes.size >= MAX_SENDS_PER_MINUTE) return sendRefused(429, "slow_down")
             sendTimes.addLast(now)
         }
         val before = data.maxMessageId()
@@ -484,7 +484,14 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             if (data.sentAfter(before, text)) { stored = true; break }
             try { Thread.sleep(100) } catch (_: InterruptedException) { break }
         }
+        // Never the text or the chat: only whether WhatsApp stored the message.
+        XposedBridge.log("$TAG send ${if (stored) "stored" else "not stored after 2 s"}")
         return WebResponse.json(WebJson.obj("ok" to true, "stored" to stored))
+    }
+
+    private fun sendRefused(status: Int, code: String): WebResponse {
+        XposedBridge.log("$TAG send refused: $code")
+        return WebResponse.error(status, code)
     }
 
     /** Says that sending failed and, as a short code, at which step. */
