@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -9,11 +9,38 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" hidden aria-hidden="true" style="display:none">
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.6"/><circle cx="8" cy="17" r="2.6"/></symbol>
+  <symbol id="i-theme" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-emoji" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.2c1 1.4 2.2 2.1 3.5 2.1s2.5-.7 3.5-2.1"/><path d="M9 9.8v.4M15 9.8v.4" stroke-width="2.4"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></symbol>
+  <symbol id="i-reply" viewBox="0 0 24 24"><path d="M10 7l-5 5 5 5"/><path d="M5 12h9a5 5 0 0 1 5 5v1"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5.5 12.5l4.5 4.5 8.5-9.5"/></symbol>
+  <symbol id="i-checks" viewBox="0 0 24 24"><path d="M2 12.5l4.5 4.5L15 7.5"/><path d="M11.5 15.5L13 17l8.5-9.5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5"/><path d="M12 8v4.3l2.5 2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+  <symbol id="i-block" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.5 6.5l11 11"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5 4.5 4"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="2.5"/><path d="M15 10.5l6-3v9l-6-3"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.7"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-poll" viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+</svg>
 <noscript>WAEX Web needs JavaScript.</noscript>
 
 <main id="login" class="login" hidden>
   <div class="card">
     <div class="logo">WAEX <span>Web</span></div>
+    <div class="steps" aria-hidden="true"><i class="on"></i><i id="step2Dot"></i></div>
     <p id="loginIntro" class="muted"></p>
     <div id="loginStep1">
       <button id="askCode" class="primary wide"></button>
@@ -37,8 +64,10 @@
   <aside id="side" class="side">
     <header class="bar">
       <div class="logo small">WAEX <span>Web</span></div>
+      <span id="conn" class="conn" role="img"></span>
       <span class="grow"></span>
-      <button id="openSettings" class="icon" aria-label="Settings">⚙</button>
+      <button id="toggleTheme" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-theme"/></svg></button>
+      <button id="openSettings" class="icon" aria-label="Settings"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg></button>
     </header>
     <div class="searchbox">
       <input id="search" type="search" autocomplete="off">
@@ -51,31 +80,34 @@
     </div>
     <div id="offline" class="offline" role="status" hidden></div>
     <div id="chats" class="chats" role="list"></div>
+    <div id="sideGrip" class="grip" aria-hidden="true"></div>
   </aside>
 
   <section id="pane" class="pane">
     <div id="empty" class="empty">
       <div class="logo">WAEX <span>Web</span></div>
       <p id="emptyText" class="muted"></p>
+      <p id="emptyHint" class="muted hint"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span></span></p>
     </div>
     <div id="chat" class="chat" hidden>
       <header class="bar">
-        <button id="back" class="icon back" aria-label="Back">←</button>
+        <button id="back" class="icon back" aria-label="Back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
         <div id="chatAvatar" class="avatar"></div>
         <div class="grow titlebox">
           <div id="chatName" class="name"></div>
           <div id="chatSub" class="muted small"></div>
         </div>
+        <button id="phoneOpen" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg></button>
       </header>
       <div id="messages" class="messages"></div>
-      <button id="toLatest" class="tolatest" hidden>↓</button>
+      <button id="toLatest" class="tolatest" hidden><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></button>
       <div id="replyBar" class="replybar" hidden>
         <div class="grow replybox"><div id="replyWho" class="sender"></div><div id="replyText" class="replytext"></div></div>
-        <button id="replyCancel" class="icon" aria-label="Cancel">✕</button>
+        <button id="replyCancel" class="icon" aria-label="Cancel"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
       </div>
       <div id="emojiPanel" class="emojipanel" hidden></div>
       <footer class="composer">
-        <button id="emojiButton" class="icon" aria-label="Emoji">☺</button>
+        <button id="emojiButton" class="icon" aria-label="Emoji"><svg class="ic" aria-hidden="true"><use href="#i-emoji"/></svg></button>
         <textarea id="text" rows="1" maxlength="8000"></textarea>
         <button id="send" class="round send" aria-label="Send"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
       </footer>
@@ -89,8 +121,9 @@
 <dialog id="settings" class="settings">
   <header class="bar">
     <div id="settingsTitle" class="name grow"></div>
-    <button id="closeSettings" class="icon" aria-label="Close">✕</button>
+    <button id="closeSettings" class="icon" aria-label="Close"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
   </header>
+  <nav id="settingsNav" class="setnav"></nav>
   <div id="settingsBody" class="settingsbody"></div>
 </dialog>
 

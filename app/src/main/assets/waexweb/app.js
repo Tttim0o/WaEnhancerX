@@ -56,7 +56,65 @@
       doubleReact: 'Double click reacts with', sendProblem: 'WhatsApp did not take the message ({s}). Try again.',
       react_unavailable: 'Reactions do not work with this WhatsApp version.',
       message_not_found: 'WhatsApp no longer has that message.', online: 'Connected to the phone',
-      reconnecting: 'The phone does not answer. Trying again…'
+      reconnecting: 'The phone does not answer. Trying again…',
+      appearance: 'Appearance',
+      chatBackground: 'Chat background',
+      chatsLook: 'Chats',
+      chatList: 'Chat list',
+      writing: 'Writing',
+      ocean: 'Ocean',
+      paper: 'Paper',
+      accentCustom: 'Custom colour',
+      automatic: 'Automatic',
+      bubbleOwn: 'My bubbles',
+      bubbleOther: 'Other bubbles',
+      tails: 'Bubble tails',
+      fontFamily: 'Font',
+      fontSystem: 'System',
+      fontRounded: 'Rounded',
+      fontSerif: 'Serif',
+      wallDoodles: 'Doodles',
+      wallGrid: 'Grid',
+      wallLines: 'Lines',
+      wallWaves: 'Waves',
+      wallAurora: 'Aurora',
+      wallColor: 'Background colour',
+      wallOpacity: 'Pattern strength',
+      wallDim: 'Dim background',
+      density: 'Message spacing',
+      listDensity: 'List spacing',
+      comfortable: 'Comfortable',
+      compact: 'Compact',
+      msgWidth: 'Bubble width',
+      sideWidth: 'Panel width',
+      listAvatars: 'Pictures in the chat list',
+      groupAvatars: 'Sender pictures in groups',
+      senderColors: 'Coloured sender names',
+      bigEmoji: 'Large emoji',
+      clock: 'Clock',
+      clockAuto: 'Automatic',
+      clock24: '24-hour',
+      clock12: '12-hour',
+      motion: 'Animations',
+      motionSystem: 'Same as system',
+      motionReduce: 'Reduced',
+      motionFull: 'Always on',
+      quickReactions: 'Quick reactions',
+      quickHint: 'Pick a slot, then choose an emoji for it.',
+      enterHint: 'Shift+Enter makes a new line',
+      titleCount: 'Unread count in the tab title',
+      resetLook: 'Reset look',
+      resetDone: 'Look was reset.',
+      previewIn: 'Hi! This is how your chats look.',
+      previewOut: 'Nice. I like it.',
+      switchTheme: 'Switch light / dark',
+      openPhone: 'Open on the phone',
+      toLatest: 'Newest messages',
+      back: 'Back',
+      close: 'Close',
+      emptyTitle: 'Your chats, on the big screen',
+      emptyHint: 'Everything stays on your phone and your Wi-Fi.',
+      account: 'Account'
     },
     sk: {
       intro: 'Čítaj a píš svoje WhatsApp správy z tohto počítača. Telefón ukáže kód, ktorým tento prehliadač pustíš dnu.',
@@ -98,18 +156,100 @@
       doubleReact: 'Dvojklik reaguje pomocou', sendProblem: 'WhatsApp správu neprevzal ({s}). Skús to znova.',
       react_unavailable: 'Reakcie s touto verziou WhatsAppu nefungujú.',
       message_not_found: 'WhatsApp už túto správu nemá.', online: 'Spojené s telefónom',
-      reconnecting: 'Telefón neodpovedá. Skúšam znova…'
+      reconnecting: 'Telefón neodpovedá. Skúšam znova…',
+      appearance: 'Vzhľad',
+      chatBackground: 'Pozadie chatu',
+      chatsLook: 'Chaty',
+      chatList: 'Zoznam chatov',
+      writing: 'Písanie',
+      ocean: 'Oceán',
+      paper: 'Papier',
+      accentCustom: 'Vlastná farba',
+      automatic: 'Automaticky',
+      bubbleOwn: 'Moje bubliny',
+      bubbleOther: 'Bubliny ostatných',
+      tails: 'Chvostíky bublín',
+      fontFamily: 'Písmo',
+      fontSystem: 'Systémové',
+      fontRounded: 'Zaoblené',
+      fontSerif: 'Pätkové',
+      wallDoodles: 'Kresbičky',
+      wallGrid: 'Mriežka',
+      wallLines: 'Čiary',
+      wallWaves: 'Vlny',
+      wallAurora: 'Polárna žiara',
+      wallColor: 'Farba pozadia',
+      wallOpacity: 'Výraznosť vzoru',
+      wallDim: 'Stmaviť pozadie',
+      density: 'Rozostupy správ',
+      listDensity: 'Rozostupy v zozname',
+      comfortable: 'Pohodlné',
+      compact: 'Husté',
+      msgWidth: 'Šírka bublín',
+      sideWidth: 'Šírka panela',
+      listAvatars: 'Obrázky v zozname chatov',
+      groupAvatars: 'Obrázky odosielateľov v skupinách',
+      senderColors: 'Farebné mená odosielateľov',
+      bigEmoji: 'Veľké emoji',
+      clock: 'Formát času',
+      clockAuto: 'Automaticky',
+      clock24: '24-hodinový',
+      clock12: '12-hodinový',
+      motion: 'Animácie',
+      motionSystem: 'Podľa systému',
+      motionReduce: 'Obmedzené',
+      motionFull: 'Vždy zapnuté',
+      quickReactions: 'Rýchle reakcie',
+      quickHint: 'Vyber miesto a potom emoji, ktoré tam má byť.',
+      enterHint: 'Shift+Enter urobí nový riadok',
+      titleCount: 'Počet neprečítaných v názve karty',
+      resetLook: 'Obnoviť vzhľad',
+      resetDone: 'Vzhľad bol obnovený.',
+      previewIn: 'Ahoj! Takto vyzerajú tvoje chaty.',
+      previewOut: 'Pekné. Páči sa mi to.',
+      switchTheme: 'Prepnúť svetlú / tmavú',
+      openPhone: 'Otvoriť v telefóne',
+      toLatest: 'Najnovšie správy',
+      back: 'Späť',
+      close: 'Zavrieť',
+      emptyTitle: 'Tvoje chaty na veľkej obrazovke',
+      emptyHint: 'Všetko ostáva v telefóne a na tvojej Wi-Fi.',
+      account: 'Účet'
     }
   };
 
   // ─── Look and feel, kept in this browser only ────────────────────────
-  const DEFAULTS = { theme: 'system', accent: '#00a884', wall: 'classic', font: 14.2, radius: 8, enter: true, lang: '', react: '❤️' };
-  const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+  const DEFAULTS = {
+    theme: 'system', accent: '#0b7f63', bubbleOwn: '', bubbleOther: '',
+    wall: 'classic', wallColor: '', wallOpacity: 100, wallDim: 0,
+    font: 14.5, family: 'system', radius: 10, tails: true,
+    density: 'comfortable', list: 'comfortable', listAvatars: true,
+    groupAvatars: true, senderColors: true, bigEmoji: true, msgWidth: 65, sideWidth: 380,
+    clock: 'auto', motion: 'system', enter: true, react: '❤️',
+    quick: ['👍', '❤️', '😂', '😮', '😢', '🙏'], titleCount: true, lang: ''
+  };
+  /** Prefs that only change the look; "Reset look" puts these back. */
+  const LOOK_KEYS = ['theme', 'accent', 'bubbleOwn', 'bubbleOther', 'wall', 'wallColor', 'wallOpacity', 'wallDim', 'font', 'family',
+    'radius', 'tails', 'density', 'list', 'listAvatars', 'groupAvatars', 'senderColors', 'bigEmoji', 'msgWidth', 'sideWidth', 'motion'];
   const EMOJI = ('😀 😁 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😜 🤪 🤔 🤨 😐 😏 😒 🙄 😬 😴 😷 🤒 🤕 🤢 🥵 🥶 😎 🤓 😕 😟 😮 😳 🥺 😢 😭 😱 😤 😡 🤬 💀 💩 🤡 👻 👍 👎 👌 ✌️ 🤞 🤝 👏 🙌 🙏 💪 👀 🫶 ❤️ 🧡 💛 💚 💙 💜 🖤 💔 💯 🔥 ✨ 🎉 🎂 🎁 ☀️ 🌙 ⭐ ☕ 🍕 🍺 ⚽ 🚗 ✈️ 🏠 📞 💻 ✅ ❌ ❓ ❗').split(' ');
-  const ACCENTS = ['#00a884', '#1fa855', '#0b84ff', '#7c4dff', '#e91e63', '#ff7043', '#f5a623', '#00a3a3', '#607d8b'];
+  const ACCENTS = ['#0b7f63', '#0c7a86', '#1a6fd6', '#5257d6', '#7e4fd0', '#c2336a', '#c74a2f', '#a66a10', '#56697a'];
+  const THEMES = ['system', 'light', 'dark', 'black', 'ocean', 'paper'];
+  const DARK = new Set(['dark', 'black', 'ocean']);
+  const WALLS = ['classic', 'dots', 'grid', 'lines', 'waves', 'gradient', 'aurora', 'plain'];
+  // Only fonts the computer already has: the page never loads anything from the internet.
+  const FAMILIES = {
+    system: null,
+    rounded: 'ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, sans-serif',
+    serif: 'ui-serif, "Iowan Old Style", "Palatino Linotype", Georgia, serif'
+  };
   let prefs = { ...DEFAULTS };
   try { prefs = { ...DEFAULTS, ...JSON.parse(localStorage.getItem('waex_prefs') || '{}') }; } catch (_) { /* private mode */ }
+  // Older versions stored the old default colour; move those to the new one.
+  if (prefs.accent === '#00a884' || prefs.accent === undefined) prefs.accent = DEFAULTS.accent;
+  if (!Array.isArray(prefs.quick) || prefs.quick.length !== 6) prefs.quick = DEFAULTS.quick.slice();
   const savePrefs = () => { try { localStorage.setItem('waex_prefs', JSON.stringify(prefs)); } catch (_) { /* ignore */ } };
+  const quick = () => prefs.quick;
+  const reactEmoji = () => (prefs.quick.includes(prefs.react) ? prefs.react : prefs.quick[0]);
   const lang = () => (WORDS[prefs.lang] ? prefs.lang : (navigator.language || 'en').slice(0, 2) === 'sk' ? 'sk' : 'en');
   const t = (key, vars) => {
     let text = WORDS[lang()][key] || WORDS.en[key] || key;
@@ -117,17 +257,73 @@
     return text;
   };
   const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const isHex = (v) => /^#[0-9a-f]{6}$/i.test(v);
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const lum = (hex) => {
+    const [r, g, b] = rgb(hex).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const mix = (a, b, p) => '#' + rgb(a).map((v, i) => Math.round(v * p + rgb(b)[i] * (1 - p)).toString(16).padStart(2, '0')).join('');
+  const best = (bg, a, b) => (contrast(a, bg) >= contrast(b, bg) ? a : b);
+  const clamp = (v, lo, hi, d) => Math.min(hi, Math.max(lo, Number.isFinite(+v) ? +v : d));
+  const resolvedTheme = () => (prefs.theme === 'system' || !THEMES.includes(prefs.theme) ? (darkQuery.matches ? 'dark' : 'light') : prefs.theme);
+
   function applyPrefs() {
     const root = document.documentElement;
-    const theme = prefs.theme === 'system' ? (darkQuery.matches ? 'dark' : 'light') : prefs.theme;
+    const set = (k, v) => (v == null ? root.style.removeProperty(k) : root.style.setProperty(k, v));
+    const flag = (name, value) => { if (value == null) delete root.dataset[name]; else root.dataset[name] = value; };
+    const theme = resolvedTheme();
+    const dark = DARK.has(theme);
     root.dataset.theme = theme;
     root.lang = lang();
-    root.style.setProperty('--accent', /^#[0-9a-f]{6}$/i.test(prefs.accent) ? prefs.accent : DEFAULTS.accent);
-    root.style.setProperty('--font', Math.min(22, Math.max(12, +prefs.font || 14.2)) + 'px');
-    root.style.setProperty('--radius', Math.min(22, Math.max(0, +prefs.radius)) + 'px');
-    $('messages').dataset.wall = prefs.wall;
+
+    const accent = isHex(prefs.accent) ? prefs.accent : DEFAULTS.accent;
+    set('--accent', accent);
+    set('--on-accent', best(accent, '#ffffff', '#0b1014'));
+    // The accent used as text must stay readable on the theme's surfaces.
+    const surface = getComputedStyle(root).getPropertyValue('--panel3').trim() || (dark ? '#24323a' : '#e6eaec');
+    let ink = mix(accent, dark ? '#ffffff' : '#000000', dark ? 0.55 : 0.74);
+    for (let i = 0; i < 12 && isHex(surface) && contrast(ink, surface) < 4.5; i++) ink = mix(ink, dark ? '#ffffff' : '#000000', 0.85);
+    set('--accent-text-custom', ink);
+
+    const own = isHex(prefs.bubbleOwn) ? prefs.bubbleOwn : null, other = isHex(prefs.bubbleOther) ? prefs.bubbleOther : null;
+    set('--out-custom', own); set('--out-text-custom', own && best(own, '#121b21', '#f1f4f6'));
+    set('--in-custom', other); set('--in-text-custom', other && best(other, '#121b21', '#f1f4f6'));
+    const wall = isHex(prefs.wallColor) ? prefs.wallColor : null;
+    set('--wall-custom', wall); set('--wall-ink-custom', wall && best(wall, '#000000', '#ffffff'));
+    set('--wall-opacity', String(clamp(prefs.wallOpacity, 0, 200, 100) / 100));
+    set('--wall-dim', String(clamp(prefs.wallDim, 0, 60, 0) / 100));
+
+    set('--font', clamp(prefs.font, 12, 20, 14.5) + 'px');
+    set('--radius', clamp(prefs.radius, 0, 22, 10) + 'px');
+    set('--msg-max', clamp(prefs.msgWidth, 50, 85, 65) + '%');
+    set('--side-w', clamp(prefs.sideWidth, 280, 520, 380) + 'px');
+    set('--family', FAMILIES[prefs.family] || null);
+
+    flag('density', prefs.density === 'compact' ? 'compact' : null);
+    flag('list', prefs.list === 'compact' ? 'compact' : null);
+    flag('tails', prefs.tails ? null : 'off');
+    flag('listAvatars', prefs.listAvatars ? null : 'off');
+    flag('senderColors', prefs.senderColors ? null : 'off');
+    flag('motion', prefs.motion === 'reduce' || prefs.motion === 'full' ? prefs.motion : null);
+    const wallName = WALLS.includes(prefs.wall) ? prefs.wall : 'classic';
+    for (const box of document.querySelectorAll('.messages')) box.dataset.wall = wallName;
   }
-  darkQuery.addEventListener('change', applyPrefs);
+  darkQuery.addEventListener('change', () => { applyPrefs(); if ($('settings').open) refreshSettings(); });
+
+  const SVG = 'http://www.w3.org/2000/svg';
+  const icon = (name) => {
+    const svg = document.createElementNS(SVG, 'svg');
+    svg.setAttribute('class', 'ic');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS(SVG, 'use');
+    use.setAttribute('href', '#i-' + name);
+    svg.append(use);
+    return svg;
+  };
+  const clockOpts = () => ({ hour: '2-digit', minute: '2-digit', ...(prefs.clock === 'auto' ? {} : { hour12: prefs.clock === '12' }) });
 
   function applyWords() {
     $('loginIntro').textContent = t('intro');
@@ -144,7 +340,19 @@
     $('viewerSave').textContent = t('save');
     $('emojiButton').title = t('emoji');
     $('replyCancel').title = t('cancel');
-    for (const b of $('tabs').children) b.textContent = t(b.dataset.tab);
+    const label = (id, key) => { $(id).title = t(key); $(id).setAttribute('aria-label', t(key)); };
+    label('back', 'back'); label('closeSettings', 'close'); label('toLatest', 'toLatest');
+    label('openSettings', 'settings'); label('toggleTheme', 'switchTheme'); label('phoneOpen', 'openPhone');
+    $('emptyHint').lastElementChild.textContent = t('emptyHint');
+    $('conn').title = t('online');
+    renderTabs();
+  }
+  function renderTabs() {
+    const unread = state.chats.filter((c) => c.unread > 0 && !c.archived).length;
+    for (const b of $('tabs').children) {
+      b.textContent = t(b.dataset.tab);
+      if (b.dataset.tab === 'unread' && unread > 0) b.append(el('span', 'count', String(unread)));
+    }
   }
 
   // ─── Talking to the phone ────────────────────────────────────────────
@@ -190,6 +398,7 @@
     $('login').hidden = false;
     $('loginStep1').hidden = false;
     $('loginStep2').hidden = true;
+    $('step2Dot').classList.remove('on');
     $('loginError').textContent = '';
     if ($('settings').open) $('settings').close();
   }
@@ -201,6 +410,7 @@
       $('passwordRow').hidden = !r.passwordSet;
       $('loginStep1').hidden = true;
       $('loginStep2').hidden = false;
+      $('step2Dot').classList.add('on');
       $('code').value = '';
       $('password').value = '';
       $('code').focus();
@@ -222,11 +432,20 @@
   // ─── Chat list ───────────────────────────────────────────────────────
   const TYPE_WORD = { 1: 'photo', 2: 'audio', 3: 'video', 4: 'contact', 5: 'location', 9: 'document', 13: 'gif',
     15: 'deleted', 16: 'liveLocation', 20: 'sticker', 42: 'viewOnce', 43: 'viewOnce', 46: 'poll' };
-  const TYPE_ICON = { 1: '📷', 2: '🎤', 3: '🎬', 4: '👤', 5: '📍', 9: '📄', 13: '🎞', 15: '🚫', 16: '📍', 20: '🌟', 42: '①', 43: '①', 46: '📊' };
+  const TYPE_ICON = { 1: 'photo', 2: 'mic', 3: 'video', 4: 'user', 5: 'pin', 9: 'file', 13: 'video', 15: 'block', 16: 'pin',
+    20: null, 42: 'lock', 43: 'lock', 46: 'poll' };
+  /** A short line with a symbol in front, e.g. "📷 Photo". */
+  function labelled(cls, type, text) {
+    const node = el('div', cls);
+    const name = TYPE_ICON[type];
+    if (name) node.append(icon(name), ' ');
+    node.append(text);
+    return node;
+  }
 
   function shortTime(ts) {
     const d = new Date(ts), now = new Date();
-    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], clockOpts());
     if (now - d < 6 * 864e5) return d.toLocaleDateString([], { weekday: 'short' });
     return d.toLocaleDateString([], { day: 'numeric', month: 'numeric', year: '2-digit' });
   }
@@ -234,7 +453,7 @@
     node.textContent = '';
     let hash = 0;
     for (let i = 0; i < jid.length; i++) hash = (hash * 31 + jid.charCodeAt(i)) | 0;
-    node.style.background = 'hsl(' + (Math.abs(hash) % 360) + ' 45% 48%)';
+    node.style.background = 'hsl(' + (Math.abs(hash) % 360) + ' 42% 44%)';
     const letter = (Array.from((name || '?').trim())[0] || '?').toUpperCase();
     if (state.noAvatar.has(jid)) { node.textContent = letter; return; }
     const img = el('img');
@@ -244,10 +463,18 @@
     img.src = '/api/avatar/' + enc(jid);
     node.append(img);
   }
-  function preview(chat) {
+  function preview(node, chat) {
     const word = TYPE_WORD[chat.lastType];
     const body = chat.lastText || (word ? t(word) : '');
-    return (chat.lastFromMe ? ticks(chat.lastStatus).text + ' ' : '') + (TYPE_ICON[chat.lastType] ? TYPE_ICON[chat.lastType] + ' ' : '') + body;
+    if (chat.lastFromMe) {
+      const tick = ticks(chat.lastStatus);
+      const span = el('span', tick.read ? 'read' : null);
+      span.append(icon(tick.icon));
+      node.append(span, ' ');
+    }
+    if (TYPE_ICON[chat.lastType]) node.append(icon(TYPE_ICON[chat.lastType]), ' ');
+    node.append(body);
+    return node;
   }
   function renderChats() {
     const box = $('chats');
@@ -273,7 +500,7 @@
       const top = el('div', 'top');
       top.append(el('div', 'name grow', chat.name), el('div', 'time', shortTime(chat.ts)));
       const bottom = el('div', 'bottom');
-      bottom.append(el('div', 'last grow', preview(chat)));
+      bottom.append(preview(el('div', 'last grow'), chat));
       if (chat.unread > 0) bottom.append(el('div', 'badge', String(chat.unread)));
       main.append(top, bottom);
       row.append(pic, main);
@@ -301,7 +528,8 @@
     if (!box.children.length) box.append(el('div', 'section muted', t('noChats')));
     box.scrollTop = keep;
     const unread = state.chats.filter((c) => c.unread > 0 && !c.archived).length;
-    document.title = (unread ? '(' + unread + ') ' : '') + 'WAEX Web';
+    document.title = (unread && prefs.titleCount ? '(' + unread + ') ' : '') + 'WAEX Web';
+    renderTabs();
   }
   async function loadChats() {
     state.chats = (await api('/api/chats')).chats;
@@ -329,11 +557,15 @@
 
   // ─── Messages ────────────────────────────────────────────────────────
   function ticks(status) {
-    if (status === 13 || status === 8 || status === 10) return { text: '✓✓', read: true };
-    if (status === 5) return { text: '✓✓', read: false };
-    if (status === 4) return { text: '✓', read: false };
-    return { text: '🕓', read: false };
+    if (status === 13 || status === 8 || status === 10) return { icon: 'checks', read: true };
+    if (status === 5) return { icon: 'checks', read: false };
+    if (status === 4) return { icon: 'check', read: false };
+    return { icon: 'clock', read: false };
   }
+  /** A new run of bubbles starts with a tail: other side, other sender, a new day or a long pause. */
+  const startsRun = (prev, m) => !prev || prev.fromMe !== m.fromMe || (prev.sender || '') !== (m.sender || '') ||
+    dayKey(prev.ts) !== dayKey(m.ts) || m.ts - prev.ts > 10 * 60000;
+  const JUMBO = /^(?:\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}|[\u{1F3FB}-\u{1F3FF}])*\s*){1,3}$/u;
   const order = (a, b) => a.sort - b.sort || a.id - b.id;
   const sorted = () => Array.from(state.messages.values()).sort(order);
   const dayKey = (ts) => new Date(ts).toDateString();
@@ -375,7 +607,7 @@
 
   function mediaNode(m) {
     const media = m.media, mime = media.mime || '', url = '/api/media/' + m.id;
-    if (m.type === 42 || m.type === 43) return el('div', 'note', '① ' + t('viewOnce'));
+    if (m.type === 42 || m.type === 43) return labelled('note', m.type, t('viewOnce'));
     if (!media.available) {
       const box = el('div');
       if (m.thumb) {
@@ -385,7 +617,7 @@
         img.src = '/api/thumb/' + m.id;
         box.append(img);
       }
-      box.append(el('div', 'note', (TYPE_ICON[m.type] || '📎') + ' ' + t(TYPE_WORD[m.type] || 'document') + ' · ' + t('notOnPhone')));
+      box.append(labelled('note', TYPE_ICON[m.type] ? m.type : 9, t(TYPE_WORD[m.type] || 'document') + ' · ' + t('notOnPhone')));
       return box;
     }
     if (m.type === 20) {
@@ -434,20 +666,36 @@
     link.download = media.name || 'file';
     const info = el('span');
     info.append(el('b', null, media.name || t('document')), size(media.size));
-    link.append('📄', info);
+    link.append(icon('file'), info);
     return link;
   }
 
-  function messageNode(m, fresh) {
-    const node = el('div', 'msg' + (m.fromMe ? ' me' : '') + (fresh ? ' new' : ''));
+  function messageNode(m, fresh, starts) {
+    const node = el('div', 'msg' + (m.fromMe ? ' me' : '') + (fresh ? ' new' : '') + (starts ? ' tail' : ' cont'));
     node.dataset.sig = JSON.stringify(m);
-    if (m.sender) node.append(el('div', 'sender', m.sender));
+    if (m.sender && !m.fromMe) {
+      let h = 0;
+      for (const ch of m.sender) h = (h * 31 + ch.codePointAt(0)) | 0;
+      h = Math.abs(h) % 360;
+      node.classList.add('hued');
+      node.style.setProperty('--h', h);
+      if (prefs.groupAvatars && starts) {
+        const pic = el('div', 'avatar mini', (Array.from(m.sender.trim())[0] || '?').toUpperCase());
+        pic.style.background = 'hsl(' + h + ' 42% 44%)';
+        pic.setAttribute('aria-hidden', 'true');
+        node.append(pic);
+      }
+    }
+    if (prefs.bigEmoji && !m.media && !m.quote && m.text && JUMBO.test(m.text)) node.classList.add('jumbo');
+    if (m.sender && starts) node.append(el('div', 'sender', m.sender));
     if (m.quote) node.append(el('div', 'quote', m.quote));
     if (m.type === 15) {
-      node.append(el('span', 'note', '🚫 ' + t('deleted')));
+      const note = el('span', 'note');
+      note.append(icon('block'), ' ', t('deleted'));
+      node.append(note);
     } else {
       if (m.media) node.append(mediaNode(m));
-      else if (TYPE_WORD[m.type]) node.append(el('div', 'note', TYPE_ICON[m.type] + ' ' + t(TYPE_WORD[m.type])));
+      else if (TYPE_WORD[m.type]) node.append(labelled('note', m.type, t(TYPE_WORD[m.type])));
       if (m.text) {
         const body = el('span', 'body');
         rich(body, m.text);
@@ -456,11 +704,14 @@
         node.append(el('span', 'note', t('unsupported')));
       }
     }
-    const meta = el('span', 'meta', (m.starred ? '★ ' : '') +
-      new Date(m.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    const meta = el('span', 'meta');
+    if (m.starred) meta.append(icon('star'), ' ');
+    meta.append(new Date(m.ts).toLocaleTimeString([], clockOpts()));
     if (m.fromMe && m.type !== 15) {
       const tick = ticks(m.status);
-      meta.append(' ', el('span', tick.read ? 'read' : null, tick.text));
+      const span = el('span', tick.read ? 'read' : null);
+      span.append(icon(tick.icon));
+      meta.append(' ', span);
     }
     node.append(meta);
     if (m.reactions) {
@@ -471,16 +722,17 @@
     }
     if (m.type !== 15) {
       const tools = el('div', 'tools');
-      const add = (icon, label, action) => {
-        const b = el('button', null, icon);
+      const add = (name, label, action) => {
+        const b = el('button');
+        b.append(icon(name));
         b.title = label;
         b.setAttribute('aria-label', label);
         b.addEventListener('click', (e) => { e.stopPropagation(); action(e); });
         tools.append(b);
       };
-      if (state.canReact) add('☺', t('react'), () => showReactBar(node, m));
-      if (state.canReply && state.canSend) add('↩', t('reply'), () => setReply(m));
-      if (m.text) add('⧉', t('copy'), () => { navigator.clipboard && navigator.clipboard.writeText(m.text).then(() => toast(t('copied'))); });
+      if (state.canReact) add('emoji', t('react'), () => showReactBar(node, m));
+      if (state.canReply && state.canSend) add('reply', t('reply'), () => setReply(m));
+      if (m.text) add('copy', t('copy'), () => { navigator.clipboard && navigator.clipboard.writeText(m.text).then(() => toast(t('copied'))); });
       if (tools.children.length) node.append(tools);
       node.addEventListener('click', (e) => {
         if (e.target.closest('a, video, audio, button, img')) return;
@@ -493,7 +745,8 @@
         e.preventDefault();
         const sel = window.getSelection();
         if (sel) sel.removeAllRanges();
-        react(m, m.myReaction === prefs.react ? '' : prefs.react);
+        const emoji = reactEmoji();
+        react(m, m.myReaction === emoji ? '' : emoji);
       });
     }
     return node;
@@ -514,7 +767,7 @@
     const open = document.querySelector('.reactbar');
     if (open) open.remove();
     const bar = el('div', 'reactbar');
-    for (const emoji of QUICK) {
+    for (const emoji of quick()) {
       const b = el('button', m.myReaction === emoji ? 'on' : null, emoji);
       b.addEventListener('click', (e) => { e.stopPropagation(); bar.remove(); react(m, m.myReaction === emoji ? '' : emoji); });
       bar.append(b);
@@ -542,10 +795,11 @@
       more.addEventListener('click', loadOlder);
       box.append(more);
     }
-    let day = '';
+    let day = '', prev = null;
     for (const m of sorted()) {
-      if (dayKey(m.ts) !== day) { day = dayKey(m.ts); box.append(el('div', 'day', dayLabel(m.ts))); }
-      const node = messageNode(m, false);
+      if (dayKey(m.ts) !== day) { day = dayKey(m.ts); box.append(el('div', 'day', dayLabel(m.ts))); prev = null; }
+      const node = messageNode(m, false, startsRun(prev, m));
+      prev = m;
       state.nodes.set(m.id, node);
       box.append(node);
     }
@@ -568,7 +822,7 @@
       state.messages.set(m.id, m);
       if (old) {
         if (old.dataset.sig !== JSON.stringify(m)) {
-          const node = messageNode(m, false);
+          const node = messageNode(m, false, old.classList.contains('tail'));
           old.replaceWith(node);
           state.nodes.set(m.id, node);
         }
@@ -576,7 +830,7 @@
         disorder = true;
       } else {
         if (!newest || dayKey(newest.ts) !== dayKey(m.ts)) box.append(el('div', 'day', dayLabel(m.ts)));
-        const node = messageNode(m, true);
+        const node = messageNode(m, true, startsRun(newest, m));
         state.nodes.set(m.id, node);
         box.append(node);
         newest = m;
@@ -605,6 +859,7 @@
     $('chatSub').textContent = chat && chat.group ? t('group') : jid.endsWith('@s.whatsapp.net') ? '+' + jid.split('@')[0] : '';
     avatar($('chatAvatar'), jid, chat ? chat.name : '?');
     $('messages').textContent = '';
+    if (chat && chat.group && prefs.groupAvatars) $('messages').dataset.group = '1'; else delete $('messages').dataset.group;
     $('text').value = state.drafts.get(jid) || '';
     autosize();
     renderChats();
@@ -706,6 +961,8 @@
       try {
         const u = await api('/api/updates' + (state.rev == null ? '' : '?rev=' + state.rev));
         $('offline').hidden = true;
+        $('conn').classList.remove('off');
+        $('conn').title = t('online');
         if (u.canSend !== state.canSend) { state.canSend = u.canSend; if (state.current) showSendNote(); }
         if (u.rev !== state.rev) {
           state.rev = u.rev;
@@ -715,7 +972,12 @@
         }
       } catch (e) {
         if (e.status === 401) break;
-        if (e.code === 'offline') { $('offline').textContent = t('reconnecting'); $('offline').hidden = false; }
+        if (e.code === 'offline') {
+          $('offline').textContent = t('reconnecting');
+          $('offline').hidden = false;
+          $('conn').classList.add('off');
+          $('conn').title = t('reconnecting');
+        }
         await sleep(3000);
       }
     }
@@ -723,74 +985,291 @@
   }
 
   // ─── Settings ────────────────────────────────────────────────────────
-  function field(label, control) {
-    const row = el('label', 'field');
-    row.append(el('span', null, label), control);
-    return row;
-  }
-  function select(options, value, onChange) {
-    const node = el('select');
-    for (const [key, label] of options) {
-      const option = el('option', null, label);
-      option.value = key;
-      node.append(option);
-    }
-    node.value = value;
-    node.addEventListener('change', () => onChange(node.value));
-    return node;
-  }
-  function range(min, max, value, onChange) {
-    const node = el('input');
-    node.type = 'range';
-    node.min = min;
-    node.max = max;
-    node.value = value;
-    node.addEventListener('input', () => onChange(+node.value));
-    return node;
-  }
-  const change = (key, redraw) => (value) => {
+  // Controls update in place; only a language change rebuilds the dialog.
+  const refreshers = [];
+  const refreshSettings = () => { for (const fn of refreshers) fn(); };
+  function setPref(key, value, redraw) {
     prefs[key] = value;
     savePrefs();
     applyPrefs();
-    if (redraw) { applyWords(); renderChats(); if (state.current) { renderAll(); showSendNote(); } openSettings(); }
-  };
+    if (redraw) { renderChats(); if (state.current) renderAll(); }
+    refreshSettings();
+  }
+  function field(label, control, hint) {
+    const row = el('label', 'field');
+    const name = el('span', null, label);
+    if (hint) name.append(el('small', null, hint));
+    row.append(name, control);
+    return row;
+  }
+  /** A row holding several buttons; a <label> would forward clicks on its text to the first one. */
+  function group(label, control, column) {
+    const row = el('div', 'field' + (column ? ' col' : ''));
+    row.append(el('span', null, label), control);
+    return row;
+  }
+  function select(options, key, redraw) {
+    const node = el('select');
+    for (const [value, label] of options) {
+      const option = el('option', null, label);
+      option.value = value;
+      node.append(option);
+    }
+    node.value = prefs[key];
+    node.addEventListener('change', () => setPref(key, node.value, redraw));
+    refreshers.push(() => { node.value = prefs[key]; });
+    return node;
+  }
+  function slider(label, key, min, max, step, unit, redraw) {
+    const row = el('label', 'field');
+    const input = el('input');
+    input.type = 'range';
+    input.min = min; input.max = max; input.step = step;
+    const out = el('output');
+    const show = () => { input.value = prefs[key]; out.textContent = prefs[key] + ' ' + unit; };
+    input.addEventListener('input', () => { setPref(key, +input.value, redraw); });
+    refreshers.push(show);
+    show();
+    row.append(el('span', null, label), input, out);
+    return row;
+  }
+  function toggle(label, key, redraw, hint) {
+    const box = el('input');
+    box.type = 'checkbox';
+    box.addEventListener('change', () => setPref(key, box.checked, redraw));
+    refreshers.push(() => { box.checked = !!prefs[key]; });
+    box.checked = !!prefs[key];
+    return field(label, box, hint);
+  }
+  function choice(cls, items, key, redraw) {
+    const box = el('div', cls);
+    box.setAttribute('role', 'group');
+    const mark = () => {
+      for (const b of box.children) {
+        if (!b.dataset.value && b.dataset.value !== '') continue;
+        const on = b.dataset.value === String(prefs[key]);
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', String(on));
+      }
+    };
+    for (const item of items) {
+      const b = item.node || el('button', null, item.label);
+      b.type = 'button';
+      b.dataset.value = item.value;
+      b.addEventListener('click', () => setPref(key, item.value, redraw));
+      box.append(b);
+    }
+    refreshers.push(mark);
+    mark();
+    return box;
+  }
+  const seg = (items, key, redraw) => choice('seg', items, key, redraw);
+  /** Colour swatches; with `auto`, an "automatic" swatch stores ''. Always ends with a colour picker. */
+  function colours(key, presets, auto) {
+    const items = [];
+    if (auto) {
+      const b = el('button', 'swatch auto');
+      b.setAttribute('aria-label', t('automatic'));
+      b.title = t('automatic');
+      items.push({ value: '', node: b });
+    }
+    for (const c of presets) {
+      const b = el('button', 'swatch');
+      b.style.background = c;
+      b.setAttribute('aria-label', c);
+      items.push({ value: c, node: b });
+    }
+    const box = choice('swatches', items, key);
+    const custom = el('input');
+    custom.type = 'color';
+    custom.setAttribute('aria-label', t('accentCustom'));
+    custom.title = t('accentCustom');
+    const sync = () => { custom.value = isHex(prefs[key]) ? prefs[key] : (isHex(prefs.accent) ? prefs.accent : DEFAULTS.accent); };
+    custom.addEventListener('input', () => setPref(key, custom.value));
+    refreshers.push(sync);
+    sync();
+    box.append(custom);
+    return box;
+  }
+  function previewBox() {
+    const chat = el('div', 'chat preview');
+    chat.setAttribute('aria-hidden', 'true');
+    const box = el('div', 'messages');
+    box.dataset.wall = prefs.wall;
+    const now = Date.now();
+    const time = (ms) => new Date(ms).toLocaleTimeString([], clockOpts());
+    const inMsg = el('div', 'msg tail');
+    inMsg.append(el('span', 'body', t('previewIn')), el('span', 'meta', time(now - 60000)));
+    const outMsg = el('div', 'msg me tail');
+    const meta = el('span', 'meta', time(now) + ' ');
+    const read = el('span', 'read');
+    read.append(icon('checks'));
+    meta.append(read);
+    outMsg.append(el('span', 'body', t('previewOut')), meta);
+    box.append(el('div', 'day', t('today')), inMsg, outMsg);
+    chat.append(box);
+    return chat;
+  }
+  function section(id, title) {
+    const box = el('section');
+    box.id = 'set-' + id;
+    box.append(el('h3', null, title));
+    const b = el('button', null, title);
+    b.type = 'button';
+    b.addEventListener('click', () => {
+      box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      for (const other of $('settingsNav').children) other.classList.toggle('on', other === b);
+    });
+    $('settingsNav').append(b);
+    return box;
+  }
 
   async function openSettings() {
     const body = $('settingsBody');
     body.textContent = '';
-    body.append(el('h3', null, t('look')));
-    body.append(field(t('theme'), select([['system', t('system')], ['light', t('light')], ['dark', t('dark')], ['black', t('black')]], prefs.theme, change('theme'))));
-    const swatches = el('div', 'swatches');
-    for (const colour of ACCENTS) {
-      const dot = el('button', 'swatch' + (colour === prefs.accent ? ' on' : ''));
-      dot.style.background = colour;
-      dot.setAttribute('aria-label', colour);
-      dot.addEventListener('click', () => {
-        change('accent')(colour);
-        for (const other of swatches.children) other.classList.toggle('on', other === dot);
-      });
-      swatches.append(dot);
-    }
-    const custom = el('input');
-    custom.type = 'color';
-    custom.value = prefs.accent;
-    custom.style.cssText = 'width:36px;height:28px;padding:0';
-    custom.addEventListener('input', () => change('accent')(custom.value));
-    swatches.append(custom);
-    body.append(field(t('accent'), swatches));
-    body.append(field(t('wallpaper'), select([['classic', t('wallClassic')], ['dots', t('wallDots')], ['gradient', t('wallGradient')], ['plain', t('wallPlain')]], prefs.wall, change('wall'))));
-    body.append(field(t('fontSize'), range(12, 22, prefs.font, change('font'))));
-    body.append(field(t('corners'), range(0, 22, prefs.radius, change('radius'))));
-    const enter = el('input');
-    enter.type = 'checkbox';
-    enter.checked = prefs.enter;
-    enter.addEventListener('change', () => change('enter')(enter.checked));
-    body.append(field(t('enterSends'), enter));
-    body.append(field(t('doubleReact'), select(QUICK.map((e) => [e, e]), prefs.react, change('react'))));
-    body.append(field(t('language'), select([['', t('system')], ['en', 'English'], ['sk', 'Slovenčina']], prefs.lang, change('lang', true))));
+    $('settingsNav').textContent = '';
+    refreshers.length = 0;
 
+    const look = section('look', t('appearance'));
+    look.append(previewBox());
+    const themes = THEMES.map((name) => {
+      const b = el('button', 'tile' + (name === 'system' ? ' auto' : ''));
+      const thumb = el('i', 'thumb mock');
+      thumb.dataset.theme = name === 'system' ? (darkQuery.matches ? 'dark' : 'light') : name;
+      b.append(thumb, el('span', null, t(name)));
+      return { value: name, node: b };
+    });
+    look.append(group(t('theme'), choice('tiles', themes, 'theme'), true));
+    look.append(group(t('accent'), colours('accent', ACCENTS, false), true));
+    look.append(group(t('bubbleOwn'), colours('bubbleOwn', [], true), true));
+    look.append(group(t('bubbleOther'), colours('bubbleOther', [], true), true));
+    look.append(slider(t('corners'), 'radius', 0, 22, 1, 'px'));
+    look.append(toggle(t('tails'), 'tails'));
+    look.append(slider(t('fontSize'), 'font', 12, 20, 0.5, 'px'));
+    look.append(field(t('fontFamily'), select([['system', t('fontSystem')], ['rounded', t('fontRounded')], ['serif', t('fontSerif')]], 'family')));
+    look.append(field(t('motion'), select([['system', t('motionSystem')], ['reduce', t('motionReduce')], ['full', t('motionFull')]], 'motion')));
+    const reset = el('button', 'reset', t('resetLook'));
+    reset.type = 'button';
+    reset.addEventListener('click', () => {
+      for (const key of LOOK_KEYS) prefs[key] = Array.isArray(DEFAULTS[key]) ? DEFAULTS[key].slice() : DEFAULTS[key];
+      savePrefs();
+      applyPrefs();
+      renderChats();
+      if (state.current) renderAll();
+      refreshSettings();
+      toast(t('resetDone'));
+    });
+    look.append(reset);
+
+    const wallSec = section('wall', t('chatBackground'));
+    const wallWords = { classic: 'wallDoodles', dots: 'wallDots', grid: 'wallGrid', lines: 'wallLines', waves: 'wallWaves',
+      gradient: 'wallGradient', aurora: 'wallAurora', plain: 'wallPlain' };
+    const walls = WALLS.map((name) => {
+      const b = el('button', 'tile');
+      b.dataset.wall = name;
+      b.append(el('i', 'thumb wall'), el('span', null, t(wallWords[name])));
+      return { value: name, node: b };
+    });
+    wallSec.append(group(t('wallpaper'), choice('tiles', walls, 'wall'), true));
+    wallSec.append(group(t('wallColor'), colours('wallColor', [], true), true));
+    const strength = slider(t('wallOpacity'), 'wallOpacity', 0, 200, 10, '%');
+    refreshers.push(() => strength.classList.toggle('off', ['gradient', 'aurora', 'plain'].includes(prefs.wall)));
+    wallSec.append(strength);
+    wallSec.append(slider(t('wallDim'), 'wallDim', 0, 60, 5, '%'));
+
+    const chats = section('chats', t('chatsLook'));
+    chats.append(group(t('density'), seg([{ value: 'comfortable', label: t('comfortable') }, { value: 'compact', label: t('compact') }], 'density')));
+    chats.append(slider(t('msgWidth'), 'msgWidth', 50, 85, 5, '%'));
+    chats.append(toggle(t('groupAvatars'), 'groupAvatars', true));
+    chats.append(toggle(t('senderColors'), 'senderColors'));
+    chats.append(toggle(t('bigEmoji'), 'bigEmoji', true));
+    chats.append(group(t('clock'), seg([{ value: 'auto', label: t('clockAuto') }, { value: '24', label: t('clock24') },
+      { value: '12', label: t('clock12') }], 'clock', true)));
+
+    const list = section('list', t('chatList'));
+    list.append(group(t('listDensity'), seg([{ value: 'comfortable', label: t('comfortable') }, { value: 'compact', label: t('compact') }], 'list')));
+    list.append(toggle(t('listAvatars'), 'listAvatars'));
+    list.append(slider(t('sideWidth'), 'sideWidth', 280, 520, 10, 'px'));
+    list.append(toggle(t('titleCount'), 'titleCount', true));
+
+    const writing = section('writing', t('writing'));
+    writing.append(toggle(t('enterSends'), 'enter', false, t('enterHint')));
+    // Quick reactions: pick a slot, then the emoji that goes there.
+    const quickRow = el('div', 'field col');
+    const slots = el('div', 'quickset');
+    const panel = el('div', 'emojipanel');
+    panel.hidden = true;
+    let slot = -1;
+    const drawSlots = () => {
+      slots.textContent = '';
+      prefs.quick.forEach((emoji, i) => {
+        const b = el('button', i === slot ? 'on' : null, emoji);
+        b.type = 'button';
+        b.setAttribute('aria-pressed', String(i === slot));
+        b.addEventListener('click', () => { slot = slot === i ? -1 : i; panel.hidden = slot < 0; drawSlots(); });
+        slots.append(b);
+      });
+    };
+    for (const emoji of EMOJI) {
+      const b = el('button', null, emoji);
+      b.type = 'button';
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (slot < 0) return;
+        const next = prefs.quick.slice();
+        next[slot] = emoji;
+        slot = -1;
+        panel.hidden = true;
+        setPref('quick', next, true);
+      });
+      panel.append(b);
+    }
+    refreshers.push(drawSlots);
+    drawSlots();
+    const quickLabel = el('span', null, t('quickReactions'));
+    quickLabel.append(el('small', null, t('quickHint')));
+    quickRow.append(quickLabel, slots, panel);
+    writing.append(quickRow);
+    const doubleBox = el('div', 'quickset');
+    const drawDouble = () => {
+      doubleBox.textContent = '';
+      for (const emoji of prefs.quick) {
+        const on = emoji === reactEmoji();
+        const b = el('button', on ? 'on' : null, emoji);
+        b.type = 'button';
+        b.setAttribute('aria-pressed', String(on));
+        b.addEventListener('click', () => setPref('react', emoji));
+        doubleBox.append(b);
+      }
+    };
+    refreshers.push(drawDouble);
+    drawDouble();
+    writing.append(group(t('doubleReact'), doubleBox, true));
+    const langSelect = el('select');
+    for (const [value, label] of [['', t('system')], ['en', 'English'], ['sk', 'Slovenčina']]) {
+      const option = el('option', null, label);
+      option.value = value;
+      langSelect.append(option);
+    }
+    langSelect.value = prefs.lang;
+    langSelect.addEventListener('change', () => {
+      prefs.lang = langSelect.value;
+      savePrefs();
+      applyPrefs();
+      applyWords();
+      renderChats();
+      if (state.current) { renderAll(); showSendNote(); }
+      openSettings();
+    });
+    writing.append(field(t('language'), langSelect));
+
+    body.append(look, wallSec, chats, list, writing);
+    const accountSec = section('account', t('account'));
     const account = el('div');
-    body.append(account);
+    accountSec.append(account);
+    body.append(accountSec);
+    $('settingsNav').firstElementChild.classList.add('on');
+    applyPrefs();
     if (!$('settings').open) $('settings').showModal();
     try { drawAccount(account, await api('/api/account')); } catch (e) { account.append(el('p', 'error', errorText(e))); }
   }
@@ -944,6 +1423,27 @@
   });
   document.addEventListener('click', (e) => { if (!e.target.closest('#emojiPanel')) $('emojiPanel').hidden = true; });
   $('openSettings').addEventListener('click', openSettings);
+  $('toggleTheme').addEventListener('click', () => {
+    prefs.theme = DARK.has(resolvedTheme()) ? 'light' : 'dark';
+    savePrefs();
+    applyPrefs();
+  });
+  $('phoneOpen').addEventListener('click', openOnPhone);
+  // Drag the edge of the chat list to change its width; double click puts it back.
+  const grip = $('sideGrip');
+  grip.addEventListener('pointerdown', (e) => {
+    grip.setPointerCapture(e.pointerId);
+    grip.classList.add('on');
+  });
+  grip.addEventListener('pointermove', (e) => {
+    if (!grip.classList.contains('on')) return;
+    prefs.sideWidth = Math.round(clamp(e.clientX - $('side').getBoundingClientRect().left, 280, 520, 380));
+    applyPrefs();
+  });
+  const endDrag = () => { if (grip.classList.contains('on')) { grip.classList.remove('on'); savePrefs(); } };
+  grip.addEventListener('pointerup', endDrag);
+  grip.addEventListener('pointercancel', endDrag);
+  grip.addEventListener('dblclick', () => { prefs.sideWidth = DEFAULTS.sideWidth; savePrefs(); applyPrefs(); });
   $('closeSettings').addEventListener('click', () => $('settings').close());
   $('viewer').addEventListener('click', (e) => { if (e.target !== $('viewerSave')) { $('viewer').hidden = true; $('viewerImg').removeAttribute('src'); } });
   document.addEventListener('keydown', (e) => {
