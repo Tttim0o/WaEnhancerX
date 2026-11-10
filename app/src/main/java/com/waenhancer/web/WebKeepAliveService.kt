@@ -10,6 +10,10 @@ import android.content.ContentProviderClient
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
@@ -27,6 +31,12 @@ class WebKeepAliveService : Service() {
 
     @Volatile private var running = false
     private var worker: Thread? = null
+    /** Whether the page is open now; null until first decided. */
+    @Volatile private var open: Boolean? = null
+    /** What the server was last told; null means tell it again (it may have restarted). */
+    @Volatile private var told: Boolean? = null
+    @Volatile private var wifiCaps: NetworkCapabilities? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startInForeground()
@@ -35,11 +45,48 @@ class WebKeepAliveService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        told = null
+        watchNetwork()
         if (worker == null) {
             running = true
             worker = Thread({ hold() }, "waex-web-keepalive").apply { isDaemon = true; start() }
+        } else {
+            worker?.interrupt()
         }
         return START_STICKY
+    }
+
+    /** Wakes the worker whenever the Wi-Fi changes, so the page opens or closes right away. */
+    private fun watchNetwork() {
+        if (networkCallback != null) return
+        val connectivity = getSystemService(ConnectivityManager::class.java) ?: return
+        val callback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            object : ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
+                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+                    wifiCaps = caps
+                    worker?.interrupt()
+                }
+                override fun onLost(network: Network) {
+                    wifiCaps = null
+                    worker?.interrupt()
+                }
+            }
+        } else {
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+                    worker?.interrupt()
+                }
+                override fun onLost(network: Network) {
+                    worker?.interrupt()
+                }
+            }
+        }
+        try {
+            connectivity.registerNetworkCallback(
+                NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(), callback)
+            networkCallback = callback
+        } catch (_: Throwable) {
+        }
     }
 
     /** Holds the connections and renews them when WhatsApp was restarted. */
@@ -47,6 +94,20 @@ class WebKeepAliveService : Service() {
         val clients = HashMap<String, ContentProviderClient>()
         try {
             while (running) {
+                val nowOpen = WebWifi.shouldBeOpen(this, wifiCaps)
+                if (nowOpen != open) {
+                    open = nowOpen
+                    told = null
+                    try { startInForeground() } catch (_: Throwable) {}
+                }
+                if (told != nowOpen && WebAdmin.setActive(this, nowOpen)) told = nowOpen
+                if (!nowOpen) {
+                    // Away from home: let WhatsApp sleep as usual.
+                    clients.values.forEach(::release)
+                    clients.clear()
+                    try { Thread.sleep(60_000) } catch (_: InterruptedException) { if (!running) break }
+                    continue
+                }
                 for (authority in AUTHORITIES) {
                     val current = clients[authority]
                     val alive = current != null && try {
@@ -66,7 +127,7 @@ class WebKeepAliveService : Service() {
                     } catch (_: Throwable) {
                     }
                 }
-                try { Thread.sleep(15_000) } catch (_: InterruptedException) { break }
+                try { Thread.sleep(15_000) } catch (_: InterruptedException) { if (!running) break }
             }
         } finally {
             clients.values.forEach(::release)
@@ -93,11 +154,14 @@ class WebKeepAliveService : Service() {
         val open = packageManager.getLaunchIntentForPackage(packageName)?.let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         }
+        val waiting = open == false
         val address = LanPolicy.localInterfaces().firstOrNull()?.let { "http://${LanPolicy.format(it.address)}:${port(this)}" }
         val notification = builder
             .setSmallIcon(android.R.drawable.stat_sys_upload_done)
-            .setContentTitle(UiText.get(R.string.waex_ui_web_running, "WAEX Web is on"))
-            .setContentText(address ?: UiText.get(R.string.waex_ui_web_no_wifi, "Connect the phone to Wi-Fi to see the address."))
+            .setContentTitle(if (waiting) UiText.get(R.string.waex_ui_web_waiting, "WAEX Web waits for a home Wi-Fi")
+                else UiText.get(R.string.waex_ui_web_running, "WAEX Web is on"))
+            .setContentText(if (waiting) UiText.get(R.string.waex_ui_web_waiting_desc, "The page opens by itself on one of your home networks.")
+                else address ?: UiText.get(R.string.waex_ui_web_no_wifi, "Connect the phone to Wi-Fi to see the address."))
             .setContentIntent(open)
             .setOngoing(true)
             .build()
@@ -114,6 +178,10 @@ class WebKeepAliveService : Service() {
 
     override fun onDestroy() {
         running = false
+        networkCallback?.let { cb ->
+            try { getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(cb) } catch (_: Throwable) {}
+        }
+        networkCallback = null
         worker?.interrupt()
         worker = null
         super.onDestroy()
@@ -133,6 +201,7 @@ class WebKeepAliveService : Service() {
     companion object {
         const val PREF_KEY = "web_access"
         const val PREF_PORT = "web_access_port"
+        const val PREF_WIFI_ONLY = "web_wifi_only"
         const val DEFAULT_PORT = 8377
         private const val CHANNEL_ID = "waex_web_keepalive"
         private const val NOTIFICATION_ID = 0x5A1E5E02

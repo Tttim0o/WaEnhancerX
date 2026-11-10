@@ -43,6 +43,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.waenhancer.web.LanPolicy
 import com.waenhancer.web.WebAdmin
 import com.waenhancer.web.WebKeepAliveService
+import com.waenhancer.web.WebWifi
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -128,6 +133,8 @@ fun WebAccessSection() {
                 )
             }
         }
+
+        HomeWifi()
 
         val port = portText.toIntOrNull()?.takeIf { it in 1024..65535 } ?: WebServerHook.DEFAULT_PORT
         if (addresses.isEmpty()) {
@@ -318,5 +325,145 @@ private fun WebDevices() {
         if (passwordSet) TextButton(onClick = { act { WebAdmin.setPassword(context, null) } }) {
             Text(UiText.get(R.string.waex_ui_web_password_remove, "Remove"), color = colors.error)
         }
+    }
+}
+
+/** "Only on home Wi-Fi": the page opens by itself on the listed networks and closes elsewhere. */
+@Composable
+private fun HomeWifi() {
+    val context = LocalContext.current
+    val preferenceManager = LocalWaexPreferenceManager.current
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    val radius = WaexTheme.radius
+
+    var wifiOnly by remember { mutableStateOf(preferenceManager.getBoolean(WebServerHook.PREF_WIFI_ONLY, false)) }
+    var networks by remember { mutableStateOf(WebWifi.networks(context)) }
+    var current by remember { mutableStateOf<String?>(null) }
+    var location by remember { mutableStateOf(WebWifi.hasLocation(context)) }
+    var background by remember { mutableStateOf(WebWifi.hasBackgroundLocation(context)) }
+    var typed by remember { mutableStateOf("") }
+
+    val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        location = WebWifi.hasLocation(context)
+        background = WebWifi.hasBackgroundLocation(context)
+        WebKeepAliveService.apply(context)
+    }
+    val askBackground = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        background = WebWifi.hasBackgroundLocation(context)
+        WebKeepAliveService.apply(context)
+    }
+
+    LaunchedEffect(wifiOnly, location) {
+        while (wifiOnly) {
+            current = withContext(Dispatchers.IO) { WebWifi.currentName(context) }
+            location = WebWifi.hasLocation(context)
+            background = WebWifi.hasBackgroundLocation(context)
+            delay(3000)
+        }
+    }
+
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = UiText.get(R.string.waex_ui_web_wifi_only, "Only on home Wi-Fi"),
+                style = typography.bodyMd, fontWeight = FontWeight.SemiBold, color = colors.onSurface
+            )
+            Text(
+                text = UiText.get(R.string.waex_ui_web_wifi_only_desc,
+                    "The page opens by itself on the networks below and closes everywhere else. Restart WhatsApp after switching this on."),
+                style = typography.labelSm, color = colors.onSurfaceVariant
+            )
+        }
+        Switch(checked = wifiOnly, onCheckedChange = {
+            wifiOnly = it
+            preferenceManager.putBoolean(WebServerHook.PREF_WIFI_ONLY, it)
+            WebKeepAliveService.apply(context)
+        })
+    }
+    if (!wifiOnly) return
+
+    if (!location) {
+        Text(
+            text = UiText.get(R.string.waex_ui_web_wifi_need_location,
+                "Android shows the Wi-Fi name only to apps with the location permission. WAEX uses it only for this name."),
+            style = typography.labelSm, color = colors.error
+        )
+        TextButton(onClick = {
+            askLocation.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        }) { Text(UiText.get(R.string.waex_ui_web_wifi_allow_location, "Allow location")) }
+    } else if (!background) {
+        Text(
+            text = UiText.get(R.string.waex_ui_web_wifi_need_background,
+                "To notice the Wi-Fi while WAEX is closed, choose \"Allow all the time\" for location."),
+            style = typography.labelSm, color = colors.error
+        )
+        TextButton(onClick = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) askBackground.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }) { Text(UiText.get(R.string.waex_ui_web_wifi_allow_always, "Allow all the time")) }
+    }
+
+    val now = current
+    Text(
+        text = when {
+            now == null -> UiText.get(R.string.waex_ui_web_wifi_now_none, "Now: no Wi-Fi name (not on Wi-Fi, location off or not allowed). The page is closed.")
+            now in networks -> UiText.get(R.string.waex_ui_web_wifi_now_home, "Now: %s, a home network. The page is open.", now)
+            else -> UiText.get(R.string.waex_ui_web_wifi_now_other, "Now: %s, not a home network. The page is closed.", now)
+        },
+        style = typography.labelSm,
+        color = if (now != null && now in networks) colors.primary else colors.onSurfaceVariant
+    )
+    if (now != null && now !in networks) {
+        TextButton(onClick = {
+            networks = WebWifi.add(context, now)
+            WebKeepAliveService.apply(context)
+        }) { Text(UiText.get(R.string.waex_ui_web_wifi_add_current, "Add %s as a home network", now)) }
+    }
+
+    Text(
+        text = UiText.get(R.string.waex_ui_web_wifi_list, "Home networks"),
+        style = typography.bodyMd, fontWeight = FontWeight.SemiBold, color = colors.onSurface
+    )
+    if (networks.isEmpty()) Text(
+        text = UiText.get(R.string.waex_ui_web_wifi_empty, "No home network yet."),
+        style = typography.labelSm, color = colors.onSurfaceVariant
+    )
+    networks.forEach { name ->
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = name, style = typography.bodyMd, color = colors.onSurface, modifier = Modifier.weight(1f))
+            TextButton(onClick = {
+                networks = WebWifi.remove(context, name)
+                WebKeepAliveService.apply(context)
+            }) { Text(UiText.get(R.string.waex_ui_web_delete, "Delete"), color = colors.error) }
+        }
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(40.dp)
+                .clip(radius.mdShape)
+                .background(colors.surface)
+                .border(1.dp, colors.outlineVariant, radius.mdShape)
+                .padding(horizontal = 10.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            if (typed.isEmpty()) Text(
+                text = UiText.get(R.string.waex_ui_web_wifi_name_hint, "Wi-Fi name"),
+                style = typography.bodyMd, color = colors.onSurfaceVariant
+            )
+            BasicTextField(
+                value = typed,
+                onValueChange = { typed = it.take(32) },
+                singleLine = true,
+                textStyle = typography.bodyMd.copy(color = colors.onSurface),
+                cursorBrush = SolidColor(colors.primary)
+            )
+        }
+        TextButton(enabled = typed.isNotBlank(), onClick = {
+            networks = WebWifi.add(context, typed)
+            typed = ""
+            WebKeepAliveService.apply(context)
+        }) { Text(UiText.get(R.string.waex_ui_web_wifi_add, "Add")) }
     }
 }

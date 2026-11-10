@@ -1201,4 +1201,20 @@ Kein Platz zwischen Nachrichten: %4$d"</string>
     <string name="waex_ui_web_password_off" formatted="false">"Passwort: keines. Ein neuer Browser benötigt nur den Code."</string>
     <string name="waex_ui_web_password_save" formatted="false">"Passwort festlegen"</string>
     <string name="waex_ui_web_password_remove" formatted="false">"Entfernen"</string>
+    <string name="waex_ui_web_waiting" formatted="false">"WAEX Web wartet auf ein Zuhause Wi-Fi"</string>
+    <string name="waex_ui_web_waiting_desc" formatted="false">"Die Seite öffnet sich automatisch in einem Ihrer Heimnetzwerke."</string>
+    <string name="waex_ui_web_wifi_only" formatted="false">"Nur zu Hause Wi-Fi"</string>
+    <string name="waex_ui_web_wifi_only_desc" formatted="false">"Die Seite öffnet sich in den unten aufgeführten Netzwerken von selbst und schließt sich überall sonst. Starten Sie WhatsApp neu, nachdem Sie dies aktiviert haben."</string>
+    <string name="waex_ui_web_wifi_need_location" formatted="false">"Android zeigt den Namen Wi-Fi nur Apps mit der Standortberechtigung an. WAEX verwendet es nur für diesen Namen."</string>
+    <string name="waex_ui_web_wifi_allow_location" formatted="false">"Standort zulassen"</string>
+    <string name="waex_ui_web_wifi_need_background" formatted="false">"Um den Wi-Fi zu bemerken, während WAEX geschlossen ist, wählen Sie „Immer zulassen“ als Standort."</string>
+    <string name="waex_ui_web_wifi_allow_always" formatted="false">"Erlaube die ganze Zeit"</string>
+    <string name="waex_ui_web_wifi_now_none" formatted="false">"Jetzt: kein Wi-Fi-Name (nicht auf Wi-Fi, Standort deaktiviert oder nicht zulässig). Die Seite ist geschlossen."</string>
+    <string name="waex_ui_web_wifi_now_home" formatted="false">"Jetzt: %s, ein Heimnetzwerk. Die Seite ist geöffnet."</string>
+    <string name="waex_ui_web_wifi_now_other" formatted="false">"Jetzt: %s, kein Heimnetzwerk. Die Seite ist geschlossen."</string>
+    <string name="waex_ui_web_wifi_add_current" formatted="false">"Fügen Sie %s als Heimnetzwerk hinzu"</string>
+    <string name="waex_ui_web_wifi_list" formatted="false">"Heimnetzwerke"</string>
+    <string name="waex_ui_web_wifi_empty" formatted="false">"Noch kein Heimnetzwerk."</string>
+    <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi Name"</string>
+    <string name="waex_ui_web_wifi_add" formatted="false">"Hinzufügen"</string>
 </resources>

@@ -62,10 +62,13 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     @Volatile private var interfaces: List<LanPolicy.Iface> = emptyList()
     @Volatile private var interfacesAt = 0L
     @Volatile private var port = DEFAULT_PORT
+    /** With "only on home Wi-Fi", the WAEX app opens the page once the phone is on such a network. */
+    @Volatile private var active = true
 
     override fun hook() {
         if (!isEnabled(PREF_KEY, false)) return
         app = context.applicationContext ?: context
+        active = !isEnabled(PREF_WIFI_ONLY, false)
         data = WebData(app)
         val store = app.getSharedPreferences("waex_web", Context.MODE_PRIVATE)
         auth = WebAuth(object : WebStore {
@@ -152,6 +155,8 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 WebHttp.write(out, response)
                 return
             }
+            // Away from the home networks the page stays closed: no answer, as if nothing were there.
+            if (!active) return
             val host = request.header("host")
             // A browser on the phone itself uses localhost; the exact name still stops DNS rebinding.
             val hostOk = if (onPhone) host in setOf("localhost:$port", "127.0.0.1:$port")
@@ -206,6 +211,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 val pending = auth.pendingCode()
                 WebResponse.json(WebJson.obj(
                     "port" to port,
+                    "active" to active,
                     "passwordSet" to auth.passwordSet(),
                     "canSend" to WebSender.available,
                     "canReact" to WebSender.canReact,
@@ -217,6 +223,10 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                     },
                     "tokens" to auth.tokens().map { linkedMapOf("id" to it.id, "name" to it.name, "created" to it.created) }
                 ))
+            }
+            "active" -> if (!post) WebResponse.error(405, "method") else {
+                active = body["on"] == true
+                WebResponse.json(WebJson.obj("ok" to true, "active" to active))
             }
             "sessions" -> if (!post) WebResponse.error(405, "method") else {
                 if (body["all"] == true) auth.revokeAllSessions() else auth.revokeSession(body["id"] as? String ?: "")
@@ -601,6 +611,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         private const val TAG = "[WAEX][Web]"
         const val PREF_KEY = "web_access"
         const val PREF_PORT = "web_access_port"
+        const val PREF_WIFI_ONLY = "web_wifi_only"
         const val DEFAULT_PORT = 8377
         private const val CHANNEL = "waex_web"
         private const val NOTIFY_CODE = 0x57454201

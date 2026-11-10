@@ -1185,4 +1185,20 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_web_password_off" formatted="false">"Contraseña: ninguna. Un nuevo navegador sólo necesita el código."</string>
     <string name="waex_ui_web_password_save" formatted="false">"Establecer contraseña"</string>
     <string name="waex_ui_web_password_remove" formatted="false">"Quitar"</string>
+    <string name="waex_ui_web_waiting" formatted="false">"WAEX Web espera una vivienda Wi-Fi"</string>
+    <string name="waex_ui_web_waiting_desc" formatted="false">"La página se abre sola en una de sus redes domésticas."</string>
+    <string name="waex_ui_web_wifi_only" formatted="false">"Sólo en casa Wi-Fi"</string>
+    <string name="waex_ui_web_wifi_only_desc" formatted="false">"La página se abre sola en las redes de abajo y se cierra en todas las demás. Reinicie WhatsApp después de encender esto."</string>
+    <string name="waex_ui_web_wifi_need_location" formatted="false">"Android muestra el nombre Wi-Fi solo a aplicaciones con permiso de ubicación. WAEX lo usa sólo para este nombre."</string>
+    <string name="waex_ui_web_wifi_allow_location" formatted="false">"Permitir ubicación"</string>
+    <string name="waex_ui_web_wifi_need_background" formatted="false">"Para notar el Wi-Fi mientras WAEX está cerrado, elija \"Permitir todo el tiempo\" para la ubicación."</string>
+    <string name="waex_ui_web_wifi_allow_always" formatted="false">"permitir todo el tiempo"</string>
+    <string name="waex_ui_web_wifi_now_none" formatted="false">"Ahora: no hay nombre Wi-Fi (no en Wi-Fi, ubicación desactivada o no permitida). La página está cerrada."</string>
+    <string name="waex_ui_web_wifi_now_home" formatted="false">"Ahora: %s, una red doméstica. La página está abierta."</string>
+    <string name="waex_ui_web_wifi_now_other" formatted="false">"Ahora: %s, no es una red doméstica. La página está cerrada."</string>
+    <string name="waex_ui_web_wifi_add_current" formatted="false">"Agregue %s como red doméstica"</string>
+    <string name="waex_ui_web_wifi_list" formatted="false">"Redes domésticas"</string>
+    <string name="waex_ui_web_wifi_empty" formatted="false">"Aún no hay red doméstica."</string>
+    <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi nombre"</string>
+    <string name="waex_ui_web_wifi_add" formatted="false">"Añadir"</string>
 </resources>
