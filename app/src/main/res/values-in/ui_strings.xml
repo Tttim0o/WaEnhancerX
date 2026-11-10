@@ -1201,4 +1201,20 @@ Tidak ada ruang antar pesan: %4$d"</string>
     <string name="waex_ui_web_password_off" formatted="false">"Kata sandi: tidak ada. Browser baru hanya membutuhkan kode."</string>
     <string name="waex_ui_web_password_save" formatted="false">"Tetapkan kata sandi"</string>
     <string name="waex_ui_web_password_remove" formatted="false">"Hapus"</string>
+    <string name="waex_ui_web_waiting" formatted="false">"WAEX Web menunggu rumah Wi-Fi"</string>
+    <string name="waex_ui_web_waiting_desc" formatted="false">"Halaman tersebut terbuka dengan sendirinya di salah satu jaringan rumah Anda."</string>
+    <string name="waex_ui_web_wifi_only" formatted="false">"Hanya di rumah Wi-Fi"</string>
+    <string name="waex_ui_web_wifi_only_desc" formatted="false">"Halaman terbuka dengan sendirinya di jaringan di bawah dan ditutup di jaringan lain. Mulai ulang WhatsApp setelah mengaktifkannya."</string>
+    <string name="waex_ui_web_wifi_need_location" formatted="false">"Android menampilkan nama Wi-Fi hanya untuk aplikasi dengan izin lokasi. WAEX hanya menggunakannya untuk nama ini."</string>
+    <string name="waex_ui_web_wifi_allow_location" formatted="false">"Izinkan lokasi"</string>
+    <string name="waex_ui_web_wifi_need_background" formatted="false">"Untuk melihat Wi-Fi saat WAEX ditutup, pilih \"Izinkan sepanjang waktu\" untuk lokasi."</string>
+    <string name="waex_ui_web_wifi_allow_always" formatted="false">"Izinkan sepanjang waktu"</string>
+    <string name="waex_ui_web_wifi_now_none" formatted="false">"Sekarang: tidak ada nama Wi-Fi (tidak aktif Wi-Fi, lokasi tidak aktif atau tidak diperbolehkan). Halaman ditutup."</string>
+    <string name="waex_ui_web_wifi_now_home" formatted="false">"Sekarang: %s, jaringan rumah. Halamannya terbuka."</string>
+    <string name="waex_ui_web_wifi_now_other" formatted="false">"Sekarang: %s, bukan jaringan rumah. Halaman ditutup."</string>
+    <string name="waex_ui_web_wifi_add_current" formatted="false">"Tambahkan %s sebagai jaringan rumah"</string>
+    <string name="waex_ui_web_wifi_list" formatted="false">"Jaringan rumah"</string>
+    <string name="waex_ui_web_wifi_empty" formatted="false">"Belum ada jaringan rumah."</string>
+    <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi nama"</string>
+    <string name="waex_ui_web_wifi_add" formatted="false">"Tambahkan"</string>
 </resources>

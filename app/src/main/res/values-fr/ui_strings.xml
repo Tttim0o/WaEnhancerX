@@ -1201,4 +1201,20 @@ Pas d'espace entre les messages : %4$d"</string>
     <string name="waex_ui_web_password_off" formatted="false">"Mot de passe : aucun. Un nouveau navigateur n'a besoin que du code."</string>
     <string name="waex_ui_web_password_save" formatted="false">"Définir le mot de passe"</string>
     <string name="waex_ui_web_password_remove" formatted="false">"Supprimer"</string>
+    <string name="waex_ui_web_waiting" formatted="false">"WAEX Web attend une maison Wi-Fi"</string>
+    <string name="waex_ui_web_waiting_desc" formatted="false">"La page s'ouvre toute seule sur l'un de vos réseaux domestiques."</string>
+    <string name="waex_ui_web_wifi_only" formatted="false">"Uniquement sur la maison Wi-Fi"</string>
+    <string name="waex_ui_web_wifi_only_desc" formatted="false">"La page s'ouvre toute seule sur les réseaux ci-dessous et se ferme partout ailleurs. Redémarrez WhatsApp après l'avoir activé."</string>
+    <string name="waex_ui_web_wifi_need_location" formatted="false">"Android affiche le nom Wi-Fi uniquement aux applications disposant de l'autorisation de localisation. WAEX l'utilise uniquement pour ce nom."</string>
+    <string name="waex_ui_web_wifi_allow_location" formatted="false">"Autoriser la localisation"</string>
+    <string name="waex_ui_web_wifi_need_background" formatted="false">"Pour remarquer le Wi-Fi alors que WAEX est fermé, choisissez « Autoriser tout le temps » pour l'emplacement."</string>
+    <string name="waex_ui_web_wifi_allow_always" formatted="false">"Autoriser tout le temps"</string>
+    <string name="waex_ui_web_wifi_now_none" formatted="false">"Maintenant : pas de nom Wi-Fi (pas sur Wi-Fi, emplacement désactivé ou non autorisé). La page est fermée."</string>
+    <string name="waex_ui_web_wifi_now_home" formatted="false">"Maintenant : %s, un réseau domestique. La page est ouverte."</string>
+    <string name="waex_ui_web_wifi_now_other" formatted="false">"Maintenant : %s, pas un réseau domestique. La page est fermée."</string>
+    <string name="waex_ui_web_wifi_add_current" formatted="false">"Ajouter %s comme réseau domestique"</string>
+    <string name="waex_ui_web_wifi_list" formatted="false">"Réseaux domestiques"</string>
+    <string name="waex_ui_web_wifi_empty" formatted="false">"Pas encore de réseau domestique."</string>
+    <string name="waex_ui_web_wifi_name_hint" formatted="false">"Nom Wi-Fi"</string>
+    <string name="waex_ui_web_wifi_add" formatted="false">"Ajouter"</string>
 </resources>

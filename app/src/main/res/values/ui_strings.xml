@@ -1183,4 +1183,20 @@
     <string name="waex_ui_web_password_off" formatted="false">"Password: none. A new browser needs only the code."</string>
     <string name="waex_ui_web_password_save" formatted="false">"Set password"</string>
     <string name="waex_ui_web_password_remove" formatted="false">"Remove"</string>
+    <string name="waex_ui_web_waiting" formatted="false">"WAEX Web waits for a home Wi-Fi"</string>
+    <string name="waex_ui_web_waiting_desc" formatted="false">"The page opens by itself on one of your home networks."</string>
+    <string name="waex_ui_web_wifi_only" formatted="false">"Only on home Wi-Fi"</string>
+    <string name="waex_ui_web_wifi_only_desc" formatted="false">"The page opens by itself on the networks below and closes everywhere else. Restart WhatsApp after switching this on."</string>
+    <string name="waex_ui_web_wifi_need_location" formatted="false">"Android shows the Wi-Fi name only to apps with the location permission. WAEX uses it only for this name."</string>
+    <string name="waex_ui_web_wifi_allow_location" formatted="false">"Allow location"</string>
+    <string name="waex_ui_web_wifi_need_background" formatted="false">"To notice the Wi-Fi while WAEX is closed, choose \"Allow all the time\" for location."</string>
+    <string name="waex_ui_web_wifi_allow_always" formatted="false">"Allow all the time"</string>
+    <string name="waex_ui_web_wifi_now_none" formatted="false">"Now: no Wi-Fi name (not on Wi-Fi, location off or not allowed). The page is closed."</string>
+    <string name="waex_ui_web_wifi_now_home" formatted="false">"Now: %s, a home network. The page is open."</string>
+    <string name="waex_ui_web_wifi_now_other" formatted="false">"Now: %s, not a home network. The page is closed."</string>
+    <string name="waex_ui_web_wifi_add_current" formatted="false">"Add %s as a home network"</string>
+    <string name="waex_ui_web_wifi_list" formatted="false">"Home networks"</string>
+    <string name="waex_ui_web_wifi_empty" formatted="false">"No home network yet."</string>
+    <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi name"</string>
+    <string name="waex_ui_web_wifi_add" formatted="false">"Add"</string>
 </resources>

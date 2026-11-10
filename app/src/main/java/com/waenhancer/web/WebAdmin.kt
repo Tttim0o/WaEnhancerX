@@ -32,6 +32,10 @@ object WebAdmin {
         return WebJson.parseObject(text).takeIf { it.containsKey("sessions") }
     }
 
+    /** Opens or closes the page; used for "only on home Wi-Fi". False when the server is away. */
+    fun setActive(context: Context, on: Boolean): Boolean =
+        call(context, "POST", "/admin/active", WebJson.obj("on" to on)) != null
+
     fun signOut(context: Context, id: String?): Boolean =
         call(context, "POST", "/admin/sessions", if (id == null) "{\"all\":true}" else WebJson.obj("id" to id)) != null
 
