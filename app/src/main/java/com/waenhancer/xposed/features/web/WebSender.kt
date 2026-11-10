@@ -26,10 +26,27 @@ object WebSender {
     @Volatile private var factoryInstance: Any? = null
     @Volatile private var senderInstance: Any? = null
     @Volatile private var jidParser: Method? = null
+    @Volatile private var jidParserTarget: Any? = null
     @Volatile private var jidClass: Class<*>? = null
+    @Volatile private var fMessageClass: Class<*>? = null
+    @Volatile private var keyConstructor: java.lang.reflect.Constructor<*>? = null
+    @Volatile private var lookup: Method? = null
+    @Volatile private var lookupInstance: Any? = null
+    @Volatile private var reactor: Method? = null
+    @Volatile private var reactorInstance: Any? = null
+
+    /** Why the last send or reaction did not work; a short code, never message content. */
+    @Volatile var lastError: String = ""
+        private set
 
     val available: Boolean
         get() = factory != null && sender != null && jidClass != null
+
+    val canReact: Boolean
+        get() = available && reactor != null && lookup != null && keyConstructor != null
+
+    val canReply: Boolean
+        get() = available && lookup != null && keyConstructor != null
 
     /** Finds the pieces. Safe to call once at startup; failures only switch sending off. */
     fun prepare(context: Context, classLoader: ClassLoader) {
@@ -78,11 +95,91 @@ object WebSender {
             foundSender.isAccessible = true
             capture(foundFactory.declaringClass) { factoryInstance = it }
             capture(foundSender.declaringClass) { senderInstance = it }
+            // Whenever WhatsApp itself sends something, remember the live sender object.
+            try {
+                XposedBridge.hookMethod(foundSender, object : XC_MethodHook() {
+                    override fun beforeHookedMethod(param: MethodHookParam) {
+                        param.thisObject?.let { senderInstance = it }
+                    }
+                })
+            } catch (_: Throwable) {
+            }
             jidClass = jid
+            fMessageClass = fMessage
             factory = foundFactory
             sender = foundSender
+            prepareExtras(context, classLoader, engine, fMessage, foundFactory.parameterTypes[0])
         } catch (t: Throwable) {
             XposedBridge.log("$TAG Sending unavailable: ${t.javaClass.simpleName}")
+        }
+    }
+
+    /** Finds what replies and reactions need: looking a message up by its key, and the reaction sender. */
+    private fun prepareExtras(context: Context, classLoader: ClassLoader, engine: DexSearchEngine,
+                              fMessage: Class<*>, chatJid: Class<*>) {
+        try {
+            // The message key is the field of a message built from (chat, id, from me).
+            var type: Class<*>? = fMessage
+            var key: java.lang.reflect.Constructor<*>? = null
+            while (type != null && key == null) {
+                for (field in type.declaredFields) {
+                    if (Modifier.isStatic(field.modifiers) || field.type.isPrimitive) continue
+                    key = field.type.declaredConstructors.firstOrNull { c ->
+                        val p = c.parameterTypes
+                        p.size == 3 && p[0].isAssignableFrom(chatJid) && p[1] == String::class.java &&
+                            p[2] == java.lang.Boolean.TYPE
+                    }
+                    if (key != null) break
+                }
+                type = type.superclass
+            }
+            val keyCtor = key ?: return
+            keyCtor.isAccessible = true
+            val keyClass = keyCtor.declaringClass
+
+            val foundLookup = engine.findMethodWithCache(context, classLoader, "waex_web_message_lookup") { bridge, loader ->
+                bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create()
+                    .paramTypes(keyClass.name).returnType(fMessage.name)))
+                    .mapNotNull { runCatching { it.getMethodInstance(loader) }.getOrNull() }
+                    .filter { m ->
+                        val owner = m.declaringClass
+                        !Modifier.isStatic(m.modifiers) && !Modifier.isAbstract(owner.modifiers) &&
+                            runCatching { owner.getDeclaredConstructor() }.isSuccess &&
+                            // The message store implements an interface with this very method.
+                            owner.interfaces.any { i ->
+                                runCatching { i.getMethod(m.name, keyClass) }.getOrNull()?.returnType == fMessage
+                            }
+                    }
+                    .sortedBy { it.declaringClass.name + "." + it.name }
+                    .firstOrNull()
+            }
+            if (foundLookup != null) {
+                foundLookup.isAccessible = true
+                capture(foundLookup.declaringClass) { lookupInstance = it }
+                keyConstructor = keyCtor
+                lookup = foundLookup
+            }
+
+            // Same search the double tap reaction feature uses.
+            val reactorClass = engine.findClassWithCache(context, classLoader, "waex_action_user_class") { bridge, loader ->
+                bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create()
+                    .paramTypes(fMessage.name, "java.lang.String", "boolean")
+                    .modifiers(Modifier.PUBLIC or Modifier.FINAL)
+                    .returnType("boolean")))
+                    .firstOrNull()?.getMethodInstance(loader)?.declaringClass
+            }
+            val foundReactor = reactorClass?.declaredMethods?.firstOrNull { m ->
+                val p = m.parameterTypes
+                p.size == 3 && p[0].isAssignableFrom(fMessage) && p[1] == String::class.java &&
+                    p[2] == java.lang.Boolean.TYPE
+            }
+            if (foundReactor != null) {
+                foundReactor.isAccessible = true
+                capture(foundReactor.declaringClass) { reactorInstance = it }
+                reactor = foundReactor
+            }
+        } catch (t: Throwable) {
+            XposedBridge.log("$TAG Replies and reactions unavailable: ${t.javaClass.simpleName}")
         }
     }
 
@@ -105,27 +202,41 @@ object WebSender {
         return constructor.newInstance()
     }
 
-    /** Turns "123@s.whatsapp.net" into WhatsApp's JID object of the type the factory expects. */
+    /**
+     * Turns "123@s.whatsapp.net" into WhatsApp's JID object of the type [wanted]. The parser is a
+     * method taking one string; it sits on the JID classes or on their companion objects.
+     */
     private fun parseJid(raw: String, wanted: Class<*>): Any? {
         val jid = jidClass ?: return null
         jidParser?.let { known ->
-            val result = runCatching { known.invoke(null, raw) }.getOrNull()
+            val result = runCatching { known.invoke(jidParserTarget, raw) }.getOrNull()
             if (wanted.isInstance(result)) return result
         }
-        val holders = LinkedHashSet<Class<*>>()
-        holders.add(jid)
-        for (field in jid.declaredFields) {
-            if (Modifier.isStatic(field.modifiers) && !field.type.isPrimitive) holders.add(field.type)
+        // Classes to look at: the wanted type up to Jid, each with its static companion fields.
+        val targets = ArrayList<Pair<Class<*>, Any?>>()
+        var type: Class<*>? = wanted
+        while (type != null && jid.isAssignableFrom(type)) {
+            targets.add(type to null)
+            for (field in type.declaredFields) {
+                if (!Modifier.isStatic(field.modifiers) || field.type.isPrimitive ||
+                    field.type == String::class.java) continue
+                val value = runCatching { field.isAccessible = true; field.get(null) }.getOrNull() ?: continue
+                targets.add(value.javaClass to value)
+            }
+            type = type.superclass
         }
-        for (holder in holders) {
+        for ((holder, instance) in targets) {
             for (method in holder.declaredMethods) {
                 val p = method.parameterTypes
-                if (!Modifier.isStatic(method.modifiers) || p.size != 1 || p[0] != String::class.java) continue
-                if (!jid.isAssignableFrom(method.returnType)) continue
+                if (p.size != 1 || p[0] != String::class.java || !jid.isAssignableFrom(method.returnType)) continue
+                val static = Modifier.isStatic(method.modifiers)
+                if (!static && instance == null) continue
                 try {
                     method.isAccessible = true
-                    val result = method.invoke(null, raw)
+                    val target = if (static) null else instance
+                    val result = method.invoke(target, raw)
                     if (wanted.isInstance(result)) {
+                        jidParserTarget = target
                         jidParser = method
                         return result
                     }
@@ -136,20 +247,72 @@ object WebSender {
         return null
     }
 
-    /** Queues [text] for [rawJid]. Returns false when WhatsApp's send path could not be used. */
-    fun sendText(rawJid: String, text: String): Boolean {
-        val make = factory ?: return false
-        val send = sender ?: return false
+    /** A message WhatsApp already has, found by its key. */
+    private fun findMessage(chatJid: String, keyId: String, fromMe: Boolean): Any? {
+        val ctor = keyConstructor ?: return null
+        val find = lookup ?: return null
+        val jid = parseJid(chatJid, ctor.parameterTypes[0]) ?: return null
+        val key = ctor.newInstance(jid, keyId, fromMe)
+        return find.invoke(instanceOf(find.declaringClass, lookupInstance), key)
+    }
+
+    private fun fail(code: String, t: Throwable? = null): Boolean {
+        val cause = (t as? java.lang.reflect.InvocationTargetException)?.targetException ?: t
+        lastError = if (cause == null) code else code + ":" + cause.javaClass.simpleName
+        XposedBridge.log("$TAG $lastError")
+        return false
+    }
+
+    /** One message as the database names it: chat JID, key id and direction. */
+    class Key(val chatJid: String, val keyId: String, val fromMe: Boolean)
+
+    /**
+     * Queues [text] for [rawJid], as a reply to [quoted] when given. Returns false when
+     * WhatsApp's send path could not be used; [lastError] then says which step failed.
+     */
+    fun sendText(rawJid: String, text: String, quoted: Key? = null): Boolean {
+        val make = factory ?: return fail("send_no_factory")
+        val send = sender ?: return fail("send_no_sender")
         return try {
-            val jid = parseJid(rawJid, make.parameterTypes[0]) ?: return false
+            val jid = parseJid(rawJid, make.parameterTypes[0]) ?: return fail("send_jid_not_parsed")
+            val quotedMessage = quoted?.let {
+                findMessage(it.chatJid, it.keyId, it.fromMe) ?: return fail("send_quoted_not_found")
+            }
             val message = make.invoke(instanceOf(make.declaringClass, factoryInstance),
-                jid, null, null, text, null, System.currentTimeMillis()) ?: return false
+                jid, quotedMessage, null, text, null, System.currentTimeMillis())
+                ?: return fail("send_no_message")
             send.invoke(instanceOf(send.declaringClass, senderInstance), message)
+            lastError = ""
             true
         } catch (t: Throwable) {
-            val cause = (t as? java.lang.reflect.InvocationTargetException)?.targetException ?: t
-            XposedBridge.log("$TAG Send failed: ${cause.javaClass.simpleName}")
-            false
+            fail("send_failed", t)
+        }
+    }
+
+    /** Adds [emoji] to a message as the user's reaction; an empty string removes it. */
+    fun react(target: Key, emoji: String): Boolean {
+        val method = reactor ?: return fail("react_unavailable")
+        return try {
+            val message = findMessage(target.chatJid, target.keyId, target.fromMe)
+                ?: return fail("react_message_not_found")
+            // WhatsApp shows the change itself, so this runs where it expects: on the main thread.
+            val done = java.util.concurrent.CountDownLatch(1)
+            var error: Throwable? = null
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                try {
+                    method.invoke(instanceOf(method.declaringClass, reactorInstance), message, emoji, emoji.isNotEmpty())
+                } catch (t: Throwable) {
+                    error = t
+                } finally {
+                    done.countDown()
+                }
+            }
+            if (!done.await(5, java.util.concurrent.TimeUnit.SECONDS)) return fail("react_timeout")
+            error?.let { return fail("react_failed", it) }
+            lastError = ""
+            true
+        } catch (t: Throwable) {
+            fail("react_failed", t)
         }
     }
 }

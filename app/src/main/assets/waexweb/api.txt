@@ -38,7 +38,8 @@ GET /api/chats/<jid>/messages?limit=60
     Newer only:  &after=<id>
     {"messages":[{"id","sort","fromMe","ts","type","text","status","sender","quote",
                   "media":{"mime","name","size","duration","w","h","voice","available"},
-                  "thumb","starred","reactions"}],"canSend":true}
+                  "thumb","starred","reactions","myReaction"}],
+     "canSend":true,"canReact":true,"canReply":true}
     type: 0 text, 1 photo, 2 audio, 3 video, 4 contact, 5 location, 9 document, 13 gif,
           15 deleted, 16 live location, 20 sticker, 42 view once, 46 poll
     status (your own messages): 0 waiting, 4 sent, 5 delivered, 13 read
@@ -56,10 +57,15 @@ GET /api/avatar/<jid>           profile picture, 404 when there is none
 
 Writing
 -------
-POST /api/chats/<jid>/send      body: {"text":"Hello"}
+POST /api/chats/<jid>/send      body: {"text":"Hello"}  or  {"text":"Hello","replyTo":<message id>}
     {"ok":true,"stored":true}   stored tells whether WhatsApp already saved the message.
     At most 8000 characters and 30 messages per minute.
     503 send_unavailable: this WhatsApp version is not supported for direct sending.
+    503 send_failed with "step": WhatsApp did not take the message; step names where it stopped.
+
+POST /api/chats/<jid>/react     body: {"id":<message id>,"emoji":"👍"}
+    Puts your reaction on a message. An empty emoji removes it.
+    503 react_unavailable: reactions are not supported on this WhatsApp version.
 
 POST /api/chats/<jid>/open      body: {"text":"Hello"}
     Opens the chat on the phone with the text filled in, for sending by hand.

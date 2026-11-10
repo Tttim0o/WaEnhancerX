@@ -63,6 +63,13 @@ class WebAuth(
         CodeResult.Issued(code, pairId, (CODE_VALID_MS / 1000).toInt())
     }
 
+    /** The code a browser is waiting for right now and the seconds it stays valid, for the phone's own screen. */
+    fun pendingCode(): Pair<String, Int>? = synchronized(lock) {
+        val now = clock()
+        val current = pending ?: return null
+        if (now >= current.expires) null else current.code to secondsUntil(current.expires, now)
+    }
+
     fun confirm(pairId: String?, code: String?, password: String?, label: String): ConfirmResult = synchronized(lock) {
         val now = clock()
         if (now < lockedUntil) return ConfirmResult.Locked(secondsUntil(lockedUntil, now))

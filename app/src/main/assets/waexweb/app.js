@@ -51,7 +51,12 @@
       tokens: 'API tokens', tokensInfo: 'For your own scripts. A token can read chats and send messages, so keep it secret.',
       tokenName: 'Name, for example "home script"', createToken: 'Create token',
       tokenOnce: 'Copy it now. It will not be shown again:', remove: 'Delete', apiDocs: 'API description',
-      too_many_tokens: 'You already have 10 tokens. Delete one first.', copied: 'Copied.'
+      too_many_tokens: 'You already have 10 tokens. Delete one first.', copied: 'Copied.',
+      reply: 'Reply', react: 'React', copy: 'Copy text', cancel: 'Cancel', emoji: 'Emoji',
+      doubleReact: 'Double click reacts with', sendProblem: 'WhatsApp did not take the message ({s}). Try again.',
+      react_unavailable: 'Reactions do not work with this WhatsApp version.',
+      message_not_found: 'WhatsApp no longer has that message.', online: 'Connected to the phone',
+      reconnecting: 'The phone does not answer. Trying again…'
     },
     sk: {
       intro: 'Čítaj a píš svoje WhatsApp správy z tohto počítača. Telefón ukáže kód, ktorým tento prehliadač pustíš dnu.',
@@ -88,13 +93,20 @@
       tokens: 'API tokeny', tokensInfo: 'Pre tvoje vlastné skripty. Token vie čítať chaty a posielať správy, drž ho v tajnosti.',
       tokenName: 'Názov, napríklad „domáci skript“', createToken: 'Vytvoriť token',
       tokenOnce: 'Skopíruj si ho teraz. Znova sa už neukáže:', remove: 'Vymazať', apiDocs: 'Popis API',
-      too_many_tokens: 'Máš už 10 tokenov. Najprv jeden vymaž.', copied: 'Skopírované.'
+      too_many_tokens: 'Máš už 10 tokenov. Najprv jeden vymaž.', copied: 'Skopírované.',
+      reply: 'Odpovedať', react: 'Reagovať', copy: 'Kopírovať text', cancel: 'Zrušiť', emoji: 'Emoji',
+      doubleReact: 'Dvojklik reaguje pomocou', sendProblem: 'WhatsApp správu neprevzal ({s}). Skús to znova.',
+      react_unavailable: 'Reakcie s touto verziou WhatsAppu nefungujú.',
+      message_not_found: 'WhatsApp už túto správu nemá.', online: 'Spojené s telefónom',
+      reconnecting: 'Telefón neodpovedá. Skúšam znova…'
     }
   };
 
   // ─── Look and feel, kept in this browser only ────────────────────────
-  const DEFAULTS = { theme: 'system', accent: '#1fa855', wall: 'classic', font: 15, radius: 12, enter: true, lang: '' };
-  const ACCENTS = ['#1fa855', '#0b84ff', '#7c4dff', '#e91e63', '#ff7043', '#f5a623', '#00a3a3', '#607d8b'];
+  const DEFAULTS = { theme: 'system', accent: '#00a884', wall: 'classic', font: 14.2, radius: 8, enter: true, lang: '', react: '❤️' };
+  const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+  const EMOJI = ('😀 😁 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😜 🤪 🤔 🤨 😐 😏 😒 🙄 😬 😴 😷 🤒 🤕 🤢 🥵 🥶 😎 🤓 😕 😟 😮 😳 🥺 😢 😭 😱 😤 😡 🤬 💀 💩 🤡 👻 👍 👎 👌 ✌️ 🤞 🤝 👏 🙌 🙏 💪 👀 🫶 ❤️ 🧡 💛 💚 💙 💜 🖤 💔 💯 🔥 ✨ 🎉 🎂 🎁 ☀️ 🌙 ⭐ ☕ 🍕 🍺 ⚽ 🚗 ✈️ 🏠 📞 💻 ✅ ❌ ❓ ❗').split(' ');
+  const ACCENTS = ['#00a884', '#1fa855', '#0b84ff', '#7c4dff', '#e91e63', '#ff7043', '#f5a623', '#00a3a3', '#607d8b'];
   let prefs = { ...DEFAULTS };
   try { prefs = { ...DEFAULTS, ...JSON.parse(localStorage.getItem('waex_prefs') || '{}') }; } catch (_) { /* private mode */ }
   const savePrefs = () => { try { localStorage.setItem('waex_prefs', JSON.stringify(prefs)); } catch (_) { /* ignore */ } };
@@ -111,7 +123,7 @@
     root.dataset.theme = theme;
     root.lang = lang();
     root.style.setProperty('--accent', /^#[0-9a-f]{6}$/i.test(prefs.accent) ? prefs.accent : DEFAULTS.accent);
-    root.style.setProperty('--font', Math.min(22, Math.max(12, +prefs.font || 15)) + 'px');
+    root.style.setProperty('--font', Math.min(22, Math.max(12, +prefs.font || 14.2)) + 'px');
     root.style.setProperty('--radius', Math.min(22, Math.max(0, +prefs.radius)) + 'px');
     $('messages').dataset.wall = prefs.wall;
   }
@@ -130,6 +142,8 @@
     $('text').placeholder = t('typeHere');
     $('settingsTitle').textContent = t('settings');
     $('viewerSave').textContent = t('save');
+    $('emojiButton').title = t('emoji');
+    $('replyCancel').title = t('cancel');
     for (const b of $('tabs').children) b.textContent = t(b.dataset.tab);
   }
 
@@ -164,7 +178,7 @@
 
   // ─── State ───────────────────────────────────────────────────────────
   const state = {
-    signedIn: false, canSend: false, rev: null, chats: [], tab: 'all', query: '', hits: [],
+    signedIn: false, canSend: false, canReact: false, canReply: false, reply: null, rev: null, chats: [], tab: 'all', query: '', hits: [],
     current: null, messages: new Map(), nodes: new Map(), noOlder: false, detached: false, drafts: new Map(),
     pairId: null, noAvatar: new Set()
   };
@@ -250,7 +264,7 @@
     });
     if (q && list.length) box.append(el('div', 'section', t('chatsSection')));
     for (const chat of list) {
-      const row = el('div', 'row' + (chat.jid === state.current ? ' on' : ''));
+      const row = el('div', 'row' + (chat.jid === state.current ? ' on' : '') + (chat.unread > 0 ? ' fresh' : ''));
       row.setAttribute('role', 'listitem');
       row.tabIndex = 0;
       const pic = el('div', 'avatar');
@@ -449,8 +463,74 @@
       meta.append(' ', el('span', tick.read ? 'read' : null, tick.text));
     }
     node.append(meta);
-    if (m.reactions) node.append(el('div', null), el('span', 'react', m.reactions));
+    if (m.reactions) {
+      const chip = el('button', 'react' + (m.myReaction ? ' mine' : ''), m.reactions);
+      if (m.myReaction) chip.addEventListener('click', () => react(m, ''));
+      node.append(chip);
+      node.classList.add('reacted');
+    }
+    if (m.type !== 15) {
+      const tools = el('div', 'tools');
+      const add = (icon, label, action) => {
+        const b = el('button', null, icon);
+        b.title = label;
+        b.setAttribute('aria-label', label);
+        b.addEventListener('click', (e) => { e.stopPropagation(); action(e); });
+        tools.append(b);
+      };
+      if (state.canReact) add('☺', t('react'), () => showReactBar(node, m));
+      if (state.canReply && state.canSend) add('↩', t('reply'), () => setReply(m));
+      if (m.text) add('⧉', t('copy'), () => { navigator.clipboard && navigator.clipboard.writeText(m.text).then(() => toast(t('copied'))); });
+      if (tools.children.length) node.append(tools);
+      node.addEventListener('click', (e) => {
+        if (e.target.closest('a, video, audio, button, img')) return;
+        const was = node.classList.contains('sel');
+        for (const other of document.querySelectorAll('.msg.sel')) other.classList.remove('sel');
+        if (!was && window.matchMedia('(hover: none)').matches) node.classList.add('sel');
+      });
+      node.addEventListener('dblclick', (e) => {
+        if (!state.canReact || e.target.closest('a, video, audio, button')) return;
+        e.preventDefault();
+        const sel = window.getSelection();
+        if (sel) sel.removeAllRanges();
+        react(m, m.myReaction === prefs.react ? '' : prefs.react);
+      });
+    }
     return node;
+  }
+
+  // ─── Reactions and replies ───────────────────────────────────────────
+  async function react(m, emoji) {
+    const jid = state.current;
+    try {
+      await api('/api/chats/' + enc(jid) + '/react', { id: m.id, emoji });
+      await sleep(350);
+      if (state.current === jid) await loadLatest();
+    } catch (e) {
+      toast(e.code === 'send_failed' ? t('sendProblem', { s: e.data.step || '?' }) : errorText(e));
+    }
+  }
+  function showReactBar(node, m) {
+    const open = document.querySelector('.reactbar');
+    if (open) open.remove();
+    const bar = el('div', 'reactbar');
+    for (const emoji of QUICK) {
+      const b = el('button', m.myReaction === emoji ? 'on' : null, emoji);
+      b.addEventListener('click', (e) => { e.stopPropagation(); bar.remove(); react(m, m.myReaction === emoji ? '' : emoji); });
+      bar.append(b);
+    }
+    node.append(bar);
+    setTimeout(() => document.addEventListener('click', () => bar.remove(), { once: true }), 0);
+  }
+  function setReply(m) {
+    state.reply = m;
+    const bar = $('replyBar');
+    bar.hidden = !m;
+    if (m) {
+      $('replyWho').textContent = m.fromMe ? t('you') : (m.sender || $('chatName').textContent);
+      $('replyText').textContent = m.text || t(TYPE_WORD[m.type] || 'document');
+      $('text').focus();
+    }
   }
 
   function renderAll() {
@@ -515,6 +595,7 @@
     state.nodes = new Map();
     state.noOlder = false;
     state.detached = !!hit;
+    setReply(null);
     const chat = currentChat();
     $('app').classList.add('open');
     $('empty').hidden = true;
@@ -532,6 +613,8 @@
       const r = await api(messagesUrl(jid, query));
       if (state.current !== jid) return;
       state.canSend = r.canSend;
+      state.canReact = !!r.canReact;
+      state.canReply = !!r.canReply;
       for (const m of r.messages) state.messages.set(m.id, m);
       if (r.messages.length < 60) state.noOlder = true;
       renderAll();
@@ -567,7 +650,9 @@
   // ─── Writing ─────────────────────────────────────────────────────────
   function autosize() {
     const box = $('text');
-    box.style.height = 'auto';
+    box.style.height = '';
+    // An empty or not yet laid out box keeps its natural one-line height.
+    if (!box.value || !box.clientWidth) return;
     box.style.height = Math.min(160, box.scrollHeight + 2) + 'px';
   }
   function showSendNote() {
@@ -593,14 +678,18 @@
     sending = true;
     $('send').disabled = true;
     try {
-      const r = await api('/api/chats/' + enc(jid) + '/send', { text });
-      if (state.current === jid) { $('text').value = ''; autosize(); }
+      const body = { text };
+      if (state.reply) body.replyTo = state.reply.id;
+      const r = await api('/api/chats/' + enc(jid) + '/send', body);
+      if (state.current === jid) { $('text').value = ''; autosize(); setReply(null); }
       state.drafts.delete(jid);
       if (state.detached) await openChat(jid); else await loadLatest();
       toBottom();
       if (!r.stored) toast(t('queued'));
     } catch (e) {
-      if (e.code === 'send_unavailable' || e.code === 'send_failed') { state.canSend = false; showSendNote(); } else toast(errorText(e));
+      if (e.code === 'send_unavailable') { state.canSend = false; showSendNote(); }
+      else if (e.code === 'send_failed') toast(t('sendProblem', { s: e.data.step || '?' }));
+      else toast(errorText(e));
     } finally {
       sending = false;
       $('send').disabled = false;
@@ -616,6 +705,7 @@
     while (state.signedIn) {
       try {
         const u = await api('/api/updates' + (state.rev == null ? '' : '?rev=' + state.rev));
+        $('offline').hidden = true;
         if (u.canSend !== state.canSend) { state.canSend = u.canSend; if (state.current) showSendNote(); }
         if (u.rev !== state.rev) {
           state.rev = u.rev;
@@ -625,6 +715,7 @@
         }
       } catch (e) {
         if (e.status === 401) break;
+        if (e.code === 'offline') { $('offline').textContent = t('reconnecting'); $('offline').hidden = false; }
         await sleep(3000);
       }
     }
@@ -695,6 +786,7 @@
     enter.checked = prefs.enter;
     enter.addEventListener('change', () => change('enter')(enter.checked));
     body.append(field(t('enterSends'), enter));
+    body.append(field(t('doubleReact'), select(QUICK.map((e) => [e, e]), prefs.react, change('react'))));
     body.append(field(t('language'), select([['', t('system')], ['en', 'English'], ['sk', 'Slovenčina']], prefs.lang, change('lang', true))));
 
     const account = el('div');
@@ -829,10 +921,37 @@
     if (e.key !== 'Enter' || e.isComposing) return;
     if (prefs.enter ? !e.shiftKey : (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); }
   });
+  $('replyCancel').addEventListener('click', () => setReply(null));
+  $('emojiButton').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const panel = $('emojiPanel');
+    if (!panel.children.length) {
+      for (const emoji of EMOJI) {
+        const b = el('button', null, emoji);
+        b.type = 'button';
+        b.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const box = $('text'), at = box.selectionStart || box.value.length;
+          box.value = box.value.slice(0, at) + emoji + box.value.slice(box.selectionEnd || at);
+          box.selectionStart = box.selectionEnd = at + emoji.length;
+          box.focus();
+          autosize();
+        });
+        panel.append(b);
+      }
+    }
+    panel.hidden = !panel.hidden;
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('#emojiPanel')) $('emojiPanel').hidden = true; });
   $('openSettings').addEventListener('click', openSettings);
   $('closeSettings').addEventListener('click', () => $('settings').close());
   $('viewer').addEventListener('click', (e) => { if (e.target !== $('viewerSave')) { $('viewer').hidden = true; $('viewerImg').removeAttribute('src'); } });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('viewer').hidden = true; });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    $('viewer').hidden = true;
+    $('emojiPanel').hidden = true;
+    if (state.reply) setReply(null);
+  });
 
   applyPrefs();
   applyWords();

@@ -74,6 +74,11 @@ public class HookProvider extends ContentProvider {
                 return result;
             }
 
+            if ("web_started".equals(method)) {
+                com.waenhancer.web.WebAdmin.onServerStarted(context, extras);
+                return writeResult(true);
+            }
+
             if ("restart_target".equals(method)) {
                 String pkg = arg != null ? arg : (extras != null
                         ? extras.getString("package") : null);

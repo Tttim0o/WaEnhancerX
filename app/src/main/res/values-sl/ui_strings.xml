@@ -1184,4 +1184,21 @@ Med sporočili ni prostora: %4$d"</string>
     <string name="waex_ui_web_no_wifi" formatted="false">"Za ogled naslova povežite telefon z Wi-Fi."</string>
     <string name="waex_ui_web_restart" formatted="false">"Po spremembi tega znova zaženite WhatsApp. WhatsApp mora delovati, da stran deluje."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"Povezava ni šifrirana. Uporabite ga samo na Wi-Fi, ki mu zaupate. Zaklenjeni klepeti niso nikoli prikazani."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX Splet je vklopljen"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"Stran še ne deluje. Enkrat odprite WhatsApp (po vklopu ga znova zaženite)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"tek. WAEX ohranja WhatsApp buden, medtem ko je to vklopljeno."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Koda za brskalnik, ki se zdaj vpisuje"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"Pošiljanje ni na voljo v tej različici WhatsApp. Branje dela."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Zadnja težava pri pošiljanju: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Prijavljeni brskalniki"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"Noben brskalnik ni prijavljen."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Nazadnje uporabljeno %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Odjavite se"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Odjavite se iz vseh brskalnikov"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API žetonov"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Izbriši"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Geslo: nastavljeno. Nov brskalnik potrebuje kodo in geslo."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Geslo: brez. Nov brskalnik potrebuje le kodo."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Nastavite geslo"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Odstrani"</string>
 </resources>

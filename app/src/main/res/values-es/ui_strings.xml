@@ -1168,4 +1168,21 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_web_no_wifi" formatted="false">"Conecte el teléfono a Wi-Fi para ver la dirección."</string>
     <string name="waex_ui_web_restart" formatted="false">"Reinicie WhatsApp después de cambiar esto. WhatsApp debe estar ejecutándose para que la página funcione."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"La conexión no está cifrada. Úselo sólo en un Wi-Fi de confianza. Los chats bloqueados nunca se muestran."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX La web está activada"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"La página aún no se está ejecutando. Abra WhatsApp una vez (reinícielo después de encenderlo)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"Corriendo. WAEX mantiene a WhatsApp despierto mientras esto está activado."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Código para el navegador que está iniciando sesión ahora"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"El envío no está disponible en esta versión WhatsApp. La lectura funciona."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Último problema de envío: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Navegadores registrados"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"Ningún navegador ha iniciado sesión."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Usado por última vez %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Cerrar sesión"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Cerrar sesión en todos los navegadores"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API fichas"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Eliminar"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Contraseña: establecer. Un nuevo navegador necesita el código y la contraseña."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Contraseña: ninguna. Un nuevo navegador sólo necesita el código."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Establecer contraseña"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Quitar"</string>
 </resources>

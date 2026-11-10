@@ -129,9 +129,11 @@ class WebServerLogicTest {
         val auth = WebAuth(MemoryStore(), { now })
         val issued = auth.requestCode() as WebAuth.CodeResult.Issued
         assertEquals(6, issued.code.length)
+        assertEquals(issued.code, auth.pendingCode()?.first)
         assertTrue("second request must wait", auth.requestCode() is WebAuth.CodeResult.Wait)
         val ok = auth.confirm(issued.pairId, issued.code, null, "Firefox") as WebAuth.ConfirmResult.Ok
         assertNotNull(auth.session(ok.token))
+        assertNull("a used code is no longer shown", auth.pendingCode())
         assertEquals("Firefox", auth.sessions().single().label)
         assertTrue("code is used up", auth.confirm(issued.pairId, issued.code, null, "x") is WebAuth.ConfirmResult.Expired)
         assertNull(auth.session("something else"))

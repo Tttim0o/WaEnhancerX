@@ -37,7 +37,15 @@ import com.waenhancer.app.R
 import com.waenhancer.ui.designsystem.WaexTheme
 import com.waenhancer.ui.navigation.LocalWaexPreferenceManager
 import com.waenhancer.utils.UiText
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.waenhancer.web.LanPolicy
+import com.waenhancer.web.WebAdmin
+import com.waenhancer.web.WebKeepAliveService
+import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.Date
 import com.waenhancer.xposed.features.web.WebServerHook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -81,6 +89,7 @@ fun WebAccessSection() {
             Switch(checked = enabled, onCheckedChange = {
                 enabled = it
                 preferenceManager.putBoolean(WebServerHook.PREF_KEY, it)
+                WebKeepAliveService.apply(context)
             })
         }
         Text(
@@ -143,6 +152,7 @@ fun WebAccessSection() {
                 )
             }
         }
+        WebDevices()
         Text(
             text = UiText.get(R.string.waex_ui_web_restart,
                 "Restart WhatsApp after changing this. WhatsApp must be running for the page to work."),
@@ -153,5 +163,160 @@ fun WebAccessSection() {
                 "The connection is not encrypted. Use it only on a Wi-Fi you trust. Locked chats are never shown."),
             style = typography.labelSm, color = colors.error
         )
+    }
+}
+
+/** Who is signed in to WAEX Web, the code a new browser is waiting for, and the password. */
+@Suppress("UNCHECKED_CAST")
+@Composable
+private fun WebDevices() {
+    val context = LocalContext.current
+    val colors = WaexTheme.colors
+    val typography = WaexTheme.typography
+    val radius = WaexTheme.radius
+    val scope = rememberCoroutineScope()
+    var state by remember { mutableStateOf<Map<String, Any?>?>(null) }
+    var asked by remember { mutableStateOf(false) }
+    var password by remember { mutableStateOf("") }
+
+    suspend fun refresh() {
+        state = withContext(Dispatchers.IO) { WebAdmin.state(context) }
+        asked = true
+    }
+    fun act(block: () -> Unit) {
+        scope.launch {
+            withContext(Dispatchers.IO) { block() }
+            refresh()
+        }
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            refresh()
+            delay(2000)
+        }
+    }
+
+    val current = state
+    if (current == null) {
+        if (asked) Text(
+            text = UiText.get(R.string.waex_ui_web_not_running,
+                "The page is not running yet. Open WhatsApp once (restart it after switching this on)."),
+            style = typography.labelSm, color = colors.error
+        )
+        return
+    }
+
+    Text(
+        text = UiText.get(R.string.waex_ui_web_is_running, "Running. WAEX keeps WhatsApp awake while this is on."),
+        style = typography.labelSm, color = colors.primary
+    )
+    (current["code"] as? String)?.let { code ->
+        Text(
+            text = UiText.get(R.string.waex_ui_web_code_now, "Code for the browser that is signing in now"),
+            style = typography.labelSm, color = colors.onSurfaceVariant
+        )
+        Text(
+            text = code.take(3) + " " + code.drop(3),
+            fontFamily = FontFamily.Monospace, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = colors.onSurface
+        )
+    }
+    if (current["canSend"] != true) Text(
+        text = UiText.get(R.string.waex_ui_web_cannot_send,
+            "Sending is not available on this WhatsApp version. Reading works."),
+        style = typography.labelSm, color = colors.error
+    )
+    (current["lastError"] as? String)?.takeIf { it.isNotEmpty() }?.let {
+        Text(
+            text = UiText.get(R.string.waex_ui_web_last_error, "Last sending problem: %s", it),
+            style = typography.labelSm, color = colors.error
+        )
+    }
+
+    Text(
+        text = UiText.get(R.string.waex_ui_web_devices, "Signed-in browsers"),
+        style = typography.bodyMd, fontWeight = FontWeight.SemiBold, color = colors.onSurface,
+        modifier = Modifier.padding(top = 8.dp)
+    )
+    val sessions = (current["sessions"] as? List<Map<String, Any?>>).orEmpty()
+    if (sessions.isEmpty()) Text(
+        text = UiText.get(R.string.waex_ui_web_no_devices, "No browser is signed in."),
+        style = typography.labelSm, color = colors.onSurfaceVariant
+    )
+    val format = remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT) }
+    sessions.forEach { session ->
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = session["label"] as? String ?: "Browser", style = typography.bodyMd, color = colors.onSurface)
+                Text(
+                    text = UiText.get(R.string.waex_ui_web_last_used, "Last used %s",
+                        format.format(Date(((session["lastSeen"] as? Double) ?: 0.0).toLong()))),
+                    style = typography.labelSm, color = colors.onSurfaceVariant
+                )
+            }
+            TextButton(onClick = { act { WebAdmin.signOut(context, session["id"] as? String ?: "") } }) {
+                Text(UiText.get(R.string.waex_ui_web_sign_out, "Sign out"), color = colors.error)
+            }
+        }
+    }
+    if (sessions.size > 1) TextButton(onClick = { act { WebAdmin.signOut(context, null) } }) {
+        Text(UiText.get(R.string.waex_ui_web_sign_out_all, "Sign out all browsers"), color = colors.error)
+    }
+
+    val tokens = (current["tokens"] as? List<Map<String, Any?>>).orEmpty()
+    if (tokens.isNotEmpty()) {
+        Text(
+            text = UiText.get(R.string.waex_ui_web_tokens, "API tokens"),
+            style = typography.bodyMd, fontWeight = FontWeight.SemiBold, color = colors.onSurface,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        tokens.forEach { token ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = token["name"] as? String ?: "API", style = typography.bodyMd, color = colors.onSurface,
+                    modifier = Modifier.weight(1f))
+                TextButton(onClick = { act { WebAdmin.deleteToken(context, token["id"] as? String ?: "") } }) {
+                    Text(UiText.get(R.string.waex_ui_web_delete, "Delete"), color = colors.error)
+                }
+            }
+        }
+    }
+
+    val passwordSet = current["passwordSet"] == true
+    Text(
+        text = if (passwordSet) UiText.get(R.string.waex_ui_web_password_on, "Password: set. A new browser needs the code and the password.")
+        else UiText.get(R.string.waex_ui_web_password_off, "Password: none. A new browser needs only the code."),
+        style = typography.bodyMd, color = colors.onSurface, modifier = Modifier.padding(top = 8.dp)
+    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(40.dp)
+                .clip(radius.mdShape)
+                .background(colors.surface)
+                .border(1.dp, colors.outlineVariant, radius.mdShape)
+                .padding(horizontal = 10.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            BasicTextField(
+                value = password,
+                onValueChange = { password = it.take(128) },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                textStyle = typography.bodyMd.copy(color = colors.onSurface),
+                cursorBrush = SolidColor(colors.primary)
+            )
+        }
+        TextButton(
+            enabled = password.length >= 6,
+            onClick = {
+                val value = password
+                password = ""
+                act { WebAdmin.setPassword(context, value) }
+            }
+        ) { Text(UiText.get(R.string.waex_ui_web_password_save, "Set password")) }
+        if (passwordSet) TextButton(onClick = { act { WebAdmin.setPassword(context, null) } }) {
+            Text(UiText.get(R.string.waex_ui_web_password_remove, "Remove"), color = colors.error)
+        }
     }
 }

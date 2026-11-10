@@ -1184,4 +1184,21 @@ Tidak ada ruang antar pesan: %4$d"</string>
     <string name="waex_ui_web_no_wifi" formatted="false">"Hubungkan telepon ke Wi-Fi untuk melihat alamatnya."</string>
     <string name="waex_ui_web_restart" formatted="false">"Mulai ulang WhatsApp setelah mengubahnya. WhatsApp harus dijalankan agar halaman dapat berfungsi."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"Koneksi tidak dienkripsi. Gunakan hanya di Wi-Fi yang Anda percayai. Obrolan yang terkunci tidak pernah ditampilkan."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX Web aktif"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"Halaman ini belum berjalan. Buka WhatsApp sekali (mulai ulang setelah mengaktifkannya)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"Berlari. WAEX membuat WhatsApp tetap aktif saat ini aktif."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Kode untuk browser yang sedang masuk sekarang"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"Pengiriman tidak tersedia pada versi WhatsApp ini. Membaca berhasil."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Masalah pengiriman terakhir: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Browser yang masuk"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"Tidak ada browser yang masuk."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Terakhir digunakan %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Keluar"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Keluar dari semua browser"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API token"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Hapus"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Kata sandi: set. Browser baru memerlukan kode dan kata sandi."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Kata sandi: tidak ada. Browser baru hanya membutuhkan kode."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Tetapkan kata sandi"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Hapus"</string>
 </resources>
