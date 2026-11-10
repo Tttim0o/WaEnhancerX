@@ -276,12 +276,12 @@ class WebData(private val app: Context) {
     /** The key WhatsApp knows message [id] by, when it is in [chat]. */
     fun messageKey(chat: Chat, id: Long): WebSender.Key? = try {
         db().rawQuery("""
-            SELECT j.raw_string, m.key_id, m.from_me
+            SELECT j.raw_string, m.key_id, m.from_me, m.sort_id
             FROM message m JOIN chat c ON c._id = m.chat_row_id JOIN jid j ON j._id = c.jid_row_id
             WHERE m._id = ? AND m.chat_row_id IN (${chat.rows.joinToString(",")})
         """.trimIndent(), arrayOf(id.toString())).use { c ->
             if (c.moveToFirst() && c.getString(0) != null && c.getString(1) != null) {
-                WebSender.Key(c.getString(0), c.getString(1), c.getInt(2) == 1)
+                WebSender.Key(c.getString(0), c.getString(1), c.getInt(2) == 1, c.getLong(3))
             } else null
         }
     } catch (_: Throwable) {

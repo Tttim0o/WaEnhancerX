@@ -32,6 +32,8 @@ object WebSender {
     @Volatile private var keyConstructor: java.lang.reflect.Constructor<*>? = null
     @Volatile private var lookup: Method? = null
     @Volatile private var lookupInstance: Any? = null
+    @Volatile private var bySortId: Method? = null
+    @Volatile private var sortInstance: Any? = null
     @Volatile private var reactor: Method? = null
     @Volatile private var reactorInstance: Any? = null
 
@@ -43,10 +45,13 @@ object WebSender {
         get() = factory != null && sender != null && jidClass != null
 
     val canReact: Boolean
-        get() = available && reactor != null && lookup != null && keyConstructor != null
+        get() = available && reactor != null && canFind
 
     val canReply: Boolean
-        get() = available && lookup != null && keyConstructor != null
+        get() = available && canFind
+
+    private val canFind: Boolean
+        get() = bySortId != null || (lookup != null && keyConstructor != null)
 
     /** Finds the pieces. Safe to call once at startup; failures only switch sending off. */
     fun prepare(context: Context, classLoader: ClassLoader) {
@@ -160,6 +165,23 @@ object WebSender {
                 lookup = foundLookup
             }
 
+            // The message store can also load a message by its sort id, which needs no JID at all.
+            // That avoids the phone number / LID mismatch that makes a lookup by key miss.
+            val foundBySort = engine.findMethodWithCache(context, classLoader, "waex_web_message_by_sort") { bridge, loader ->
+                bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create()
+                    .addUsingString("CachedMessageStore/getMessageBySortId", StringMatchType.Contains)))
+                    .mapNotNull { runCatching { it.getMethodInstance(loader) }.getOrNull() }
+                    .firstOrNull { m ->
+                        !Modifier.isStatic(m.modifiers) && fMessage.isAssignableFrom(m.returnType) &&
+                            m.parameterTypes.contentEquals(arrayOf(java.lang.Long.TYPE))
+                    }
+            }
+            if (foundBySort != null) {
+                foundBySort.isAccessible = true
+                capture(foundBySort.declaringClass) { sortInstance = it }
+                bySortId = foundBySort
+            }
+
             // Same search the double tap reaction feature uses.
             val reactorClass = engine.findClassWithCache(context, classLoader, "waex_action_user_class") { bridge, loader ->
                 bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create()
@@ -247,12 +269,18 @@ object WebSender {
         return null
     }
 
-    /** A message WhatsApp already has, found by its key. */
-    private fun findMessage(chatJid: String, keyId: String, fromMe: Boolean): Any? {
+    /** A message WhatsApp already has: by sort id when possible, otherwise by its key. */
+    private fun findMessage(target: Key): Any? {
+        bySortId?.let { find ->
+            if (target.sortId > 0) {
+                val found = runCatching { find.invoke(instanceOf(find.declaringClass, sortInstance), target.sortId) }.getOrNull()
+                if (found != null) return found
+            }
+        }
         val ctor = keyConstructor ?: return null
         val find = lookup ?: return null
-        val jid = parseJid(chatJid, ctor.parameterTypes[0]) ?: return null
-        val key = ctor.newInstance(jid, keyId, fromMe)
+        val jid = parseJid(target.chatJid, ctor.parameterTypes[0]) ?: return null
+        val key = ctor.newInstance(jid, target.keyId, target.fromMe)
         return find.invoke(instanceOf(find.declaringClass, lookupInstance), key)
     }
 
@@ -263,8 +291,8 @@ object WebSender {
         return false
     }
 
-    /** One message as the database names it: chat JID, key id and direction. */
-    class Key(val chatJid: String, val keyId: String, val fromMe: Boolean)
+    /** One message as the database names it: chat JID, key id, direction and sort id. */
+    class Key(val chatJid: String, val keyId: String, val fromMe: Boolean, val sortId: Long = 0)
 
     /**
      * Queues [text] for [rawJid], as a reply to [quoted] when given. Returns false when
@@ -276,12 +304,14 @@ object WebSender {
         return try {
             val jid = parseJid(rawJid, make.parameterTypes[0]) ?: return fail("send_jid_not_parsed")
             val quotedMessage = quoted?.let {
-                findMessage(it.chatJid, it.keyId, it.fromMe) ?: return fail("send_quoted_not_found")
+                findMessage(it) ?: return fail("send_quoted_not_found")
             }
             val message = make.invoke(instanceOf(make.declaringClass, factoryInstance),
                 jid, quotedMessage, null, text, null, System.currentTimeMillis())
                 ?: return fail("send_no_message")
+            val live = senderInstance != null
             send.invoke(instanceOf(send.declaringClass, senderInstance), message)
+            XposedBridge.log("$TAG send handed over (${if (live) "live" else "new"} sender, ${message.javaClass.name})")
             lastError = ""
             true
         } catch (t: Throwable) {
@@ -293,7 +323,7 @@ object WebSender {
     fun react(target: Key, emoji: String): Boolean {
         val method = reactor ?: return fail("react_unavailable")
         return try {
-            val message = findMessage(target.chatJid, target.keyId, target.fromMe)
+            val message = findMessage(target)
                 ?: return fail("react_message_not_found")
             // WhatsApp shows the change itself, so this runs where it expects: on the main thread.
             val done = java.util.concurrent.CountDownLatch(1)
