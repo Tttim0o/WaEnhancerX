@@ -259,6 +259,7 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
         val isGroup = ContactNameResolver.isGroupJid(chat.jid)
         class Row(val id: Long, val json: LinkedHashMap<String, Any?>)
         val rows = ArrayList<Row>()
+        val revokedKeys = LinkedHashMap<String, Long>()
         db().rawQuery(sql, args.toTypedArray()).use { c ->
             while (c.moveToNext()) {
                 val type = c.getInt(4)
@@ -295,17 +296,45 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
                 if (c.getInt(18) == 1) item["starred"] = true
                 if (type == 42 || type == 43) item["viewOnce"] = true
                 // Kept by WAEX's anti-revoke: the sender deleted it, the phone still has it.
-                c.getString(19)?.let { keyId -> deletedAt(keyId)?.let { item["deletedAt"] = it } }
+                c.getString(19)?.let { keyId ->
+                    deletedAt(keyId)?.let { item["deletedAt"] = it }
+                    // WhatsApp replaced it with "This message was deleted"; WAEX's vault may have the text.
+                    if (type == 15) revokedKeys[keyId] = c.getLong(0)
+                }
                 rows.add(Row(c.getLong(0), item))
             }
         }
         if (afterId == null) rows.reverse()
+        if (revokedKeys.isNotEmpty()) {
+            val texts = preservedTexts(revokedKeys.keys.toList())
+            val byId = rows.associateBy { it.id }
+            for ((keyId, rowId) in revokedKeys) {
+                val text = texts[keyId] ?: continue
+                byId[rowId]?.json?.let { json ->
+                    json["type"] = 0
+                    json["text"] = text
+                    if (json["deletedAt"] == null) json["deletedAt"] = json["ts"]
+                }
+            }
+        }
         val reactions = reactionsFor(rows.map { it.id })
         for (row in rows) reactions[row.id]?.let { row.json["reactions"] = it }
         val mine = myReactionsFor(rows.map { it.id })
         for (row in rows) mine[row.id]?.let { row.json["myReaction"] = it }
         return WebJson.obj("messages" to rows.map { it.json }, "canSend" to WebSender.available,
             "canReact" to WebSender.canReact, "canReply" to WebSender.canReply)
+    }
+
+    /** Original texts from WAEX's deleted messages vault (kept in the WAEX app), by key id. */
+    private fun preservedTexts(keyIds: List<String>): Map<String, String> = try {
+        val extras = android.os.Bundle()
+        extras.putStringArray("ids", keyIds.toTypedArray())
+        val answer = app.contentResolver.call(android.net.Uri.parse("content://com.waenhancer.hookprovider"),
+            "web_preserved_texts", null, extras)
+        val texts = answer?.getBundle("texts")
+        texts?.keySet()?.associateWith { texts.getString(it).orEmpty() }?.filterValues { it.isNotEmpty() } ?: emptyMap()
+    } catch (_: Throwable) {
+        emptyMap()
     }
 
     /** When the sender deleted a message that WAEX kept, or null. */
