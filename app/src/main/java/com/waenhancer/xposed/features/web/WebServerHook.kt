@@ -136,15 +136,9 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             val peer = socket.inetAddress
             val local = socket.localAddress
             if (peer == null || local == null) return
-            if (peer.isLoopbackAddress && local.isLoopbackAddress) {
-                // The WAEX app on this phone manages the server through here, with its own key.
-                val request = try { WebHttp.read(socket.getInputStream()) ?: return } catch (_: WebHttp.BadRequest) { return }
-                val response = try { admin(request) } catch (_: Throwable) { WebResponse.error(500, "internal") }
-                WebHttp.write(socket.getOutputStream(), response)
-                return
-            }
-            // Anything that is not on the phone's own Wi-Fi is dropped without an answer.
-            if (!LanPolicy.peerAllowed(peer, local, localInterfaces())) return
+            val onPhone = peer.isLoopbackAddress && local.isLoopbackAddress
+            // Anything that is not on the phone itself or its own Wi-Fi is dropped without an answer.
+            if (!onPhone && !LanPolicy.peerAllowed(peer, local, localInterfaces())) return
             val out = socket.getOutputStream()
             val request = try {
                 WebHttp.read(socket.getInputStream()) ?: return
@@ -152,8 +146,17 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 WebHttp.write(out, WebResponse.error(e.status, "bad_request"))
                 return
             }
+            if (onPhone && request.path.startsWith("/admin/")) {
+                // The WAEX app on this phone manages the server through here, with its own key.
+                val response = try { admin(request) } catch (_: Throwable) { WebResponse.error(500, "internal") }
+                WebHttp.write(out, response)
+                return
+            }
             val host = request.header("host")
-            val response = if (!LanPolicy.hostAllowed(host, local, port)) {
+            // A browser on the phone itself uses localhost; the exact name still stops DNS rebinding.
+            val hostOk = if (onPhone) host in setOf("localhost:$port", "127.0.0.1:$port")
+                else LanPolicy.hostAllowed(host, local, port)
+            val response = if (!hostOk) {
                 WebResponse.error(403, "open_by_ip_address")
             } else try {
                 route(request, host!!, peer.hostAddress.orEmpty())
