@@ -1217,4 +1217,8 @@
     <string name="waex_ui_web_wifi_empty" formatted="false">"ابھی تک کوئی ہوم نیٹ ورک نہیں ہے۔"</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi نام"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"شامل کریں۔"</string>
+    <string name="waex_ui_web_merge" formatted="false">"تمام WhatsApp اکاؤنٹس کے ان باکسز کو ضم کریں۔"</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"WhatsApp میں ایک سے زیادہ اکاؤنٹ والے لوگوں کے لیے (کاروبار نہیں)۔ ویب تمام چیٹس کو ایک ساتھ دکھاتا ہے اور آپ کو بھیجنے کے لیے اکاؤنٹ کا انتخاب کرنے دیتا ہے۔ استعمال میں نہ آنے والے اکاؤنٹس ظاہر کرتے ہیں کہ آخری بار استعمال میں ان کے پاس کیا تھا۔ اسے تبدیل کرنے کے بعد WhatsApp کو دوبارہ شروع کریں۔"</string>
+    <string name="waex_ui_web_switch_title" formatted="false">"WhatsApp اکاؤنٹ سوئچ کریں۔"</string>
+    <string name="waex_ui_web_switch_text" formatted="false">"%s پر سوئچ کرنے کے لیے تھپتھپائیں، جیسا کہ WAEX ویب میں پوچھا گیا ہے۔"</string>
 </resources>

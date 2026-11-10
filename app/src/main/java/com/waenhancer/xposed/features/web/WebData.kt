@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.os.Environment
 import com.waenhancer.utils.ContactNameResolver
 import com.waenhancer.web.WebJson
+import com.waenhancer.xposed.core.db.DelMessageStore
 import com.waenhancer.xposed.core.db.MessageStore
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
  * through a read-only connection inside WhatsApp's process. Locked chats are never returned.
  * Nothing read here is logged.
  */
-class WebData(private val app: Context) {
+class WebData(private val app: Context, private val account: WebAccounts.Account? = null) {
 
     private var database: SQLiteDatabase? = null
     private val columnCache = HashMap<String, Set<String>>()
@@ -23,7 +24,9 @@ class WebData(private val app: Context) {
 
     @Synchronized
     private fun db(): SQLiteDatabase {
-        val file = MessageStore.findMsgstoreDbFile(app) ?: error("msgstore.db not found")
+        // Another account's saved database, or the database of the account in use.
+        val file = (if (account != null) account.dbFile.takeIf { it.isFile && it.canRead() }
+            else MessageStore.findMsgstoreDbFile(app)) ?: error("msgstore.db not found")
         val current = database
         if (current != null && current.isOpen && current.path == file.absolutePath) return current
         try { current?.close() } catch (_: Throwable) {}
@@ -122,13 +125,20 @@ class WebData(private val app: Context) {
         return byJid.values.sortedByDescending { it.sort }
     }
 
-    fun chatsJson(query: String?): String {
+    fun chatsJson(query: String?): String =
+        chatItems(query, null).joinToString(",", "{\"chats\":[", "]}") { it.second }
+
+    /**
+     * The chats as (time, JSON object) pairs. With [tag] (account id and name) every chat also says
+     * which account it belongs to, for the merged inbox.
+     */
+    fun chatItems(query: String?, tag: Pair<String, String>?): List<Pair<Long, String>> {
         val q = query?.trim().orEmpty()
-        val list = ArrayList<String>()
+        val list = ArrayList<Pair<Long, String>>()
         for (chat in chats()) {
             val name = nameOf(chat.jid, chat.subject)
             if (q.isNotEmpty() && !name.contains(q, ignoreCase = true) && !chat.jid.contains(q)) continue
-            list.add(WebJson.obj(
+            val item = linkedMapOf<String, Any?>(
                 "jid" to chat.jid,
                 "name" to name,
                 "group" to ContactNameResolver.isGroupJid(chat.jid),
@@ -139,10 +149,12 @@ class WebData(private val app: Context) {
                 "lastType" to chat.lastType,
                 "lastText" to chat.lastText?.take(160),
                 "lastStatus" to chat.lastStatus
-            ))
+            )
+            if (tag != null) { item["account"] = tag.first; item["accountName"] = tag.second }
+            list.add(chat.sort to WebJson.obj(*item.toList().toTypedArray()))
             if (list.size >= MAX_CHATS) break
         }
-        return list.joinToString(",", "{\"chats\":[", "]}")
+        return list
     }
 
     /** The chat for [jid], or null when it does not exist or is locked. */
@@ -175,10 +187,27 @@ class WebData(private val app: Context) {
         }
         return names.getOrPut(jid) {
             try {
-                ContactNameResolver.resolveName(app, jid)
+                if (account != null) contactName(jid) ?: ContactNameResolver.cleanUserPart(jid)
+                else ContactNameResolver.resolveName(app, jid)
             } catch (_: Throwable) {
                 ContactNameResolver.cleanUserPart(jid)
             }
+        }
+    }
+
+    /** A name from another account's own address book (wa.db), read-only. */
+    private fun contactName(jid: String): String? {
+        val file = account?.contactsFile?.takeIf { it.isFile && it.canRead() } ?: return null
+        return try {
+            SQLiteDatabase.openDatabase(file.absolutePath, null,
+                SQLiteDatabase.OPEN_READONLY or SQLiteDatabase.NO_LOCALIZED_COLLATORS).use { db ->
+                db.rawQuery("SELECT display_name, wa_name FROM wa_contacts WHERE jid = ? LIMIT 1", arrayOf(jid)).use { c ->
+                    if (c.moveToFirst()) (c.getString(0)?.takeIf { it.isNotBlank() } ?: c.getString(1)?.takeIf { it.isNotBlank() })
+                    else null
+                }
+            }
+        } catch (_: Throwable) {
+            null
         }
     }
 
@@ -223,7 +252,7 @@ class WebData(private val app: Context) {
                    ${col(quoted, "q", "text_data")}, ${col(media, "mm", "file_path")}, ${col(media, "mm", "mime_type")},
                    ${col(media, "mm", "media_caption")}, ${col(media, "mm", "media_name")}, ${col(media, "mm", "file_size")},
                    ${col(media, "mm", "media_duration")}, ${col(media, "mm", "width")}, ${col(media, "mm", "height")},
-                   $hasThumb, ${col(message, "m", "starred")}
+                   $hasThumb, ${col(message, "m", "starred")}, ${col(message, "m", "key_id")}
             FROM message m$joins
             WHERE $where ORDER BY $order LIMIT ${limit.coerceIn(1, MAX_PAGE)}
         """.trimIndent()
@@ -264,6 +293,9 @@ class WebData(private val app: Context) {
                 }
                 if (c.getInt(17) == 1) item["thumb"] = true
                 if (c.getInt(18) == 1) item["starred"] = true
+                if (type == 42 || type == 43) item["viewOnce"] = true
+                // Kept by WAEX's anti-revoke: the sender deleted it, the phone still has it.
+                c.getString(19)?.let { keyId -> deletedAt(keyId)?.let { item["deletedAt"] = it } }
                 rows.add(Row(c.getLong(0), item))
             }
         }
@@ -274,6 +306,13 @@ class WebData(private val app: Context) {
         for (row in rows) mine[row.id]?.let { row.json["myReaction"] = it }
         return WebJson.obj("messages" to rows.map { it.json }, "canSend" to WebSender.available,
             "canReact" to WebSender.canReact, "canReply" to WebSender.canReply)
+    }
+
+    /** When the sender deleted a message that WAEX kept, or null. */
+    private fun deletedAt(keyId: String): Long? = try {
+        DelMessageStore.getInstance(app).getTimestampByMessageId(keyId).takeIf { it > 0 }
+    } catch (_: Throwable) {
+        null
     }
 
     /** The reaction this phone's user put on each message. */
@@ -424,7 +463,7 @@ class WebData(private val app: Context) {
     /** The small profile picture WhatsApp keeps for a chat, when it has one. */
     fun avatar(jid: String): File? {
         val chat = chat(jid) ?: return null
-        val dir = File(MessageStore.findAccountDataDir(app), "files/Avatars")
+        val dir = File(account?.dataDir ?: MessageStore.findAccountDataDir(app), "files/Avatars")
         val candidates = LinkedHashSet<String>()
         candidates.add(chat.jid)
         candidates.add(chat.sendJid)
@@ -441,7 +480,10 @@ class WebData(private val app: Context) {
         listOf(
             File(storage, "Android/media/${app.packageName}/WhatsApp"),
             File(storage, "WhatsApp"),
-            app.filesDir
+            app.filesDir,
+            // View once media stays in WhatsApp's private folders until it is opened.
+            app.cacheDir,
+            account?.dataDir ?: MessageStore.findAccountDataDir(app)
         )
     }
 
@@ -453,7 +495,9 @@ class WebData(private val app: Context) {
     /** Only files inside WhatsApp's own media folders are served, whatever the database says. */
     private fun insideMediaRoots(file: File): Boolean = try {
         val canonical = file.canonicalPath
-        mediaRoots.any { canonical.startsWith(it.canonicalPath + File.separator) }
+        // The account folder also holds databases and settings; those are never media.
+        !canonical.contains("/databases/") && !canonical.contains("/shared_prefs/") &&
+            mediaRoots.any { canonical.startsWith(it.canonicalPath + File.separator) }
     } catch (_: Throwable) {
         false
     }

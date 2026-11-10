@@ -8,7 +8,6 @@ import android.net.NetworkCapabilities
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
-import com.waenhancer.config.PreferenceStores
 
 /**
  * "Only on home Wi-Fi" for WAEX Web: the list of home networks and the name of the current one.
@@ -24,8 +23,8 @@ object WebWifi {
     private const val MAX_NETWORKS = 20
 
     /** The switch lives in the shared settings so the server inside WhatsApp starts closed. */
-    fun wifiOnly(context: Context): Boolean =
-        PreferenceStores.read(context, WebKeepAliveService.PREF_WIFI_ONLY) == true
+    fun wifiOnly(context: Context, pkg: String): Boolean =
+        WebKeepAliveService.setting(context, pkg, WebKeepAliveService.PREF_WIFI_ONLY) == true
 
     fun networks(context: Context): List<String> =
         context.getSharedPreferences(STORE, Context.MODE_PRIVATE).getString(KEY_LIST, null)
@@ -79,8 +78,8 @@ object WebWifi {
         ssid.isNotBlank() && ssid != WifiManager.UNKNOWN_SSID && ssid != "<unknown ssid>"
 
     /** Whether the page should be open now. Always true when "only on home Wi-Fi" is off. */
-    fun shouldBeOpen(context: Context, capabilities: NetworkCapabilities? = null): Boolean {
-        if (!wifiOnly(context)) return true
+    fun shouldBeOpen(context: Context, pkg: String, capabilities: NetworkCapabilities? = null): Boolean {
+        if (!wifiOnly(context, pkg)) return true
         val name = currentName(context, capabilities) ?: return false
         return networks(context).any { it == name }
     }

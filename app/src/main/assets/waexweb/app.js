@@ -57,6 +57,14 @@
       react_unavailable: 'Reactions do not work with this WhatsApp version.',
       message_not_found: 'WhatsApp no longer has that message.', online: 'Connected to the phone',
       reconnecting: 'The phone does not answer. Trying again…',
+      deletedBy: 'Deleted by the sender {s}. WAEX kept it.', accounts: 'Accounts', sendAs: 'Send as',
+      switchConfirm: 'Switch WhatsApp on the phone to {s}? WhatsApp restarts, which takes a few seconds.',
+      switching: 'Switching the account on the phone…', switched: 'Now using {s}.',
+      switchSlow: 'The phone did not switch. Open WhatsApp on the phone, or tap the WAEX notification there.',
+      notInUse: 'not in use', account_inactive: 'This account is not in use on the phone. Switch to it first.',
+      account_logged_out: 'That account is logged out.', cannot_switch: 'WhatsApp could not switch accounts.',
+      chat_not_found: 'This account has no chat with them yet.', viewOnceBadge: 'View once',
+      viewOnceGone: 'View once message. The file is no longer on the phone.',
       appearance: 'Appearance',
       chatBackground: 'Chat background',
       chatsLook: 'Chats',
@@ -157,6 +165,14 @@
       react_unavailable: 'Reakcie s touto verziou WhatsAppu nefungujú.',
       message_not_found: 'WhatsApp už túto správu nemá.', online: 'Spojené s telefónom',
       reconnecting: 'Telefón neodpovedá. Skúšam znova…',
+      deletedBy: 'Odosielateľ to vymazal {s}. WAEX si to nechal.', accounts: 'Účty', sendAs: 'Odoslať ako',
+      switchConfirm: 'Prepnúť WhatsApp v telefóne na {s}? WhatsApp sa reštartuje, trvá to pár sekúnd.',
+      switching: 'Prepínam účet v telefóne…', switched: 'Teraz sa používa {s}.',
+      switchSlow: 'Telefón účet neprepol. Otvor WhatsApp v telefóne alebo ťukni tam na notifikáciu WAEX.',
+      notInUse: 'nepoužíva sa', account_inactive: 'Tento účet sa v telefóne nepoužíva. Najprv sa naň prepni.',
+      account_logged_out: 'Ten účet je odhlásený.', cannot_switch: 'WhatsApp nevedel prepnúť účet.',
+      chat_not_found: 'Tento účet s nimi ešte nemá chat.', viewOnceBadge: 'Na jedno zobrazenie',
+      viewOnceGone: 'Správa na jedno zobrazenie. Súbor už v telefóne nie je.',
       appearance: 'Vzhľad',
       chatBackground: 'Pozadie chatu',
       chatsLook: 'Chaty',
@@ -388,8 +404,16 @@
   const state = {
     signedIn: false, canSend: false, canReact: false, canReply: false, reply: null, rev: null, chats: [], tab: 'all', query: '', hits: [],
     current: null, messages: new Map(), nodes: new Map(), noOlder: false, detached: false, drafts: new Map(),
-    pairId: null, noAvatar: new Set()
+    pairId: null, noAvatar: new Set(),
+    // Accounts on the phone; `account` is the account of the open chat ('' = the one in use).
+    accounts: [], merged: false, activeAccount: '', account: '', sendAs: '', switchingTo: null, pending: null
   };
+  /** "?account=…" (or "&account=…") when the open chat belongs to an account that is not in use. */
+  const accParam = (sep, account) => {
+    const id = account === undefined ? state.account : account;
+    return id && id !== state.activeAccount ? sep + 'account=' + encodeURIComponent(id) : '';
+  };
+  const accountName = (id) => { const a = state.accounts.find((x) => x.id === id); return a ? a.name : id; };
 
   // ─── Signing in ──────────────────────────────────────────────────────
   function showLogin() {
@@ -449,7 +473,7 @@
     if (now - d < 6 * 864e5) return d.toLocaleDateString([], { weekday: 'short' });
     return d.toLocaleDateString([], { day: 'numeric', month: 'numeric', year: '2-digit' });
   }
-  function avatar(node, jid, name) {
+  function avatar(node, jid, name, account) {
     node.textContent = '';
     let hash = 0;
     for (let i = 0; i < jid.length; i++) hash = (hash * 31 + jid.charCodeAt(i)) | 0;
@@ -460,7 +484,7 @@
     img.alt = '';
     img.loading = 'lazy';
     img.addEventListener('error', () => { state.noAvatar.add(jid); node.textContent = letter; });
-    img.src = '/api/avatar/' + enc(jid);
+    img.src = '/api/avatar/' + enc(jid) + accParam('?', account || '');
     node.append(img);
   }
   function preview(node, chat) {
@@ -491,20 +515,25 @@
     });
     if (q && list.length) box.append(el('div', 'section', t('chatsSection')));
     for (const chat of list) {
-      const row = el('div', 'row' + (chat.jid === state.current ? ' on' : '') + (chat.unread > 0 ? ' fresh' : ''));
+      const row = el('div', 'row' + (sameChat(chat) ? ' on' : '') + (chat.unread > 0 ? ' fresh' : ''));
       row.setAttribute('role', 'listitem');
       row.tabIndex = 0;
       const pic = el('div', 'avatar');
-      avatar(pic, chat.jid, chat.name);
+      avatar(pic, chat.jid, chat.name, chat.account || '');
       const main = el('div', 'grow');
       const top = el('div', 'top');
-      top.append(el('div', 'name grow', chat.name), el('div', 'time', shortTime(chat.ts)));
+      const name = el('div', 'name grow', chat.name);
+      if (state.merged && chat.account) {
+        const tag = el('span', 'acct' + (chat.account === state.activeAccount ? '' : ' idle'), chat.accountName || '');
+        name.append(' ', tag);
+      }
+      top.append(name, el('div', 'time', shortTime(chat.ts)));
       const bottom = el('div', 'bottom');
       bottom.append(preview(el('div', 'last grow'), chat));
       if (chat.unread > 0) bottom.append(el('div', 'badge', String(chat.unread)));
       main.append(top, bottom);
       row.append(pic, main);
-      const open = () => openChat(chat.jid);
+      const open = () => openChat(chat.jid, null, chat.account || '');
       row.addEventListener('click', open);
       row.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
       box.append(row);
@@ -537,7 +566,8 @@
     const chat = currentChat();
     if (chat) $('chatName').textContent = chat.name;
   }
-  const currentChat = () => state.chats.find((c) => c.jid === state.current);
+  const sameChat = (c) => c.jid === state.current && ((c.account && c.account !== state.activeAccount) ? c.account : '') === state.account;
+  const currentChat = () => state.chats.find(sameChat);
 
   let searchTimer = 0;
   function onSearch() {
@@ -606,15 +636,15 @@
   }
 
   function mediaNode(m) {
-    const media = m.media, mime = media.mime || '', url = '/api/media/' + m.id;
-    if (m.type === 42 || m.type === 43) return labelled('note', m.type, t('viewOnce'));
+    const media = m.media, mime = media.mime || '', url = '/api/media/' + m.id + accParam('?');
+    if ((m.type === 42 || m.type === 43) && !media.available) return labelled('note', m.type, t('viewOnceGone'));
     if (!media.available) {
       const box = el('div');
       if (m.thumb) {
         const img = el('img', 'pic');
         img.alt = '';
         img.style.cursor = 'default';
-        img.src = '/api/thumb/' + m.id;
+        img.src = '/api/thumb/' + m.id + accParam('?');
         box.append(img);
       }
       box.append(labelled('note', TYPE_ICON[m.type] ? m.type : 9, t(TYPE_WORD[m.type] || 'document') + ' · ' + t('notOnPhone')));
@@ -650,7 +680,7 @@
       video.preload = 'none';
       video.playsInline = true;
       if (m.type === 13) { video.loop = true; video.muted = true; }
-      if (m.thumb) video.poster = '/api/thumb/' + m.id;
+      if (m.thumb) video.poster = '/api/thumb/' + m.id + accParam('?');
       video.src = url;
       return video;
     }
@@ -694,6 +724,7 @@
       note.append(icon('block'), ' ', t('deleted'));
       node.append(note);
     } else {
+      if (m.viewOnce && m.media && m.media.available) node.append(labelled('note once', 42, t('viewOnceBadge')));
       if (m.media) node.append(mediaNode(m));
       else if (TYPE_WORD[m.type]) node.append(labelled('note', m.type, t(TYPE_WORD[m.type])));
       if (m.text) {
@@ -703,6 +734,13 @@
       } else if (!m.media && !TYPE_WORD[m.type]) {
         node.append(el('span', 'note', t('unsupported')));
       }
+    }
+    if (m.deletedAt) {
+      node.classList.add('revoked');
+      const when = new Date(m.deletedAt);
+      const label = (dayKey(m.deletedAt) === dayKey(Date.now()) ? '' : when.toLocaleDateString() + ' ') +
+        when.toLocaleTimeString([], clockOpts());
+      node.append(labelled('note revokednote', 15, t('deletedBy', { s: label })));
     }
     const meta = el('span', 'meta');
     if (m.starred) meta.append(icon('star'), ' ');
@@ -840,11 +878,15 @@
     if (stick) toBottom();
   }
 
-  const messagesUrl = (jid, query) => '/api/chats/' + enc(jid) + '/messages?limit=60' + (query || '');
+  const messagesUrl = (jid, query) => '/api/chats/' + enc(jid) + '/messages?limit=60' + (query || '') + accParam('&');
+  const draftKey = () => state.current + '|' + state.account;
 
-  async function openChat(jid, hit) {
-    if (state.current) state.drafts.set(state.current, $('text').value);
+  async function openChat(jid, hit, account) {
+    if (state.current) state.drafts.set(draftKey(), $('text').value);
     state.current = jid;
+    state.account = account && account !== state.activeAccount ? account : '';
+    state.sendAs = state.account || state.activeAccount;
+    drawSendAs();
     state.messages = new Map();
     state.nodes = new Map();
     state.noOlder = false;
@@ -857,19 +899,21 @@
     $('toLatest').hidden = !hit;
     $('chatName').textContent = chat ? chat.name : jid;
     $('chatSub').textContent = chat && chat.group ? t('group') : jid.endsWith('@s.whatsapp.net') ? '+' + jid.split('@')[0] : '';
-    avatar($('chatAvatar'), jid, chat ? chat.name : '?');
+    avatar($('chatAvatar'), jid, chat ? chat.name : '?', state.account);
     $('messages').textContent = '';
     if (chat && chat.group && prefs.groupAvatars) $('messages').dataset.group = '1'; else delete $('messages').dataset.group;
-    $('text').value = state.drafts.get(jid) || '';
+    $('text').value = state.drafts.get(draftKey()) || '';
     autosize();
     renderChats();
     try {
       const query = hit ? '&beforeSort=' + hit.sort + '&beforeId=' + (hit.id + 1) : '';
       const r = await api(messagesUrl(jid, query));
       if (state.current !== jid) return;
+      // Another account's chat is read-only until WhatsApp switches to it.
+      const live = !state.account;
       state.canSend = r.canSend;
-      state.canReact = !!r.canReact;
-      state.canReply = !!r.canReply;
+      state.canReact = live && !!r.canReact;
+      state.canReply = live && !!r.canReply;
       for (const m of r.messages) state.messages.set(m.id, m);
       if (r.messages.length < 60) state.noOlder = true;
       renderAll();
@@ -930,6 +974,15 @@
     const jid = state.current, text = $('text').value.trim();
     if (!jid || !text || sending) return;
     if (!state.canSend) { openOnPhone(); return; }
+    // Sending from an account that is not in use: switch first, then send.
+    if (state.sendAs && state.sendAs !== state.activeAccount) {
+      if (!window.confirm(t('switchConfirm', { s: accountName(state.sendAs) }))) return;
+      state.pending = { jid, text };
+      $('text').value = '';
+      autosize();
+      await switchAccount(state.sendAs, true);
+      return;
+    }
     sending = true;
     $('send').disabled = true;
     try {
@@ -937,7 +990,7 @@
       if (state.reply) body.replyTo = state.reply.id;
       const r = await api('/api/chats/' + enc(jid) + '/send', body);
       if (state.current === jid) { $('text').value = ''; autosize(); setReply(null); }
-      state.drafts.delete(jid);
+      state.drafts.delete(draftKey());
       if (state.detached) await openChat(jid); else await loadLatest();
       toBottom();
       if (!r.stored) toast(t('queued'));
@@ -964,6 +1017,7 @@
         $('conn').classList.remove('off');
         $('conn').title = t('online');
         if (u.canSend !== state.canSend) { state.canSend = u.canSend; if (state.current) showSendNote(); }
+        if (state.switchingTo) await checkSwitched();
         if (u.rev !== state.rev) {
           state.rev = u.rev;
           await loadChats();
@@ -973,7 +1027,7 @@
       } catch (e) {
         if (e.status === 401) break;
         if (e.code === 'offline') {
-          $('offline').textContent = t('reconnecting');
+          $('offline').textContent = t(state.switchingTo ? 'switching' : 'reconnecting');
           $('offline').hidden = false;
           $('conn').classList.add('off');
           $('conn').title = t('reconnecting');
@@ -982,6 +1036,109 @@
       }
     }
     polling = false;
+  }
+
+  // ─── Accounts ────────────────────────────────────────────────────────
+  async function loadAccounts() {
+    try {
+      const r = await api('/api/accounts');
+      state.accounts = (r.accounts || []).filter((a) => !a.loggedOut);
+      state.merged = !!r.merged;
+      const active = state.accounts.find((a) => a.active);
+      state.activeAccount = active ? active.id : '';
+    } catch (_) {
+      state.accounts = [];
+    }
+    drawAccountButton();
+    drawSendAs();
+  }
+  function drawAccountButton() {
+    const button = $('accountButton');
+    const active = state.accounts.find((a) => a.active);
+    button.hidden = state.accounts.length < 2;
+    button.textContent = active ? active.name : t('accounts');
+    button.title = t('accounts');
+  }
+  function showAccountMenu(e) {
+    e.stopPropagation();
+    const old = document.querySelector('.acctmenu');
+    if (old) { old.remove(); return; }
+    const menu = el('div', 'acctmenu');
+    menu.setAttribute('role', 'menu');
+    for (const a of state.accounts) {
+      const item = el('button', a.active ? 'on' : null);
+      item.type = 'button';
+      item.append(el('b', null, a.name), el('small', null, (a.phone || '') + (a.active ? '' : ' · ' + t('notInUse'))));
+      item.addEventListener('click', () => {
+        menu.remove();
+        if (a.active) return;
+        if (window.confirm(t('switchConfirm', { s: a.name }))) switchAccount(a.id, false);
+      });
+      menu.append(item);
+    }
+    $('side').append(menu);
+    setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 0);
+  }
+  /** The "Send as" picker above the composer, shown when the phone has several accounts. */
+  function drawSendAs() {
+    const box = $('sendAs');
+    box.textContent = '';
+    box.hidden = state.accounts.length < 2 || !state.current;
+    if (box.hidden) return;
+    const label = el('span', null, t('sendAs') + ':');
+    const pick = el('select');
+    for (const a of state.accounts) {
+      const option = el('option', null, a.name + (a.active ? '' : ' (' + t('notInUse') + ')'));
+      option.value = a.id;
+      pick.append(option);
+    }
+    pick.value = state.sendAs || state.activeAccount;
+    pick.addEventListener('change', () => { state.sendAs = pick.value; });
+    box.append(label, pick);
+  }
+  let switchTimer = 0;
+  async function switchAccount(id, forSending) {
+    try {
+      await api('/api/accounts/switch', { id });
+    } catch (e) {
+      state.pending = null;
+      toast(errorText(e));
+      return;
+    }
+    state.switchingTo = id;
+    if (!forSending) state.pending = null;
+    $('offline').textContent = t('switching');
+    $('offline').hidden = false;
+    clearTimeout(switchTimer);
+    switchTimer = setTimeout(() => {
+      if (!state.switchingTo) return;
+      state.switchingTo = null;
+      $('offline').hidden = true;
+      if (state.pending) { $('text').value = state.pending.text; autosize(); state.pending = null; }
+      toast(t('switchSlow'));
+    }, 90000);
+  }
+  async function checkSwitched() {
+    let status;
+    try { status = await api('/api/status'); } catch (_) { return; }
+    if (!status.signedIn || status.account !== state.switchingTo) return;
+    const id = state.switchingTo;
+    state.switchingTo = null;
+    clearTimeout(switchTimer);
+    $('offline').hidden = true;
+    await loadAccounts();
+    await loadChats();
+    toast(t('switched', { s: accountName(id) }));
+    const pending = state.pending;
+    state.pending = null;
+    if (pending) {
+      await openChat(pending.jid, null, '');
+      $('text').value = pending.text;
+      autosize();
+      await send();
+    } else if (state.current) {
+      await openChat(state.current, null, '');
+    }
   }
 
   // ─── Settings ────────────────────────────────────────────────────────
@@ -1377,6 +1534,7 @@
     state.rev = null;
     $('login').hidden = true;
     $('app').hidden = false;
+    await loadAccounts();
     try { await loadChats(); } catch (_) { /* the poll loop retries */ }
     poll();
   }
@@ -1393,7 +1551,7 @@
     renderChats();
   });
   $('back').addEventListener('click', () => { $('app').classList.remove('open'); });
-  $('toLatest').addEventListener('click', () => openChat(state.current));
+  $('toLatest').addEventListener('click', () => openChat(state.current, null, state.account));
   $('send').addEventListener('click', send);
   $('text').addEventListener('input', autosize);
   $('text').addEventListener('keydown', (e) => {
@@ -1429,6 +1587,7 @@
     applyPrefs();
   });
   $('phoneOpen').addEventListener('click', openOnPhone);
+  $('accountButton').addEventListener('click', showAccountMenu);
   // Drag the edge of the chat list to change its width; double click puts it back.
   const grip = $('sideGrip');
   grip.addEventListener('pointerdown', (e) => {

@@ -66,6 +66,11 @@ public final class WaexPreferenceManager implements CustomAbPropsStore {
         }
     }
 
+    /** The app whose settings are edited ("Per Target App" mode), or null. */
+    public String getTargetPackage() {
+        return PER_TARGET_MODE.equals(rawString(MODE_KEY, "Universal")) ? targetPackage : null;
+    }
+
     /** Changes when the active target changes; preference screens use it to refresh controls only. */
     public int getTargetEpoch() { return targetEpoch; }
 

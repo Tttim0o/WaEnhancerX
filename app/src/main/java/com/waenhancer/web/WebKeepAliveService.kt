@@ -31,10 +31,10 @@ class WebKeepAliveService : Service() {
 
     @Volatile private var running = false
     private var worker: Thread? = null
-    /** Whether the page is open now; null until first decided. */
-    @Volatile private var pageOpen: Boolean? = null
-    /** What the server was last told; null means tell it again (it may have restarted). */
-    @Volatile private var told: Boolean? = null
+    /** Whether each app's page is open now (by package); empty until first decided. */
+    private val pageOpen = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+    /** What each server was last told; missing means tell it again (it may have restarted). */
+    private val told = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
     @Volatile private var wifiCaps: NetworkCapabilities? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
@@ -45,7 +45,7 @@ class WebKeepAliveService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        told = null
+        told.clear()
         watchNetwork()
         if (worker == null) {
             running = true
@@ -94,21 +94,25 @@ class WebKeepAliveService : Service() {
         val clients = HashMap<String, ContentProviderClient>()
         try {
             while (running) {
-                val nowOpen = WebWifi.shouldBeOpen(this, wifiCaps)
-                if (nowOpen != pageOpen) {
-                    pageOpen = nowOpen
-                    told = null
-                    try { startInForeground() } catch (_: Throwable) {}
+                var changed = false
+                val wanted = HashSet<String>()
+                for (pkg in WebAdmin.PACKAGES) {
+                    if (!enabled(this, pkg)) { pageOpen.remove(pkg); continue }
+                    val nowOpen = WebWifi.shouldBeOpen(this, pkg, wifiCaps)
+                    if (pageOpen[pkg] != nowOpen) {
+                        pageOpen[pkg] = nowOpen
+                        told.remove(pkg)
+                        changed = true
+                    }
+                    if (told[pkg] != nowOpen && WebAdmin.setActive(this, pkg, nowOpen)) told[pkg] = nowOpen
+                    // Away from home that app may sleep as usual.
+                    if (nowOpen) AUTHORITIES[pkg]?.let(wanted::add)
                 }
-                if (told != nowOpen && WebAdmin.setActive(this, nowOpen)) told = nowOpen
-                if (!nowOpen) {
-                    // Away from home: let WhatsApp sleep as usual.
-                    clients.values.forEach(::release)
-                    clients.clear()
-                    try { Thread.sleep(60_000) } catch (_: InterruptedException) { if (!running) break }
-                    continue
+                if (changed) try { startInForeground() } catch (_: Throwable) {}
+                for (authority in clients.keys.toList()) {
+                    if (authority !in wanted) clients.remove(authority)?.let(::release)
                 }
-                for (authority in AUTHORITIES) {
+                for (authority in wanted) {
                     val current = clients[authority]
                     val alive = current != null && try {
                         current.getType(Uri.parse("content://$authority/"))
@@ -151,18 +155,20 @@ class WebKeepAliveService : Service() {
         }
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(this, CHANNEL_ID)
         else Notification.Builder(this)
-        val open = packageManager.getLaunchIntentForPackage(packageName)?.let {
+        val launch = packageManager.getLaunchIntentForPackage(packageName)?.let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         }
-        val waiting = pageOpen == false
-        val address = LanPolicy.localInterfaces().firstOrNull()?.let { "http://${LanPolicy.format(it.address)}:${port(this)}" }
+        val open = WebAdmin.PACKAGES.filter { pageOpen[it] == true }
+        val waiting = open.isEmpty() && pageOpen.isNotEmpty()
+        val ip = LanPolicy.localInterfaces().firstOrNull()?.let { LanPolicy.format(it.address) }
+        val address = ip?.let { host -> open.ifEmpty { listOf(WebAdmin.WHATSAPP) }.joinToString("  ") { "http://$host:${port(this, it)}" } }
         val notification = builder
             .setSmallIcon(android.R.drawable.stat_sys_upload_done)
             .setContentTitle(if (waiting) UiText.get(R.string.waex_ui_web_waiting, "WAEX Web waits for a home Wi-Fi")
                 else UiText.get(R.string.waex_ui_web_running, "WAEX Web is on"))
             .setContentText(if (waiting) UiText.get(R.string.waex_ui_web_waiting_desc, "The page opens by itself on one of your home networks.")
                 else address ?: UiText.get(R.string.waex_ui_web_no_wifi, "Connect the phone to Wi-Fi to see the address."))
-            .setContentIntent(open)
+            .setContentIntent(launch)
             .setOngoing(true)
             .build()
         if (Build.VERSION.SDK_INT >= 34) {
@@ -205,15 +211,43 @@ class WebKeepAliveService : Service() {
         const val DEFAULT_PORT = 8377
         private const val CHANNEL_ID = "waex_web_keepalive"
         private const val NOTIFICATION_ID = 0x5A1E5E02
-        private val AUTHORITIES = listOf(
-            "com.whatsapp.provider.sticker_whitelist_check",
-            "com.whatsapp.w4b.provider.sticker_whitelist_check"
+        private val AUTHORITIES = mapOf(
+            WebAdmin.WHATSAPP to "com.whatsapp.provider.sticker_whitelist_check",
+            WebAdmin.BUSINESS to "com.whatsapp.w4b.provider.sticker_whitelist_check"
         )
 
-        fun enabled(context: Context): Boolean = PreferenceStores.read(context, PREF_KEY) == true
+        /**
+         * A WAEX setting as the app [pkg] sees it: with "Per Target App" settings its own value comes
+         * first, otherwise the shared one (the same order the hooks inside WhatsApp use).
+         */
+        fun setting(context: Context, pkg: String, key: String): Any? {
+            val all = PreferenceStores.publicStore(context).all
+            val perTarget = all["module_config_mode"] == "Per Target App"
+            if (perTarget) all["$pkg:$key"]?.let { return it }
+            all[key]?.let { return it }
+            return if (perTarget) null else all["${WebAdmin.WHATSAPP}:$key"] ?: all["${WebAdmin.BUSINESS}:$key"]
+        }
 
-        fun port(context: Context): Int =
-            (PreferenceStores.read(context, PREF_PORT) as? Int)?.takeIf { it in 1024..65535 } ?: DEFAULT_PORT
+        private fun installed(context: Context, pkg: String): Boolean = try {
+            context.packageManager.getApplicationInfo(pkg, 0)
+            true
+        } catch (_: Throwable) {
+            false
+        }
+
+        fun enabled(context: Context, pkg: String): Boolean = setting(context, pkg, PREF_KEY) == true && installed(context, pkg)
+
+        fun enabled(context: Context): Boolean = WebAdmin.PACKAGES.any { enabled(context, it) }
+
+        /** Same rule as the server: a shared port is moved up by one for WhatsApp Business. */
+        fun port(context: Context, pkg: String): Int {
+            val business = pkg == WebAdmin.BUSINESS
+            val all = PreferenceStores.publicStore(context).all
+            val own = (all["$pkg:$PREF_PORT"] as? Int)
+                ?.takeIf { all["module_config_mode"] == "Per Target App" }
+            val chosen = own ?: (all[PREF_PORT] as? Int)?.let { if (business) it + 1 else it }
+            return chosen?.takeIf { it in 1024..65535 } ?: if (business) DEFAULT_PORT + 1 else DEFAULT_PORT
+        }
 
         /** Starts or stops the service to match the setting. Safe to call from anywhere. */
         @JvmStatic

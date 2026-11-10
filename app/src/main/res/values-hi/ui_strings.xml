@@ -1217,4 +1217,8 @@
     <string name="waex_ui_web_wifi_empty" formatted="false">"अभी तक कोई घरेलू नेटवर्क नहीं है."</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi नाम"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"जोड़ें"</string>
+    <string name="waex_ui_web_merge" formatted="false">"सभी WhatsApp खातों के इनबॉक्स को मर्ज करें"</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"WhatsApp (व्यवसाय नहीं) में एक से अधिक खाते वाले लोगों के लिए। वेब सभी चैट को एक साथ दिखाता है और आपको भेजने के लिए खाता चुनने देता है। उपयोग में नहीं आने वाले खाते दिखाते हैं कि पिछली बार उपयोग में होने पर उनके पास क्या था। इसे बदलने के बाद WhatsApp को पुनः आरंभ करें।"</string>
+    <string name="waex_ui_web_switch_title" formatted="false">"WhatsApp खाता स्विच करें"</string>
+    <string name="waex_ui_web_switch_text" formatted="false">"%s पर स्विच करने के लिए टैप करें, जैसा कि WAEX वेब में पूछा गया है।"</string>
 </resources>

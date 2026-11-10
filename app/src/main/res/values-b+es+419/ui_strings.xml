@@ -1201,4 +1201,8 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_web_wifi_empty" formatted="false">"Aún no hay red doméstica."</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi nombre"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Añadir"</string>
+    <string name="waex_ui_web_merge" formatted="false">"Fusionar las bandejas de entrada de todas las cuentas WhatsApp"</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"Para personas con más de una cuenta en WhatsApp (no Empresas). La web muestra todos los chats juntos y te permite elegir la cuenta desde la que enviar. Las cuentas que no están en uso muestran lo que tenían la última vez que estuvieron en uso. Reinicie WhatsApp después de cambiar esto."</string>
+    <string name="waex_ui_web_switch_title" formatted="false">"Cambiar cuenta WhatsApp"</string>
+    <string name="waex_ui_web_switch_text" formatted="false">"Toque para cambiar a %s, como se solicita en WAEX Web."</string>
 </resources>

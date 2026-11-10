@@ -70,4 +70,21 @@ POST /api/chats/<jid>/react     body: {"id":<message id>,"emoji":"👍"}
 POST /api/chats/<jid>/open      body: {"text":"Hello"}
     Opens the chat on the phone with the text filled in, for sending by hand.
 
+Accounts (WhatsApp's own "add account")
+--------
+GET /api/accounts
+    {"accounts":[{"id":"main","name":"…","phone":"+…","active":true,"loggedOut":false}],"merged":false,"app":"com.whatsapp"}
+    With "Merge the inboxes" switched on in WAEX (WhatsApp only), GET /api/chats lists the chats of
+    every account; each chat then has "account" and "accountName".
+    Chats, messages, media, thumbnails and avatars of an account that is not in use are read with
+    ?account=<id> added to the URL. They show what WhatsApp had when that account was last in use.
+    Writing to them answers 409 account_inactive.
+
+POST /api/accounts/switch       body: {"id":"<account id>"}
+    Asks WhatsApp on the phone to switch to that account. WhatsApp restarts; /api/status shows
+    "account" with the id in use once it is back.
+
+Messages kept by WAEX's anti-revoke have "deletedAt" (when the sender deleted them).
+View once messages have "viewOnce": true; their media is served like any other while the file exists.
+
 POST requests need "Content-Type: application/json" and a Content-Length.
