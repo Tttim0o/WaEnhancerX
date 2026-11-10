@@ -32,7 +32,7 @@ class WebKeepAliveService : Service() {
     @Volatile private var running = false
     private var worker: Thread? = null
     /** Whether the page is open now; null until first decided. */
-    @Volatile private var open: Boolean? = null
+    @Volatile private var pageOpen: Boolean? = null
     /** What the server was last told; null means tell it again (it may have restarted). */
     @Volatile private var told: Boolean? = null
     @Volatile private var wifiCaps: NetworkCapabilities? = null
@@ -95,8 +95,8 @@ class WebKeepAliveService : Service() {
         try {
             while (running) {
                 val nowOpen = WebWifi.shouldBeOpen(this, wifiCaps)
-                if (nowOpen != open) {
-                    open = nowOpen
+                if (nowOpen != pageOpen) {
+                    pageOpen = nowOpen
                     told = null
                     try { startInForeground() } catch (_: Throwable) {}
                 }
@@ -154,7 +154,7 @@ class WebKeepAliveService : Service() {
         val open = packageManager.getLaunchIntentForPackage(packageName)?.let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         }
-        val waiting = open == false
+        val waiting = pageOpen == false
         val address = LanPolicy.localInterfaces().firstOrNull()?.let { "http://${LanPolicy.format(it.address)}:${port(this)}" }
         val notification = builder
             .setSmallIcon(android.R.drawable.stat_sys_upload_done)
