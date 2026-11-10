@@ -79,6 +79,7 @@ public final class PreferenceSchema {
         add(entries, "always_online", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "always_typing", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "always_typing_contacts", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
+        add(entries, "merged_inbox", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "waex_sim_enabled", Type.BOOLEAN, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "waex_sim_trigger", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);
         add(entries, "waex_sim_kind", Type.STRING, Sensitivity.PUBLIC_SETTING, Store.PUBLIC);

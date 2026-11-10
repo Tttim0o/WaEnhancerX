@@ -67,6 +67,10 @@ POST /api/chats/<jid>/react     body: {"id":<message id>,"emoji":"👍"}
     Puts your reaction on a message. An empty emoji removes it.
     503 react_unavailable: reactions are not supported on this WhatsApp version.
 
+POST /api/chats/<jid>/delete    body: {"id":<message id>,"everyone":false}
+    Deletes a message the way WhatsApp's own dialog does: for this phone only, or with
+    "everyone":true for all (your own messages only). 503 delete_unavailable when not supported.
+
 POST /api/chats/<jid>/open      body: {"text":"Hello"}
     Opens the chat on the phone with the text filled in, for sending by hand.
 

@@ -1221,4 +1221,15 @@ Mesajlar arasında yer yok: %4$d"</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"WhatsApp'de (İşletme değil) birden fazla hesabı olan kişiler için. Web, tüm sohbetleri bir arada gösterir ve gönderilecek hesabı seçmenize olanak tanır. Kullanılmayan hesaplar, en son kullanıldıkları sırada sahip oldukları şeyleri gösterir. Bunu değiştirdikten sonra WhatsApp'yi yeniden başlatın."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"WhatsApp hesabını değiştir"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"WAEX Web'de sorulduğu gibi %s'ye geçmek için dokunun."</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"Tüm hesaplar"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"kullanımda değil"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"Şuradan yaz:"</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"%s'ye geçilsin mi?"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp bu hesaba geçer ve yeniden başlar. Sohbet geri döndüğünde açılır."</string>
+    <string name="waex_ui_merged_switch" formatted="false">"Anahtar"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp hesap değiştiremedi."</string>
+    <string name="waex_ui_merged_hint" formatted="false">"Kullanılmayan hesaplar, en son kullanıldıkları sırada sahip oldukları şeyleri gösterir. Başka bir hesaptan yazmak için bir sohbet tutun."</string>
+    <string name="waex_ui_merged_empty" formatted="false">"Hiç sohbet bulunamadı."</string>
+    <string name="waex_ui_merged_setting" formatted="false">"Tüm hesapların gelen kutusu"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"WhatsApp'de birden fazla hesap için (İş değil): Ana ekrandaki üç noktalı menü, her hesabın sohbetlerini bir arada içeren \"Tüm hesaplar\"ı alır. Başka bir hesabın sohbetine dokunduğunuzda o hesaba geçiş yapılır. Bunu değiştirdikten sonra WhatsApp'yi yeniden başlatın."</string>
 </resources>

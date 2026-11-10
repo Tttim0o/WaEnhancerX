@@ -34,6 +34,9 @@ object WebSender {
     @Volatile private var lookupInstance: Any? = null
     @Volatile private var bySortId: Method? = null
     @Volatile private var sortInstance: Any? = null
+    @Volatile private var deleteForMe: Method? = null
+    @Volatile private var deleteForAll: Method? = null
+    @Volatile private var deleterInstance: Any? = null
     @Volatile private var reactor: Method? = null
     @Volatile private var reactorInstance: Any? = null
 
@@ -49,6 +52,9 @@ object WebSender {
 
     val canReply: Boolean
         get() = available && canFind
+
+    val canDelete: Boolean
+        get() = deleteForMe != null && canFind
 
     private val canFind: Boolean
         get() = bySortId != null || (lookup != null && keyConstructor != null)
@@ -180,6 +186,29 @@ object WebSender {
                 foundBySort.isAccessible = true
                 capture(foundBySort.declaringClass) { sortInstance = it }
                 bySortId = foundBySort
+            }
+
+            // WhatsApp's own "delete for me" and "delete for everyone" (UserActionsMessageDeletion).
+            val foundDelete = engine.findMethodWithCache(context, classLoader, "waex_web_delete_for_me") { bridge, loader ->
+                bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create()
+                    .addUsingString("UserActionsMessageDeletion/userActionDeleteMessages ", StringMatchType.Equals)))
+                    .mapNotNull { runCatching { it.getMethodInstance(loader) }.getOrNull() }
+                    .firstOrNull { m ->
+                        val p = m.parameterTypes
+                        !Modifier.isStatic(m.modifiers) && p.size == 4 && p[0] == Integer::class.java &&
+                            Collection::class.java.isAssignableFrom(p[1]) && p[2] == java.lang.Boolean.TYPE && p[3] == java.lang.Boolean.TYPE
+                    }
+            }
+            if (foundDelete != null) {
+                foundDelete.isAccessible = true
+                val owner = foundDelete.declaringClass
+                deleteForAll = owner.declaredMethods.firstOrNull { m ->
+                    val p = m.parameterTypes
+                    !Modifier.isStatic(m.modifiers) && m.returnType == Void.TYPE && p.size == 3 &&
+                        p[0] == Integer::class.java && p[1] == java.util.Set::class.java && p[2] == java.lang.Boolean.TYPE
+                }?.also { it.isAccessible = true }
+                capture(owner) { deleterInstance = it }
+                deleteForMe = foundDelete
             }
 
             // Same search the double tap reaction feature uses.
@@ -316,6 +345,25 @@ object WebSender {
             true
         } catch (t: Throwable) {
             fail("send_failed", t)
+        }
+    }
+
+    /**
+     * Deletes a message the way WhatsApp's own dialog does: for this phone only, or with
+     * [everyone] for all (only the user's own messages, as WhatsApp allows).
+     */
+    fun delete(target: Key, everyone: Boolean): Boolean {
+        val forMe = deleteForMe ?: return fail("delete_unavailable")
+        if (everyone && (deleteForAll == null || !target.fromMe)) return fail("delete_everyone_unavailable")
+        return try {
+            val message = findMessage(target) ?: return fail("delete_message_not_found")
+            val owner = instanceOf(forMe.declaringClass, deleterInstance)
+            if (everyone) deleteForAll!!.invoke(owner, null, java.util.Collections.singleton(message), false)
+            else forMe.invoke(owner, null, java.util.Collections.singletonList(message), false, false)
+            lastError = ""
+            true
+        } catch (t: Throwable) {
+            fail("delete_failed", t)
         }
     }
 

@@ -1203,4 +1203,15 @@
     <string name="waex_ui_web_merge_desc" formatted="false">"For people with more than one account in WhatsApp (not Business). The web shows all chats together and lets you choose the account to send from. Accounts not in use show what they had when last in use. Restart WhatsApp after changing this."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Switch WhatsApp account"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Tap to switch to %s, as asked in WAEX Web."</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"All accounts"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"not in use"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"Write from…"</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"Switch to %s?"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp switches to this account and restarts. The chat opens when it is back."</string>
+    <string name="waex_ui_merged_switch" formatted="false">"Switch"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp could not switch accounts."</string>
+    <string name="waex_ui_merged_hint" formatted="false">"Accounts not in use show what they had when last in use. Hold a chat to write from another account."</string>
+    <string name="waex_ui_merged_empty" formatted="false">"No chats found."</string>
+    <string name="waex_ui_merged_setting" formatted="false">"All accounts inbox"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"For more than one account in WhatsApp (not Business): the three-dot menu on the home screen gets \"All accounts\" with the chats of every account together. Tapping a chat of another account switches to it. Restart WhatsApp after changing this."</string>
 </resources>

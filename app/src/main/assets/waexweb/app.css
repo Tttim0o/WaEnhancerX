@@ -382,7 +382,7 @@ input[type="checkbox"]:focus-visible { box-shadow: none; outline: 2px solid var(
   font-size: .8em; font-weight: 500; padding: 4px 12px; border-radius: var(--r-pill); box-shadow: var(--sh-1);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
-.day { margin: var(--s5) 0 var(--s3); position: sticky; top: var(--s3); z-index: 2; }
+.day { margin: var(--s5) 0 var(--s3); position: relative; z-index: 2; }
 .day::first-letter { text-transform: uppercase; }
 .msg.sys { max-width: 80%; text-align: center; margin: var(--s3) 0; border-radius: var(--r-m); }
 .msg.sys::before { display: none; }
@@ -740,3 +740,10 @@ input[type="checkbox"]:focus-visible { box-shadow: none; outline: 2px solid var(
 .sendas select { width: auto; max-width: 60%; min-height: 0; height: auto; font: inherit; background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
   border-radius: 8px; padding: 2px 6px; }
 .sendas select option { color: #111; }
+
+/* Delete choices under a message. */
+.deletebar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.deletebar button { font: inherit; font-size: .85em; border: 0; border-radius: 999px; padding: 6px 12px; cursor: pointer;
+  background: color-mix(in srgb, #e5484d 16%, transparent); color: inherit; }
+.deletebar button:hover { background: color-mix(in srgb, #e5484d 28%, transparent); }
+.deletebar button.cancel { background: color-mix(in srgb, currentColor 10%, transparent); }

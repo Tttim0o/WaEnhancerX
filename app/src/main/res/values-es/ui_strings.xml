@@ -1205,4 +1205,15 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"Para personas con más de una cuenta en WhatsApp (no Empresas). La web muestra todos los chats juntos y te permite elegir la cuenta desde la que enviar. Las cuentas que no están en uso muestran lo que tenían la última vez que estuvieron en uso. Reinicie WhatsApp después de cambiar esto."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Cambiar cuenta WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Toque para cambiar a %s, como se solicita en WAEX Web."</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"Todas las cuentas"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"no en uso"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"Escribe desde…"</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"¿Cambiar a %s?"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp cambia a esta cuenta y reinicia. El chat se abre cuando regresa."</string>
+    <string name="waex_ui_merged_switch" formatted="false">"Cambiar"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp no pudo cambiar de cuenta."</string>
+    <string name="waex_ui_merged_hint" formatted="false">"Las cuentas que no están en uso muestran lo que tenían la última vez que estuvieron en uso. Mantén un chat para escribir desde otra cuenta."</string>
+    <string name="waex_ui_merged_empty" formatted="false">"No se encontraron chats."</string>
+    <string name="waex_ui_merged_setting" formatted="false">"Bandeja de entrada de todas las cuentas"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"Para más de una cuenta en WhatsApp (no Empresas): el menú de tres puntos en la pantalla de inicio muestra \"Todas las cuentas\" con los chats de cada cuenta juntos. Al tocar un chat de otra cuenta se accede a él. Reinicie WhatsApp después de cambiar esto."</string>
 </resources>

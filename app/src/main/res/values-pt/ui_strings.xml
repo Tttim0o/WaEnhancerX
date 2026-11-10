@@ -1221,4 +1221,15 @@ Não há espaço entre mensagens: %4$d"</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"Para pessoas com mais de uma conta em WhatsApp (não Business). A web mostra todos os bate-papos juntos e permite que você escolha a conta de onde enviar. As contas que não estão em uso mostram o que tinham quando foram usadas pela última vez. Reinicie WhatsApp após alterar isso."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Trocar conta WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Toque para mudar para %s, conforme solicitado em WAEX Web."</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"Todas as contas"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"não está em uso"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"Escreva de…"</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"Mudar para %s?"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp alterna para esta conta e reinicia. O chat abre quando ele volta."</string>
+    <string name="waex_ui_merged_switch" formatted="false">"Mudar"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp não conseguiu trocar de conta."</string>
+    <string name="waex_ui_merged_hint" formatted="false">"As contas que não estão em uso mostram o que tinham quando foram usadas pela última vez. Mantenha um bate-papo para escrever de outra conta."</string>
+    <string name="waex_ui_merged_empty" formatted="false">"Nenhum bate-papo encontrado."</string>
+    <string name="waex_ui_merged_setting" formatted="false">"Caixa de entrada de todas as contas"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"Para mais de uma conta em WhatsApp (não Business): o menu de três pontos na tela inicial mostra “Todas as contas” com os chats de cada conta juntos. Tocar em um bate-papo de outra conta alterna para ele. Reinicie WhatsApp após alterar isso."</string>
 </resources>
