@@ -1184,4 +1184,21 @@
     <string name="waex_ui_web_no_wifi" formatted="false">"پتہ دیکھنے کے لیے فون کو Wi-Fi سے جوڑیں۔"</string>
     <string name="waex_ui_web_restart" formatted="false">"اسے تبدیل کرنے کے بعد WhatsApp کو دوبارہ شروع کریں۔ صفحہ کے کام کرنے کے لیے WhatsApp کا چلنا ضروری ہے۔"</string>
     <string name="waex_ui_web_plain_http" formatted="false">"کنکشن کو خفیہ نہیں کیا گیا ہے۔ اسے صرف اس Wi-Fi پر استعمال کریں جس پر آپ اعتماد کرتے ہیں۔ مقفل چیٹس کبھی نہیں دکھائے جاتے ہیں۔"</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX ویب آن ہے۔"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"صفحہ ابھی تک نہیں چل رہا ہے۔ ایک بار WhatsApp کھولیں (اسے آن کرنے کے بعد دوبارہ شروع کریں)۔"</string>
+    <string name="waex_ui_web_is_running" formatted="false">"چل رہا ہے۔ WAEX اس کے آن ہونے کے دوران WhatsApp کو بیدار رکھتا ہے۔"</string>
+    <string name="waex_ui_web_code_now" formatted="false">"اس براؤزر کا کوڈ جو ابھی سائن ان ہو رہا ہے۔"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"بھیجنا اس WhatsApp ورژن پر دستیاب نہیں ہے۔ پڑھنا کام کرتا ہے۔"</string>
+    <string name="waex_ui_web_last_error" formatted="false">"آخری بار بھیجنے کا مسئلہ: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"سائن ان براؤزرز"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"کوئی براؤزر سائن ان نہیں ہے۔"</string>
+    <string name="waex_ui_web_last_used" formatted="false">"آخری بار استعمال کیا گیا %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"سائن آؤٹ کریں۔"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"تمام براؤزر سے سائن آؤٹ کریں۔"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API ٹوکنز"</string>
+    <string name="waex_ui_web_delete" formatted="false">"حذف کریں۔"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"پاس ورڈ: سیٹ۔ ایک نئے براؤزر کو کوڈ اور پاس ورڈ کی ضرورت ہے۔"</string>
+    <string name="waex_ui_web_password_off" formatted="false">"پاس ورڈ: کوئی نہیں۔ ایک نئے براؤزر کو صرف کوڈ کی ضرورت ہوتی ہے۔"</string>
+    <string name="waex_ui_web_password_save" formatted="false">"پاس ورڈ سیٹ کریں۔"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"ہٹا دیں۔"</string>
 </resources>

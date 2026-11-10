@@ -1184,4 +1184,21 @@ Mesajlar arasında yer yok: %4$d"</string>
     <string name="waex_ui_web_no_wifi" formatted="false">"Adresi görmek için telefonu Wi-Fi'ye bağlayın."</string>
     <string name="waex_ui_web_restart" formatted="false">"Bunu değiştirdikten sonra WhatsApp'yi yeniden başlatın. Sayfanın çalışması için WhatsApp çalışıyor olmalıdır."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"Bağlantı şifrelenmemiştir. Yalnızca güvendiğiniz bir Wi-Fi üzerinde kullanın. Kilitli sohbetler hiçbir zaman gösterilmez."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX Web açık"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"Sayfa henüz çalışmıyor. WhatsApp'yi bir kez açın (bunu açtıktan sonra yeniden başlatın)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"Koşuyorum. WAEX bu açıkken WhatsApp'yi uyanık tutar."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Şu anda oturum açan tarayıcının kodu"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"Bu WhatsApp sürümünde gönderme yapılamıyor. Okumak işe yarar."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Son gönderme sorunu: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Oturum açılmış tarayıcılar"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"Hiçbir tarayıcıda oturum açılmadı."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Son kullanılan %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Oturumu kapat"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Tüm tarayıcılardan oturumu kapat"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API jetonları"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Sil"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Şifre: ayarlayın. Yeni bir tarayıcının koda ve şifreye ihtiyacı vardır."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Şifre: yok. Yeni bir tarayıcının yalnızca koda ihtiyacı vardır."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Şifreyi ayarla"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Kaldır"</string>
 </resources>

@@ -1166,4 +1166,21 @@
     <string name="waex_ui_web_no_wifi" formatted="false">"Connect the phone to Wi-Fi to see the address."</string>
     <string name="waex_ui_web_restart" formatted="false">"Restart WhatsApp after changing this. WhatsApp must be running for the page to work."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"The connection is not encrypted. Use it only on a Wi-Fi you trust. Locked chats are never shown."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX Web is on"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"The page is not running yet. Open WhatsApp once (restart it after switching this on)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"Running. WAEX keeps WhatsApp awake while this is on."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Code for the browser that is signing in now"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"Sending is not available on this WhatsApp version. Reading works."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Last sending problem: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Signed-in browsers"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"No browser is signed in."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Last used %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Sign out"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Sign out all browsers"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API tokens"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Delete"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Password: set. A new browser needs the code and the password."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Password: none. A new browser needs only the code."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Set password"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Remove"</string>
 </resources>

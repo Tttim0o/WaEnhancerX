@@ -49,6 +49,7 @@
       <button data-tab="groups"></button>
       <button data-tab="archived"></button>
     </div>
+    <div id="offline" class="offline" role="status" hidden></div>
     <div id="chats" class="chats" role="list"></div>
   </aside>
 
@@ -68,9 +69,15 @@
       </header>
       <div id="messages" class="messages"></div>
       <button id="toLatest" class="tolatest" hidden>↓</button>
+      <div id="replyBar" class="replybar" hidden>
+        <div class="grow replybox"><div id="replyWho" class="sender"></div><div id="replyText" class="replytext"></div></div>
+        <button id="replyCancel" class="icon" aria-label="Cancel">✕</button>
+      </div>
+      <div id="emojiPanel" class="emojipanel" hidden></div>
       <footer class="composer">
+        <button id="emojiButton" class="icon" aria-label="Emoji">☺</button>
         <textarea id="text" rows="1" maxlength="8000"></textarea>
-        <button id="send" class="primary round" aria-label="Send">➤</button>
+        <button id="send" class="round send" aria-label="Send"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
       </footer>
       <div id="sendNote" class="sendnote" hidden></div>
     </div>

@@ -98,6 +98,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                     server.bind(InetSocketAddress(port), 32)
                     XposedBridge.log("$TAG Listening on port $port, sending ${if (WebSender.available) "available" else "unavailable"}")
                     failures = 0
+                    announce()
                     while (true) {
                         val client = server.accept()
                         try {
@@ -134,8 +135,16 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             socket.soTimeout = 20_000
             val peer = socket.inetAddress
             val local = socket.localAddress
+            if (peer == null || local == null) return
+            if (peer.isLoopbackAddress && local.isLoopbackAddress) {
+                // The WAEX app on this phone manages the server through here, with its own key.
+                val request = try { WebHttp.read(socket.getInputStream()) ?: return } catch (_: WebHttp.BadRequest) { return }
+                val response = try { admin(request) } catch (_: Throwable) { WebResponse.error(500, "internal") }
+                WebHttp.write(socket.getOutputStream(), response)
+                return
+            }
             // Anything that is not on the phone's own Wi-Fi is dropped without an answer.
-            if (peer == null || local == null || !LanPolicy.peerAllowed(peer, local, localInterfaces())) return
+            if (!LanPolicy.peerAllowed(peer, local, localInterfaces())) return
             val out = socket.getOutputStream()
             val request = try {
                 WebHttp.read(socket.getInputStream()) ?: return
@@ -159,6 +168,67 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             // Broken connections are normal (closed tabs, sleeping laptops).
         } finally {
             closeQuietly(socket)
+        }
+    }
+
+    // ─── Management from the WAEX app ───────────────────────────────────
+
+    private val adminKey: String = ByteArray(32).also { java.security.SecureRandom().nextBytes(it) }
+        .joinToString("") { String.format("%02x", it.toInt() and 0xff) }
+
+    /** Tells the WAEX app that the server runs, so it can keep WhatsApp awake and manage browsers. */
+    private fun announce() {
+        try {
+            val extras = android.os.Bundle()
+            extras.putInt("port", port)
+            extras.putString("admin_key", adminKey)
+            extras.putString("package", app.packageName)
+            app.contentResolver.call(Uri.parse("content://com.waenhancer.hookprovider"), "web_started", null, extras)
+        } catch (t: Throwable) {
+            XposedBridge.log("$TAG WAEX app not reached: ${t.javaClass.simpleName}")
+        }
+    }
+
+    private fun admin(request: WebRequest): WebResponse {
+        val given = request.header("x-waex-admin").orEmpty()
+        if (!java.security.MessageDigest.isEqual(given.toByteArray(), adminKey.toByteArray())) {
+            return WebResponse.error(403, "admin_key")
+        }
+        val seg = request.segments
+        if (seg.firstOrNull() != "admin") return WebResponse.error(404, "not_found")
+        val post = request.method == "POST"
+        val body = if (post) WebJson.parseObject(request.bodyText()) else emptyMap()
+        return when (seg.getOrNull(1)) {
+            "state" -> {
+                val pending = auth.pendingCode()
+                WebResponse.json(WebJson.obj(
+                    "port" to port,
+                    "passwordSet" to auth.passwordSet(),
+                    "canSend" to WebSender.available,
+                    "canReact" to WebSender.canReact,
+                    "lastError" to WebSender.lastError,
+                    "code" to pending?.first,
+                    "codeSeconds" to (pending?.second ?: 0),
+                    "sessions" to auth.sessions().map {
+                        linkedMapOf("id" to it.id, "label" to it.label, "created" to it.created, "lastSeen" to it.lastSeen)
+                    },
+                    "tokens" to auth.tokens().map { linkedMapOf("id" to it.id, "name" to it.name, "created" to it.created) }
+                ))
+            }
+            "sessions" -> if (!post) WebResponse.error(405, "method") else {
+                if (body["all"] == true) auth.revokeAllSessions() else auth.revokeSession(body["id"] as? String ?: "")
+                WebResponse.json("{\"ok\":true}")
+            }
+            "tokens" -> if (!post) WebResponse.error(405, "method") else {
+                auth.deleteToken(body["id"] as? String ?: "")
+                WebResponse.json("{\"ok\":true}")
+            }
+            "password" -> if (!post) WebResponse.error(405, "method") else {
+                // The phone's owner is in charge here, so the old password is not asked for.
+                if (auth.setPassword(body["new"] as? String)) WebResponse.json("{\"ok\":true}")
+                else WebResponse.error(400, "password_length")
+            }
+            else -> WebResponse.error(404, "not_found")
         }
     }
 
@@ -386,15 +456,20 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 request.query["after"]?.toLongOrNull(),
                 request.query["limit"]?.toIntOrNull() ?: 60))
             "send" -> if (post) send(request, chat) else WebResponse.error(405, "method")
+            "react" -> if (post) react(request, chat) else WebResponse.error(405, "method")
             "open" -> if (post) openOnPhone(request, chat) else WebResponse.error(405, "method")
             else -> WebResponse.error(404, "not_found")
         }
     }
 
     private fun send(request: WebRequest, chat: WebData.Chat): WebResponse {
-        val text = (WebJson.parseObject(request.bodyText())["text"] as? String)?.trim().orEmpty()
+        val body = WebJson.parseObject(request.bodyText())
+        val text = (body["text"] as? String)?.trim().orEmpty()
         if (text.isEmpty() || text.length > MAX_TEXT) return WebResponse.error(400, "text_length")
         if (!WebSender.available) return WebResponse.error(503, "send_unavailable")
+        val quoted = (body["replyTo"] as? Double)?.toLong()?.let {
+            data.messageKey(chat, it) ?: return WebResponse.error(404, "message_not_found")
+        }
         synchronized(sendTimes) {
             val now = System.currentTimeMillis()
             while (sendTimes.isNotEmpty() && now - sendTimes.first() > 60_000) sendTimes.removeFirst()
@@ -402,7 +477,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             sendTimes.addLast(now)
         }
         val before = data.maxMessageId()
-        if (!WebSender.sendText(chat.sendJid, text)) return WebResponse.error(503, "send_failed")
+        if (!WebSender.sendText(chat.sendJid, text, quoted)) return sendError()
         // WhatsApp stores the message a moment later; wait briefly so the page can say it worked.
         var stored = false
         for (i in 0 until 20) {
@@ -410,6 +485,21 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             try { Thread.sleep(100) } catch (_: InterruptedException) { break }
         }
         return WebResponse.json(WebJson.obj("ok" to true, "stored" to stored))
+    }
+
+    /** Says that sending failed and, as a short code, at which step. */
+    private fun sendError(): WebResponse =
+        WebResponse.json(WebJson.obj("error" to "send_failed", "step" to WebSender.lastError), 503)
+
+    /** Body {id, emoji}: puts the reaction on a message; an empty emoji takes it away. */
+    private fun react(request: WebRequest, chat: WebData.Chat): WebResponse {
+        val body = WebJson.parseObject(request.bodyText())
+        val id = (body["id"] as? Double)?.toLong() ?: return WebResponse.error(400, "id")
+        val emoji = (body["emoji"] as? String).orEmpty()
+        if (emoji.length > 16) return WebResponse.error(400, "emoji")
+        if (!WebSender.canReact) return WebResponse.error(503, "react_unavailable")
+        val key = data.messageKey(chat, id) ?: return WebResponse.error(404, "message_not_found")
+        return if (WebSender.react(key, emoji)) WebResponse.json("{\"ok\":true}") else sendError()
     }
 
     /** Fallback when sending is unavailable: opens the chat on the phone with the text filled in. */

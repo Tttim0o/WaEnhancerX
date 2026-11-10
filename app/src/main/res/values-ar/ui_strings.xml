@@ -1184,4 +1184,21 @@
     <string name="waex_ui_web_no_wifi" formatted="false">"قم بتوصيل الهاتف بـ Wi-Fi لرؤية العنوان."</string>
     <string name="waex_ui_web_restart" formatted="false">"أعد تشغيل WhatsApp بعد تغيير هذا. يجب تشغيل WhatsApp حتى تعمل الصفحة."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"الاتصال غير مشفر. استخدمه فقط على Wi-Fi الذي تثق به. لا يتم عرض الدردشات المقفلة أبدًا."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX الويب قيد التشغيل"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"الصفحة لا تعمل بعد. افتح WhatsApp مرة واحدة (أعد تشغيله بعد تشغيله)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"الجري. WAEX يبقي WhatsApp مستيقظًا أثناء تشغيله."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"رمز المتصفح الذي يقوم بتسجيل الدخول الآن"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"الإرسال غير متاح في هذا الإصدار WhatsApp. أعمال القراءة."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"مشكلة الإرسال الأخير: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"المتصفحات التي تم تسجيل الدخول إليها"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"لم يتم تسجيل الدخول إلى أي متصفح."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"آخر استخدام %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"تسجيل الخروج"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"تسجيل الخروج من جميع المتصفحات"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API الرموز المميزة"</string>
+    <string name="waex_ui_web_delete" formatted="false">"حذف"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"كلمة المرور: تعيين. يحتاج المتصفح الجديد إلى الرمز وكلمة المرور."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"كلمة المرور: لا يوجد. يحتاج المتصفح الجديد إلى الرمز فقط."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"تعيين كلمة المرور"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"إزالة"</string>
 </resources>

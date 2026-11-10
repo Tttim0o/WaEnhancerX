@@ -249,7 +249,43 @@ class WebData(private val app: Context) {
         if (afterId == null) rows.reverse()
         val reactions = reactionsFor(rows.map { it.id })
         for (row in rows) reactions[row.id]?.let { row.json["reactions"] = it }
-        return WebJson.obj("messages" to rows.map { it.json }, "canSend" to WebSender.available)
+        val mine = myReactionsFor(rows.map { it.id })
+        for (row in rows) mine[row.id]?.let { row.json["myReaction"] = it }
+        return WebJson.obj("messages" to rows.map { it.json }, "canSend" to WebSender.available,
+            "canReact" to WebSender.canReact, "canReply" to WebSender.canReply)
+    }
+
+    /** The reaction this phone's user put on each message. */
+    private fun myReactionsFor(ids: List<Long>): Map<Long, String> {
+        if (ids.isEmpty() || "from_me" !in columns("message_add_on")) return emptyMap()
+        val result = HashMap<Long, String>()
+        try {
+            db().rawQuery("""
+                SELECT a.parent_message_row_id, r.reaction
+                FROM message_add_on a JOIN message_add_on_reaction r ON r.message_add_on_row_id = a._id
+                WHERE a.parent_message_row_id IN (${ids.joinToString(",")}) AND a.from_me = 1
+                      AND r.reaction IS NOT NULL AND r.reaction != ''
+            """.trimIndent(), null).use { c ->
+                while (c.moveToNext()) result[c.getLong(0)] = c.getString(1)
+            }
+        } catch (_: Throwable) {
+        }
+        return result
+    }
+
+    /** The key WhatsApp knows message [id] by, when it is in [chat]. */
+    fun messageKey(chat: Chat, id: Long): WebSender.Key? = try {
+        db().rawQuery("""
+            SELECT j.raw_string, m.key_id, m.from_me
+            FROM message m JOIN chat c ON c._id = m.chat_row_id JOIN jid j ON j._id = c.jid_row_id
+            WHERE m._id = ? AND m.chat_row_id IN (${chat.rows.joinToString(",")})
+        """.trimIndent(), arrayOf(id.toString())).use { c ->
+            if (c.moveToFirst() && c.getString(0) != null && c.getString(1) != null) {
+                WebSender.Key(c.getString(0), c.getString(1), c.getInt(2) == 1)
+            } else null
+        }
+    } catch (_: Throwable) {
+        null
     }
 
     private fun reactionsFor(ids: List<Long>): Map<Long, String> {

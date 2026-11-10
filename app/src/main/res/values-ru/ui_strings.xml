@@ -1184,4 +1184,21 @@
     <string name="waex_ui_web_no_wifi" formatted="false">"Подключите телефон к Wi-Fi, чтобы увидеть адрес."</string>
     <string name="waex_ui_web_restart" formatted="false">"Перезапустите WhatsApp после изменения. Чтобы страница работала, WhatsApp должен быть запущен."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"Соединение не шифруется. Используйте его только на том Wi-Fi, которому вы доверяете. Заблокированные чаты никогда не отображаются."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX Интернет включен"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"Страница еще не работает. Откройте WhatsApp один раз (перезапустите его после включения)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"Бег. WAEX не дает WhatsApp бодрствовать, пока он включен."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Код для браузера, в котором сейчас выполняется вход"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"Отправка недоступна в этой версии WhatsApp. Чтение работает."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Последняя проблема с отправкой: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Браузеры, вошедшие в систему"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"Ни в одном браузере не выполнен вход."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Последнее использование %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Выйти"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Выйдите из всех браузеров"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API токенов"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Удалить"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Пароль: установлен. Новому браузеру нужен код и пароль."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Пароль: нет. Новому браузеру нужен только код."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Установить пароль"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Удалить"</string>
 </resources>

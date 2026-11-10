@@ -1184,4 +1184,21 @@ Kein Platz zwischen Nachrichten: %4$d"</string>
     <string name="waex_ui_web_no_wifi" formatted="false">"Verbinden Sie das Telefon mit Wi-Fi, um die Adresse anzuzeigen."</string>
     <string name="waex_ui_web_restart" formatted="false">"Starten Sie WhatsApp neu, nachdem Sie dies geändert haben. WhatsApp muss ausgeführt werden, damit die Seite funktioniert."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"Die Verbindung ist nicht verschlüsselt. Verwenden Sie es nur auf einem Wi-Fi, dem Sie vertrauen. Gesperrte Chats werden nie angezeigt."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX Web ist eingeschaltet"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"Die Seite läuft noch nicht. Öffnen Sie WhatsApp einmal (starten Sie es nach dem Einschalten neu)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"Laufen. WAEX hält WhatsApp wach, während dies aktiviert ist."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Code für den Browser, der sich gerade anmeldet"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"Das Senden ist in dieser WhatsApp-Version nicht verfügbar. Lesen funktioniert."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Letztes Sendeproblem: %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Angemeldete Browser"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"Es ist kein Browser angemeldet."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Zuletzt verwendet %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Abmelden"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Melden Sie alle Browser ab"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API Token"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Löschen"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Passwort: eingestellt. Ein neuer Browser benötigt den Code und das Passwort."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Passwort: keines. Ein neuer Browser benötigt nur den Code."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Passwort festlegen"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Entfernen"</string>
 </resources>

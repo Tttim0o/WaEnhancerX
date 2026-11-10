@@ -1184,4 +1184,21 @@ Pas d'espace entre les messages : %4$d"</string>
     <string name="waex_ui_web_no_wifi" formatted="false">"Connectez le téléphone à Wi-Fi pour voir l'adresse."</string>
     <string name="waex_ui_web_restart" formatted="false">"Redémarrez WhatsApp après avoir modifié cela. WhatsApp doit être en cours d'exécution pour que la page fonctionne."</string>
     <string name="waex_ui_web_plain_http" formatted="false">"La connexion n'est pas cryptée. Utilisez-le uniquement sur un Wi-Fi en qui vous avez confiance. Les discussions verrouillées ne sont jamais affichées."</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX Web est activé"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"La page n'est pas encore en cours d'exécution. Ouvrez WhatsApp une fois (redémarrez-le après l'avoir activé)."</string>
+    <string name="waex_ui_web_is_running" formatted="false">"Courir. WAEX maintient WhatsApp éveillé pendant que cette fonction est activée."</string>
+    <string name="waex_ui_web_code_now" formatted="false">"Code du navigateur qui se connecte maintenant"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"L'envoi n'est pas disponible sur cette version WhatsApp. La lecture fonctionne."</string>
+    <string name="waex_ui_web_last_error" formatted="false">"Dernier problème d'envoi : %s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"Navigateurs connectés"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"Aucun navigateur n'est connecté."</string>
+    <string name="waex_ui_web_last_used" formatted="false">"Dernière utilisation %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"Se déconnecter"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"Déconnectez-vous de tous les navigateurs"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"Jetons API"</string>
+    <string name="waex_ui_web_delete" formatted="false">"Supprimer"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"Mot de passe : défini. Un nouveau navigateur a besoin du code et du mot de passe."</string>
+    <string name="waex_ui_web_password_off" formatted="false">"Mot de passe : aucun. Un nouveau navigateur n'a besoin que du code."</string>
+    <string name="waex_ui_web_password_save" formatted="false">"Définir le mot de passe"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"Supprimer"</string>
 </resources>

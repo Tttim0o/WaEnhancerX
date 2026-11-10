@@ -1184,4 +1184,21 @@
     <string name="waex_ui_web_no_wifi" formatted="false">"将手机连接到 Wi-Fi 以查看地址。"</string>
     <string name="waex_ui_web_restart" formatted="false">"更改后重新启动 WhatsApp。 WhatsApp 必须正在运行，页面才能正常工作。"</string>
     <string name="waex_ui_web_plain_http" formatted="false">"连接未加密。仅在您信任的 Wi-Fi 上使用它。锁定的聊天永远不会显示。"</string>
+    <string name="waex_ui_web_running" formatted="false">"WAEX 网络已开启"</string>
+    <string name="waex_ui_web_not_running" formatted="false">"该页面尚未运行。打开 WhatsApp 一次（打开后重新启动）。"</string>
+    <string name="waex_ui_web_is_running" formatted="false">"跑步。开启此功能时，WAEX 会保持 WhatsApp 处于唤醒状态。"</string>
+    <string name="waex_ui_web_code_now" formatted="false">"现在登录的浏览器的代码"</string>
+    <string name="waex_ui_web_cannot_send" formatted="false">"此 WhatsApp 版本不支持发送。读书作品。"</string>
+    <string name="waex_ui_web_last_error" formatted="false">"上次发送问题：%s"</string>
+    <string name="waex_ui_web_devices" formatted="false">"已登录的浏览器"</string>
+    <string name="waex_ui_web_no_devices" formatted="false">"没有浏览器登录。"</string>
+    <string name="waex_ui_web_last_used" formatted="false">"最后使用 %s"</string>
+    <string name="waex_ui_web_sign_out" formatted="false">"退出"</string>
+    <string name="waex_ui_web_sign_out_all" formatted="false">"退出所有浏览器"</string>
+    <string name="waex_ui_web_tokens" formatted="false">"API 代币"</string>
+    <string name="waex_ui_web_delete" formatted="false">"删除"</string>
+    <string name="waex_ui_web_password_on" formatted="false">"密码：设置。新的浏览器需要代码和密码。"</string>
+    <string name="waex_ui_web_password_off" formatted="false">"密码：无。新的浏览器只需要代码。"</string>
+    <string name="waex_ui_web_password_save" formatted="false">"设置密码"</string>
+    <string name="waex_ui_web_password_remove" formatted="false">"删除"</string>
 </resources>
