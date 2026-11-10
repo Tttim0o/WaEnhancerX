@@ -711,11 +711,11 @@ input[type="checkbox"]:focus-visible { box-shadow: none; outline: 2px solid var(
   .chat::after { display: none; }
 }
 
-/* Kept by anti-revoke: the sender deleted it, WAEX still shows it. */
-.msg.revoked { box-shadow: inset 3px 0 0 color-mix(in srgb, #e5484d 70%, transparent); }
-.msg .revokednote { color: #d13d42; font-size: .8em; margin-top: 2px; }
-:root[data-theme="dark"] .msg .revokednote, :root[data-theme="black"] .msg .revokednote,
-:root[data-theme="ocean"] .msg .revokednote { color: #ff8589; }
+/* Kept by anti-revoke: readable as before, with a small "deleted" mark next to the time. */
+.msg .revokedmark { color: #d13d42; font-weight: 500; white-space: nowrap; }
+:root[data-theme="dark"] .msg .revokedmark, :root[data-theme="black"] .msg .revokedmark,
+:root[data-theme="ocean"] .msg .revokedmark { color: #ff8589; }
+.msg .revokedmark .ic { width: 1em; height: 1em; vertical-align: -0.15em; }
 .msg .note.once { font-size: .8em; font-style: normal; margin-bottom: 4px; }
 
 /* Accounts: switcher, menu, tags in the merged inbox, "Send as". */

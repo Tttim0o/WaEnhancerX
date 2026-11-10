@@ -338,6 +338,22 @@ public class HookProvider extends ContentProvider {
                 return TranscriptionRequestHandler.log(context, extras);
             }
 
+            if ("web_preserved_texts".equals(method) && extras != null) {
+                // WAEX Web asks for the original text of messages the sender deleted.
+                String[] ids = extras.getStringArray("ids");
+                Bundle texts = new Bundle();
+                if (ids != null) {
+                    PreservedMessageStore store = PreservedMessageStore.getInstance(context);
+                    for (int i = 0; i < ids.length && i < 200; i++) {
+                        PreservedMessageStore.StoredMessage stored = store.getPreservedMessageByMsgId(ids[i]);
+                        if (stored != null && !stored.getText().isEmpty()) texts.putString(ids[i], stored.getText());
+                    }
+                }
+                Bundle result = writeResult(true);
+                result.putBundle("texts", texts);
+                return result;
+            }
+
             if ("record_preserved_message".equals(method) && extras != null) {
                 String jid = extras.getString("jid", "");
                 String contactName = extras.getString("name", "");

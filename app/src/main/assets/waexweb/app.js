@@ -57,7 +57,7 @@
       react_unavailable: 'Reactions do not work with this WhatsApp version.',
       message_not_found: 'WhatsApp no longer has that message.', online: 'Connected to the phone',
       reconnecting: 'The phone does not answer. Trying again…',
-      deletedBy: 'Deleted by the sender {s}. WAEX kept it.', accounts: 'Accounts', sendAs: 'Send as',
+      deletedBy: 'Deleted by the sender {s}', deletedShort: 'Deleted', accounts: 'Accounts', sendAs: 'Send as',
       switchConfirm: 'Switch WhatsApp on the phone to {s}? WhatsApp restarts, which takes a few seconds.',
       switching: 'Switching the account on the phone…', switched: 'Now using {s}.',
       switchSlow: 'The phone did not switch. Open WhatsApp on the phone, or tap the WAEX notification there.',
@@ -165,7 +165,7 @@
       react_unavailable: 'Reakcie s touto verziou WhatsAppu nefungujú.',
       message_not_found: 'WhatsApp už túto správu nemá.', online: 'Spojené s telefónom',
       reconnecting: 'Telefón neodpovedá. Skúšam znova…',
-      deletedBy: 'Odosielateľ to vymazal {s}. WAEX si to nechal.', accounts: 'Účty', sendAs: 'Odoslať ako',
+      deletedBy: 'Odosielateľ to vymazal {s}', deletedShort: 'Vymazané', accounts: 'Účty', sendAs: 'Odoslať ako',
       switchConfirm: 'Prepnúť WhatsApp v telefóne na {s}? WhatsApp sa reštartuje, trvá to pár sekúnd.',
       switching: 'Prepínam účet v telefóne…', switched: 'Teraz sa používa {s}.',
       switchSlow: 'Telefón účet neprepol. Otvor WhatsApp v telefóne alebo ťukni tam na notifikáciu WAEX.',
@@ -735,14 +735,16 @@
         node.append(el('span', 'note', t('unsupported')));
       }
     }
+    const meta = el('span', 'meta');
     if (m.deletedAt) {
+      // Shown as in WAEX on the phone: the message stays readable, with a small "deleted" mark.
       node.classList.add('revoked');
       const when = new Date(m.deletedAt);
-      const label = (dayKey(m.deletedAt) === dayKey(Date.now()) ? '' : when.toLocaleDateString() + ' ') +
-        when.toLocaleTimeString([], clockOpts());
-      node.append(labelled('note revokednote', 15, t('deletedBy', { s: label })));
+      const mark = el('span', 'revokedmark');
+      mark.title = t('deletedBy', { s: when.toLocaleDateString() + ' ' + when.toLocaleTimeString([], clockOpts()) });
+      mark.append(icon('block'), ' ', t('deletedShort'));
+      meta.append(mark, ' ');
     }
-    const meta = el('span', 'meta');
     if (m.starred) meta.append(icon('star'), ' ');
     meta.append(new Date(m.ts).toLocaleTimeString([], clockOpts()));
     if (m.fromMe && m.type !== 15) {
