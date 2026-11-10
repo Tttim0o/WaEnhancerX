@@ -36,6 +36,7 @@
       notOnPhone: 'Not downloaded on the phone', save: 'Download',
       noSend: 'Sending from the browser does not work with this WhatsApp version.',
       openOnPhone: 'Open on the phone instead', openedOnPhone: 'Opened on the phone. Confirm sending there.',
+      openedPlain: 'The chat is open on the phone now.',
       not_a_phone_chat: 'This chat can only be opened on the phone by hand.',
       queued: 'Sent to WhatsApp. It will show up here in a moment.', slow_down: 'Too many messages at once. Wait a moment.',
       settings: 'Settings', look: 'Look', theme: 'Theme', system: 'Same as system', light: 'Light', dark: 'Dark',
@@ -57,7 +58,10 @@
       react_unavailable: 'Reactions do not work with this WhatsApp version.',
       message_not_found: 'WhatsApp no longer has that message.', online: 'Connected to the phone',
       reconnecting: 'The phone does not answer. Trying again…',
-      deletedBy: 'Deleted by the sender {s}', deletedShort: 'Deleted', accounts: 'Accounts', sendAs: 'Send as',
+      deletedBy: 'Deleted by the sender {s}', deletedShort: 'Deleted', delete: 'Delete',
+      deleteForMe: 'Delete for me', deleteForAll: 'Delete for everyone', deleteSure: 'Delete this message?',
+      deleted_ok: 'Deleted.', delete_unavailable: 'Deleting does not work with this WhatsApp version.',
+      not_your_message: 'Only your own messages can be deleted for everyone.', accounts: 'Accounts', sendAs: 'Send as',
       switchConfirm: 'Switch WhatsApp on the phone to {s}? WhatsApp restarts, which takes a few seconds.',
       switching: 'Switching the account on the phone…', switched: 'Now using {s}.',
       switchSlow: 'The phone did not switch. Open WhatsApp on the phone, or tap the WAEX notification there.',
@@ -144,6 +148,7 @@
       notOnPhone: 'V telefóne nie je stiahnuté', save: 'Stiahnuť',
       noSend: 'Posielanie z prehliadača s touto verziou WhatsAppu nefunguje.',
       openOnPhone: 'Otvoriť radšej v telefóne', openedOnPhone: 'Otvorené v telefóne. Odoslanie potvrď tam.',
+      openedPlain: 'Chat je teraz otvorený v telefóne.',
       not_a_phone_chat: 'Tento chat sa dá v telefóne otvoriť len ručne.',
       queued: 'Odovzdané WhatsAppu. O chvíľu sa tu správa objaví.', slow_down: 'Priveľa správ naraz. Chvíľu počkaj.',
       settings: 'Nastavenia', look: 'Vzhľad', theme: 'Téma', system: 'Podľa systému', light: 'Svetlá', dark: 'Tmavá',
@@ -165,7 +170,10 @@
       react_unavailable: 'Reakcie s touto verziou WhatsAppu nefungujú.',
       message_not_found: 'WhatsApp už túto správu nemá.', online: 'Spojené s telefónom',
       reconnecting: 'Telefón neodpovedá. Skúšam znova…',
-      deletedBy: 'Odosielateľ to vymazal {s}', deletedShort: 'Vymazané', accounts: 'Účty', sendAs: 'Odoslať ako',
+      deletedBy: 'Odosielateľ to vymazal {s}', deletedShort: 'Vymazané', delete: 'Vymazať',
+      deleteForMe: 'Vymazať pre mňa', deleteForAll: 'Vymazať pre všetkých', deleteSure: 'Vymazať túto správu?',
+      deleted_ok: 'Vymazané.', delete_unavailable: 'Mazanie s touto verziou WhatsAppu nefunguje.',
+      not_your_message: 'Pre všetkých sa dajú vymazať len tvoje vlastné správy.', accounts: 'Účty', sendAs: 'Odoslať ako',
       switchConfirm: 'Prepnúť WhatsApp v telefóne na {s}? WhatsApp sa reštartuje, trvá to pár sekúnd.',
       switching: 'Prepínam účet v telefóne…', switched: 'Teraz sa používa {s}.',
       switchSlow: 'Telefón účet neprepol. Otvor WhatsApp v telefóne alebo ťukni tam na notifikáciu WAEX.',
@@ -402,7 +410,7 @@
 
   // ─── State ───────────────────────────────────────────────────────────
   const state = {
-    signedIn: false, canSend: false, canReact: false, canReply: false, reply: null, rev: null, chats: [], tab: 'all', query: '', hits: [],
+    signedIn: false, canSend: false, canReact: false, canReply: false, canDelete: false, reply: null, rev: null, chats: [], tab: 'all', query: '', hits: [],
     current: null, messages: new Map(), nodes: new Map(), noOlder: false, detached: false, drafts: new Map(),
     pairId: null, noAvatar: new Set(),
     // Accounts on the phone; `account` is the account of the open chat ('' = the one in use).
@@ -597,7 +605,9 @@
     dayKey(prev.ts) !== dayKey(m.ts) || m.ts - prev.ts > 10 * 60000;
   const JUMBO = /^(?:\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}|[\u{1F3FB}-\u{1F3FF}])*\s*){1,3}$/u;
   const order = (a, b) => a.sort - b.sort || a.id - b.id;
-  const sorted = () => Array.from(state.messages.values()).sort(order);
+  /** Kinds of messages the web cannot show at all; they are left out instead of a placeholder. */
+  const shown = (m) => !!(m.text || m.media || TYPE_WORD[m.type] || m.type === 15);
+  const sorted = () => Array.from(state.messages.values()).filter(shown).sort(order);
   const dayKey = (ts) => new Date(ts).toDateString();
   function dayLabel(ts) {
     const d = new Date(ts), now = new Date();
@@ -731,8 +741,6 @@
         const body = el('span', 'body');
         rich(body, m.text);
         node.append(body);
-      } else if (!m.media && !TYPE_WORD[m.type]) {
-        node.append(el('span', 'note', t('unsupported')));
       }
     }
     const meta = el('span', 'meta');
@@ -772,6 +780,7 @@
       };
       if (state.canReact) add('emoji', t('react'), () => showReactBar(node, m));
       if (state.canReply && state.canSend) add('reply', t('reply'), () => setReply(m));
+      if (state.canDelete) add('trash', t('delete'), () => showDeleteBar(node, m));
       if (m.text) add('copy', t('copy'), () => { navigator.clipboard && navigator.clipboard.writeText(m.text).then(() => toast(t('copied'))); });
       if (tools.children.length) node.append(tools);
       node.addEventListener('click', (e) => {
@@ -814,6 +823,38 @@
     }
     node.append(bar);
     setTimeout(() => document.addEventListener('click', () => bar.remove(), { once: true }), 0);
+  }
+  function showDeleteBar(node, m) {
+    for (const old of document.querySelectorAll('.deletebar')) old.remove();
+    const bar = el('div', 'deletebar');
+    const choice = (label, everyone) => {
+      const b = el('button', null, label);
+      b.type = 'button';
+      b.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        bar.remove();
+        try {
+          await api('/api/chats/' + enc(state.current) + '/delete', { id: m.id, everyone });
+          state.messages.delete(m.id);
+          const gone = state.nodes.get(m.id);
+          if (gone) gone.remove();
+          state.nodes.delete(m.id);
+          toast(t('deleted_ok'));
+          await sleep(500);
+          await loadLatest();
+        } catch (err) {
+          toast(err.code === 'send_failed' ? t('sendProblem', { s: err.data.step || '?' }) : errorText(err));
+        }
+      });
+      bar.append(b);
+    };
+    choice(t('deleteForMe'), false);
+    if (m.fromMe && Date.now() - m.ts < 2 * 864e5) choice(t('deleteForAll'), true);
+    const cancel = el('button', 'cancel', t('cancel'));
+    cancel.type = 'button';
+    cancel.addEventListener('click', (e) => { e.stopPropagation(); bar.remove(); });
+    bar.append(cancel);
+    node.append(bar);
   }
   function setReply(m) {
     state.reply = m;
@@ -860,6 +901,7 @@
     for (const m of list) {
       const old = state.nodes.get(m.id);
       state.messages.set(m.id, m);
+      if (!shown(m)) { if (old) { old.remove(); state.nodes.delete(m.id); } continue; }
       if (old) {
         if (old.dataset.sig !== JSON.stringify(m)) {
           const node = messageNode(m, false, old.classList.contains('tail'));
@@ -888,6 +930,7 @@
     state.current = jid;
     state.account = account && account !== state.activeAccount ? account : '';
     state.sendAs = state.account || state.activeAccount;
+    $('phoneOpen').hidden = !!state.account;
     drawSendAs();
     state.messages = new Map();
     state.nodes = new Map();
@@ -916,6 +959,7 @@
       state.canSend = r.canSend;
       state.canReact = live && !!r.canReact;
       state.canReply = live && !!r.canReply;
+      state.canDelete = live && !!r.canDelete;
       for (const m of r.messages) state.messages.set(m.id, m);
       if (r.messages.length < 60) state.noOlder = true;
       renderAll();
@@ -1588,7 +1632,13 @@
     savePrefs();
     applyPrefs();
   });
-  $('phoneOpen').addEventListener('click', openOnPhone);
+  $('phoneOpen').addEventListener('click', async () => {
+    if (!state.current) return;
+    try {
+      await api('/api/chats/' + enc(state.current) + '/open', { text: '' });
+      toast(t('openedPlain'));
+    } catch (e) { toast(errorText(e)); }
+  });
   $('accountButton').addEventListener('click', showAccountMenu);
   // Drag the edge of the chat list to change its width; double click puts it back.
   const grip = $('sideGrip');

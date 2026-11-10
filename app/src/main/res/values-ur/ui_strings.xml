@@ -1221,4 +1221,15 @@
     <string name="waex_ui_web_merge_desc" formatted="false">"WhatsApp میں ایک سے زیادہ اکاؤنٹ والے لوگوں کے لیے (کاروبار نہیں)۔ ویب تمام چیٹس کو ایک ساتھ دکھاتا ہے اور آپ کو بھیجنے کے لیے اکاؤنٹ کا انتخاب کرنے دیتا ہے۔ استعمال میں نہ آنے والے اکاؤنٹس ظاہر کرتے ہیں کہ آخری بار استعمال میں ان کے پاس کیا تھا۔ اسے تبدیل کرنے کے بعد WhatsApp کو دوبارہ شروع کریں۔"</string>
     <string name="waex_ui_web_switch_title" formatted="false">"WhatsApp اکاؤنٹ سوئچ کریں۔"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"%s پر سوئچ کرنے کے لیے تھپتھپائیں، جیسا کہ WAEX ویب میں پوچھا گیا ہے۔"</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"تمام اکاؤنٹس"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"استعمال میں نہیں"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"سے لکھیں…"</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"%s پر سوئچ کریں؟"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp اس اکاؤنٹ پر سوئچ کرتا ہے اور دوبارہ شروع ہوتا ہے۔ واپس آنے پر چیٹ کھل جاتی ہے۔"</string>
+    <string name="waex_ui_merged_switch" formatted="false">"سوئچ کریں۔"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp اکاؤنٹس کو تبدیل نہیں کر سکا۔"</string>
+    <string name="waex_ui_merged_hint" formatted="false">"استعمال میں نہ آنے والے اکاؤنٹس ظاہر کرتے ہیں کہ آخری بار استعمال میں ان کے پاس کیا تھا۔ کسی دوسرے اکاؤنٹ سے لکھنے کے لیے چیٹ پکڑیں۔"</string>
+    <string name="waex_ui_merged_empty" formatted="false">"کوئی چیٹس نہیں ملے۔"</string>
+    <string name="waex_ui_merged_setting" formatted="false">"تمام اکاؤنٹس ان باکس کریں۔"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"WhatsApp میں ایک سے زیادہ اکاؤنٹس کے لیے (کاروبار نہیں): ہوم اسکرین پر تین نقطوں والا مینو ہر اکاؤنٹ کی چیٹس کے ساتھ \"تمام اکاؤنٹس\" حاصل کرتا ہے۔ دوسرے اکاؤنٹ کی چیٹ کو ٹیپ کرنے سے اس پر سوئچ ہوجاتا ہے۔ اسے تبدیل کرنے کے بعد WhatsApp کو دوبارہ شروع کریں۔"</string>
 </resources>

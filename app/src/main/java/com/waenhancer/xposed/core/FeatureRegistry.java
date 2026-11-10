@@ -379,6 +379,10 @@ public final class FeatureRegistry {
                         || prefs.getBoolean("archive_open_via_title_long_press", true),
                 () -> new HomeScreenHeaderActionsHook(context, classLoader, prefs));
 
+        registerFeature(com.waenhancer.xposed.features.homescreen.MergedInboxHook.class, "Customization",
+                () -> prefs.getBoolean(com.waenhancer.xposed.features.homescreen.MergedInboxHook.PREF_KEY, false),
+                () -> new com.waenhancer.xposed.features.homescreen.MergedInboxHook(context, classLoader, prefs));
+
         registerFeature(ChatListCustomizationsHook.class, "Customization",
                 () -> prefs.getBoolean("metaai", false)
                         || prefs.getBoolean("dotonline", false)

@@ -82,7 +82,7 @@ fun ConversationEnhancementsScreen(targetEpoch: Int = 0) {
             "message_bomber", "anti_edit_messages", "message_device_source", "preserve_own_revoke", "revokeallmessages", "hide_forwarded_tag",
             "removeforwardlimit", "sticker_confirm_alert", "removeseemore", "stamp_copied_message", "doubletap2like",
             "jump_to_first_message", "unlimited_pinned_chats", "broadcast_tag", "direct_chat_dialer",
-            "inline_translation", "copy_status_text", "animation_emojis", "disable_defemojis"
+            "inline_translation", "copy_status_text", "animation_emojis", "disable_defemojis", "merged_inbox"
         )
     }
 
@@ -220,6 +220,14 @@ fun ConversationEnhancementsScreen(targetEpoch: Int = 0) {
                         checked = stateMap["removeforwardlimit"] ?: false,
                         onCheckedChange = { onToggle("removeforwardlimit", it) },
                         icon = WaexIcons.Share,
+                        showDivider = true
+                    )
+                    WaexSwitchPreference(
+                        title = UiText.get(R.string.waex_ui_merged_setting, "All accounts inbox"),
+                        description = UiText.get(R.string.waex_ui_merged_setting_desc, "For more than one account in WhatsApp (not Business): the three-dot menu on the home screen gets \"All accounts\" with the chats of every account together. Tapping a chat of another account switches to it. Restart WhatsApp after changing this."),
+                        checked = stateMap["merged_inbox"] ?: false,
+                        onCheckedChange = { onToggle("merged_inbox", it) },
+                        icon = WaexIcons.Info,
                         showDivider = true
                     )
                     WaexSwitchPreference(

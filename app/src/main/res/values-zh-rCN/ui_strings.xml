@@ -1221,4 +1221,15 @@
     <string name="waex_ui_web_merge_desc" formatted="false">"适用于在 WhatsApp（非企业）中拥有多个帐户的人士。网络会同时显示所有聊天内容，并让您选择要发送的帐户。未使用的帐户显示上次使用时的帐户。更改后重新启动 WhatsApp。"</string>
     <string name="waex_ui_web_switch_title" formatted="false">"切换WhatsApp账户"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"点击以切换到 %s，如 WAEX Web 中所示。"</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"所有账户"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"未使用"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"写自…"</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"切换到%s？"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp 切换到此帐户并重新启动。当它回来时，聊天就会打开。"</string>
+    <string name="waex_ui_merged_switch" formatted="false">"开关"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp 无法切换帐户。"</string>
+    <string name="waex_ui_merged_hint" formatted="false">"未使用的帐户显示上次使用时的帐户。保持聊天以从另一个帐户写入。"</string>
+    <string name="waex_ui_merged_empty" formatted="false">"没有找到聊天记录。"</string>
+    <string name="waex_ui_merged_setting" formatted="false">"所有帐户收件箱"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"对于 WhatsApp 中的多个帐户（非商业帐户）：主屏幕上的三点菜单显示“所有帐户”，其中包含每个帐户的聊天记录。点击另一个帐户的聊天会切换到该帐户。更改后重新启动 WhatsApp。"</string>
 </resources>

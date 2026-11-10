@@ -1221,4 +1221,15 @@
     <string name="waex_ui_web_merge_desc" formatted="false">"WhatsApp (व्यवसाय नहीं) में एक से अधिक खाते वाले लोगों के लिए। वेब सभी चैट को एक साथ दिखाता है और आपको भेजने के लिए खाता चुनने देता है। उपयोग में नहीं आने वाले खाते दिखाते हैं कि पिछली बार उपयोग में होने पर उनके पास क्या था। इसे बदलने के बाद WhatsApp को पुनः आरंभ करें।"</string>
     <string name="waex_ui_web_switch_title" formatted="false">"WhatsApp खाता स्विच करें"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"%s पर स्विच करने के लिए टैप करें, जैसा कि WAEX वेब में पूछा गया है।"</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"सभी खाते"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"उपयोग में नहीं है"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"से लिखें..."</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"%s पर स्विच करें?"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp इस खाते पर स्विच करता है और पुनरारंभ होता है। वापस आने पर चैट खुल जाती है."</string>
+    <string name="waex_ui_merged_switch" formatted="false">"स्विच करें"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp खाते स्विच नहीं कर सका."</string>
+    <string name="waex_ui_merged_hint" formatted="false">"उपयोग में नहीं आने वाले खाते दिखाते हैं कि पिछली बार उपयोग में होने पर उनके पास क्या था। किसी अन्य खाते से लिखने के लिए चैट को होल्ड करें."</string>
+    <string name="waex_ui_merged_empty" formatted="false">"कोई चैट नहीं मिली."</string>
+    <string name="waex_ui_merged_setting" formatted="false">"सभी खाते इनबॉक्स"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"WhatsApp (व्यवसाय नहीं) में एक से अधिक खाते के लिए: होम स्क्रीन पर तीन-बिंदु मेनू को प्रत्येक खाते की चैट के साथ \"सभी खाते\" मिलते हैं। किसी अन्य खाते की चैट को टैप करने से वह उसमें स्विच हो जाता है। इसे बदलने के बाद WhatsApp को पुनः आरंभ करें।"</string>
 </resources>

@@ -1221,4 +1221,15 @@
     <string name="waex_ui_web_merge_desc" formatted="false">"Для людей, имеющих более одной учетной записи в WhatsApp (не Business). В Интернете отображаются все чаты вместе и вы можете выбрать учетную запись для отправки. Неиспользуемые учетные записи показывают, что они имели при последнем использовании. Перезапустите WhatsApp после изменения."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Сменить аккаунт WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Нажмите, чтобы переключиться на %s, как указано в WAEX Web."</string>
+    <string name="waex_ui_merged_inbox" formatted="false">"Все аккаунты"</string>
+    <string name="waex_ui_merged_not_in_use" formatted="false">"не используется"</string>
+    <string name="waex_ui_merged_write_from" formatted="false">"Напишите из…"</string>
+    <string name="waex_ui_merged_switch_title" formatted="false">"Переключиться на %s?"</string>
+    <string name="waex_ui_merged_switch_text" formatted="false">"WhatsApp переключается на эту учетную запись и перезагружается. Чат откроется, когда он вернется."</string>
+    <string name="waex_ui_merged_switch" formatted="false">"Переключатель"</string>
+    <string name="waex_ui_merged_switch_failed" formatted="false">"WhatsApp не удалось переключить учетные записи."</string>
+    <string name="waex_ui_merged_hint" formatted="false">"Неиспользуемые учетные записи показывают, что они имели при последнем использовании. Держите чат, чтобы написать из другого аккаунта."</string>
+    <string name="waex_ui_merged_empty" formatted="false">"Чатов не найдено."</string>
+    <string name="waex_ui_merged_setting" formatted="false">"Входящие все аккаунты"</string>
+    <string name="waex_ui_merged_setting_desc" formatted="false">"Для более чем одной учетной записи в WhatsApp (не Business): трехточечное меню на главном экране отображает «Все учетные записи» с чатами каждой учетной записи вместе. Нажатие на чат другого аккаунта переключает на него. Перезапустите WhatsApp после изменения."</string>
 </resources>

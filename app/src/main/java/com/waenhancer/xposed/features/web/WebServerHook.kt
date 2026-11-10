@@ -31,6 +31,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.ZipFile
+import de.robv.android.xposed.XposedHelpers
 
 /**
  * WAEX Web: a small web server inside WhatsApp's process that shows the chats in a browser on
@@ -540,6 +541,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 request.query["limit"]?.toIntOrNull() ?: 60))
             "send" -> if (post) send(request, chat) else WebResponse.error(405, "method")
             "react" -> if (post) react(request, chat) else WebResponse.error(405, "method")
+            "delete" -> if (post) deleteMessage(request, chat) else WebResponse.error(405, "method")
             "open" -> if (post) openOnPhone(request, chat) else WebResponse.error(405, "method")
             else -> WebResponse.error(404, "not_found")
         }
@@ -624,18 +626,54 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         return if (WebSender.react(key, emoji)) WebResponse.json("{\"ok\":true}") else sendError()
     }
 
-    /** Fallback when sending is unavailable: opens the chat on the phone with the text filled in. */
+    /** Body {id, everyone}: deletes a message for this phone, or for everyone (own messages only). */
+    private fun deleteMessage(request: WebRequest, chat: WebData.Chat): WebResponse {
+        val body = WebJson.parseObject(request.bodyText())
+        val id = (body["id"] as? Double)?.toLong() ?: return WebResponse.error(400, "id")
+        val everyone = body["everyone"] == true
+        if (!WebSender.canDelete) return WebResponse.error(503, "delete_unavailable")
+        val key = data.messageKey(chat, id) ?: return WebResponse.error(404, "message_not_found")
+        if (everyone && !key.fromMe) return WebResponse.error(403, "not_your_message")
+        return if (WebSender.delete(key, everyone)) WebResponse.json("{\"ok\":true}") else sendError()
+    }
+
+    /**
+     * Opens the chat on the phone: a one-to-one chat with the typed text filled in (WhatsApp's own
+     * link), a group chat as it is. Android does not let WhatsApp open a screen from the background,
+     * so the WAEX app opens it (or shows a notification to tap).
+     */
     private fun openOnPhone(request: WebRequest, chat: WebData.Chat): WebResponse {
         val text = (WebJson.parseObject(request.bodyText())["text"] as? String).orEmpty().take(MAX_TEXT)
         val phone = chat.jid.takeIf { it.endsWith("@s.whatsapp.net") }?.substringBefore('@')?.filter(Char::isDigit)
-        if (phone.isNullOrEmpty()) return WebResponse.error(400, "not_a_phone_chat")
+        val intent = if (!phone.isNullOrEmpty()) {
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://api.whatsapp.com/send?phone=$phone&text=${Uri.encode(text)}"))
+                .setPackage(app.packageName)
+        } else {
+            val conversation = XposedHelpers.findClassIfExists("com.whatsapp.Conversation", app.classLoader)
+                ?: return WebResponse.error(400, "not_a_phone_chat")
+            Intent(app, conversation).putExtra("jid", data.sendTarget(chat))
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return if (launchOnPhone(intent, data.nameOf(chat.jid, chat.subject))) WebResponse.json("{\"ok\":true}")
+        else WebResponse.error(503, "cannot_open")
+    }
+
+    private fun launchOnPhone(intent: Intent, label: String): Boolean {
+        try {
+            val pending = android.app.PendingIntent.getActivity(app, 0x5745, intent,
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+            val extras = android.os.Bundle()
+            extras.putParcelable("intent", pending)
+            extras.putString("label", label)
+            val answer = app.contentResolver.call(Uri.parse("content://com.waenhancer.hookprovider"), "web_launch", null, extras)
+            if (answer?.getBoolean("success", false) == true) return true
+        } catch (_: Throwable) {
+        }
         return try {
-            app.startActivity(Intent(Intent.ACTION_VIEW,
-                Uri.parse("https://api.whatsapp.com/send?phone=$phone&text=${Uri.encode(text)}"))
-                .setPackage(app.packageName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            WebResponse.json("{\"ok\":true}")
-        } catch (t: Throwable) {
-            WebResponse.error(503, "cannot_open")
+            app.startActivity(intent)
+            true
+        } catch (_: Throwable) {
+            false
         }
     }
 

@@ -322,7 +322,7 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
         val mine = myReactionsFor(rows.map { it.id })
         for (row in rows) mine[row.id]?.let { row.json["myReaction"] = it }
         return WebJson.obj("messages" to rows.map { it.json }, "canSend" to WebSender.available,
-            "canReact" to WebSender.canReact, "canReply" to WebSender.canReply)
+            "canReact" to WebSender.canReact, "canReply" to WebSender.canReply, "canDelete" to WebSender.canDelete)
     }
 
     /** Original texts from WAEX's deleted messages vault (kept in the WAEX app), by key id. */
