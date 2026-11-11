@@ -1219,4 +1219,9 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_web_screen_title" formatted="false">"Tus chats en un navegador"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"Una alternativa web WhatsApp atendida por este teléfono, solo por su cuenta Wi-Fi."</string>
     <string name="waex_ui_web_card_desc" formatted="false">"Lee y escribe tus chats desde una computadora en tu Wi-Fi, cambia de cuenta."</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"Chats en un navegador"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"Inicio Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"Cambio de cuenta"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android impide que WhatsApp hable con dispositivos en su Wi-Fi, por lo que una computadora no puede abrir esta página. Permitir \"Dispositivos cercanos\" (red local) para WhatsApp."</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"Abrir permisos WhatsApp"</string>
 </resources>

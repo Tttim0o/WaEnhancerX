@@ -93,6 +93,15 @@ fun SearchScreen() {
             }
         }
     }
+    // WAEX Web is a page of its own, not a single switch, so it is offered as a page result.
+    val webTitle = "WAEX Web"
+    val webDesc = UiText.get(R.string.waex_ui_web_card_desc, "Read and write your chats from a computer on your Wi-Fi, switch accounts.")
+    val showWebPage = remember(query, webDesc) {
+        val terms = query.trim().lowercase().split("\\s+".toRegex()).filter { it.isNotEmpty() }
+        val haystack = ("waex web browser computer pc wifi wi-fi home network accounts account switch merge merged inbox " +
+            "all accounts whatsapp web prehliadac prehliadač pocitac počítač ucet účet ucty účty schranka schránka " + webDesc).lowercase()
+        terms.all(haystack::contains)
+    }
     val groupedPreferences = remember(filteredPreferences, context) {
         filteredPreferences.groupBy { LocalizationHelper.getSection(context, it) }
     }
@@ -140,7 +149,7 @@ fun SearchScreen() {
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
-            if (filteredPreferences.isEmpty()) {
+            if (filteredPreferences.isEmpty() && !showWebPage) {
                 WaexEmptyState(
                     title = stringResource(R.string.no_results_found),
                     description = stringResource(R.string.no_results_description),
@@ -152,6 +161,13 @@ fun SearchScreen() {
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
+                    if (showWebPage) {
+                        item(key = "page_waex_web") {
+                            PageResultRow(title = webTitle, description = webDesc) {
+                                navController.navigateTo(Screen.WaexWeb)
+                            }
+                        }
+                    }
                     groupedPreferences.forEach { (section, preferences) ->
                         stickyHeader(key = "section_$section") {
                             SearchSectionHeader(section)
@@ -179,6 +195,62 @@ fun SearchScreen() {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PageResultRow(title: String, description: String, onClick: () -> Unit) {
+    val colors = WaexTheme.colors
+    val spacing = WaexTheme.spacing
+    val typography = WaexTheme.typography
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(start = spacing.pageMargin)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 15.dp, end = spacing.pageMargin, bottom = 15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = WaexIcons.Smartphone,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = typography.titleMd,
+                    color = colors.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = description,
+                    style = typography.bodyMd,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                imageVector = WaexIcons.ChevronRight,
+                contentDescription = null,
+                tint = colors.outline,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp)
     }
 }
 

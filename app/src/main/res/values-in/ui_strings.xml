@@ -1235,4 +1235,9 @@ Tidak ada ruang antar pesan: %4$d"</string>
     <string name="waex_ui_web_screen_title" formatted="false">"Obrolan Anda di browser"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"Alternatif web WhatsApp yang dilayani oleh ponsel ini, hanya di Wi-Fi Anda sendiri."</string>
     <string name="waex_ui_web_card_desc" formatted="false">"Baca dan tulis obrolan Anda dari komputer di Wi-Fi Anda, ganti akun."</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"Obrolan di browser"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"Beranda Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"Peralihan akun"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android memblokir WhatsApp agar tidak dapat berbicara dengan perangkat di Wi-Fi Anda, sehingga komputer tidak dapat membuka halaman ini. Izinkan \"Perangkat terdekat\" (jaringan lokal) untuk WhatsApp."</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"Buka izin WhatsApp"</string>
 </resources>

@@ -1235,4 +1235,9 @@ Med sporočili ni prostora: %4$d"</string>
     <string name="waex_ui_web_screen_title" formatted="false">"Vaši klepeti v brskalniku"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"WhatsApp Spletna alternativa, ki jo ponuja ta telefon, samo na vašem Wi-Fi."</string>
     <string name="waex_ui_web_card_desc" formatted="false">"Preberite in pišite svoje klepete iz računalnika na vašem Wi-Fi, zamenjajte račune."</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"Klepeti v brskalniku"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"Domov Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"Zamenjava računa"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android blokira WhatsApp pogovor z napravami na vašem Wi-Fi, zato računalnik ne more odpreti te strani. Dovoli »Naprave v bližini« (lokalno omrežje) za WhatsApp."</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"Odprite dovoljenja WhatsApp"</string>
 </resources>

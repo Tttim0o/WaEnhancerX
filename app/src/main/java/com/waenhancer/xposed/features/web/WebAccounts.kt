@@ -73,15 +73,20 @@ class WebAccounts(private val app: Context) {
             val dirId = entry.optString("dir_id").trim()
             if (dirId.contains('/') || dirId.contains("..")) continue
             if (list.any { it.dirId == dirId }) continue
+            // WhatsApp often leaves these empty for the accounts added later; their own settings have them.
+            val own = ownPrefs(dirFor(dirId))
             val jid = entry.optString("jid").takeIf { it.isNotBlank() }
+                ?: own["registration_jid"]
+                ?: own["ph"]?.let { (own["cc"] ?: "") + it }
             val name = entry.optString("name").takeIf { it.isNotBlank() }
+                ?: own["push_name"]
                 ?: jid?.substringBefore('@')?.let { "+$it" } ?: "WhatsApp"
             list.add(Account(
                 id = dirId.ifEmpty { MAIN },
                 dirId = dirId,
                 name = name,
                 phone = jid?.substringBefore('@')?.filter(Char::isDigit)?.takeIf { it.isNotEmpty() }?.let { "+$it" },
-                lid = entry.optString("lid").takeIf { it.isNotBlank() },
+                lid = entry.optString("lid").takeIf { it.isNotBlank() } ?: own["self_lid"],
                 loggedOut = entry.optBoolean("is_logged_out"),
                 active = dirId == activeDir,
                 dataDir = dirFor(dirId)
@@ -92,7 +97,11 @@ class WebAccounts(private val app: Context) {
             val dirId = dir.name
             if (!dir.isDirectory || list.any { it.dirId == dirId }) return@forEach
             if (!File(dir, "databases/msgstore.db").isFile) return@forEach
-            list.add(Account(dirId, dirId, "WhatsApp " + (list.size + 1), null, null, false, dirId == activeDir, dir))
+            val own = ownPrefs(dir)
+            val phone = (own["registration_jid"] ?: own["ph"]?.let { (own["cc"] ?: "") + it })
+                ?.substringBefore('@')?.filter(Char::isDigit)?.takeIf { it.isNotEmpty() }?.let { "+$it" }
+            list.add(Account(dirId, dirId, own["push_name"] ?: phone ?: ("WhatsApp " + (list.size + 1)), phone,
+                own["self_lid"], false, dirId == activeDir, dir))
         }
         // WhatsApp's list holds the other accounts; the one in use may be missing from it.
         if (list.none { it.active }) {
@@ -118,6 +127,27 @@ class WebAccounts(private val app: Context) {
     @Volatile private var lastLogged = -1
 
     private fun dirFor(dirId: String): File = if (dirId.isEmpty()) root else File(root, "accounts/$dirId")
+
+    /**
+     * A few text values from an account's own settings file, read as a file because the settings of
+     * an account that is not in use are not loaded. Missing file or keys give an empty map.
+     */
+    private fun ownPrefs(dataDir: File): Map<String, String> = try {
+        val file = File(dataDir, "shared_prefs/" + app.packageName + "_preferences_light.xml")
+        if (!file.isFile || file.length() > 4_000_000) emptyMap() else {
+            val wanted = setOf("push_name", "registration_jid", "self_lid", "cc", "ph")
+            val found = HashMap<String, String>()
+            Regex("<string name=\"([a-z_]+)\">([^<]*)</string>").findAll(file.readText()).forEach { m ->
+                val key = m.groupValues[1]
+                val value = m.groupValues[2].replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
+                    .replace("&apos;", "'").replace("&amp;", "&").trim()
+                if (key in wanted && value.isNotEmpty()) found[key] = value
+            }
+            found
+        }
+    } catch (_: Throwable) {
+        emptyMap()
+    }
 
     /** The profile name WhatsApp shows for the account in use, when it can be found. */
     private fun ownName(): String? = try {

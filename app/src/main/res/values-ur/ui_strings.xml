@@ -1235,4 +1235,9 @@
     <string name="waex_ui_web_screen_title" formatted="false">"براؤزر میں آپ کی چیٹس"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"اس فون کے ذریعہ پیش کردہ ایک WhatsApp ویب متبادل، صرف آپ کے اپنے Wi-Fi پر۔"</string>
     <string name="waex_ui_web_card_desc" formatted="false">"اپنے Wi-Fi پر کمپیوٹر سے اپنی چیٹس پڑھیں اور لکھیں، اکاؤنٹس تبدیل کریں۔"</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"براؤزر میں چیٹس"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"گھر Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"اکاؤنٹ سوئچنگ"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android WhatsApp کو آپ کے Wi-Fi پر موجود آلات سے بات کرنے سے روکتا ہے، لہذا کمپیوٹر اس صفحہ کو نہیں کھول سکتا۔ WhatsApp کیلئے \"قریبی آلات\" (مقامی نیٹ ورک) کی اجازت دیں۔"</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"WhatsApp اجازتیں کھولیں۔"</string>
 </resources>

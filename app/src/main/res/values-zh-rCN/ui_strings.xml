@@ -1235,4 +1235,9 @@
     <string name="waex_ui_web_screen_title" formatted="false">"您在浏览器中的聊天记录"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"此手机提供的 WhatsApp Web 替代方案，仅在您自己的 Wi-Fi 上。"</string>
     <string name="waex_ui_web_card_desc" formatted="false">"从计算机上的 Wi-Fi 上读取和写入聊天记录，切换帐户。"</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"在浏览器中聊天"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"首页 Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"账户切换"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android 阻止 WhatsApp 与 Wi-Fi 上的设备通信，因此计算机无法打开此页面。允许 WhatsApp 的“附近设备”（本地网络）。"</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"打开WhatsApp权限"</string>
 </resources>

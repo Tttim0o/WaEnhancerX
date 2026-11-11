@@ -35,14 +35,31 @@
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.7"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
   <symbol id="i-poll" viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-chats" viewBox="0 0 24 24"><path d="M5 5h14a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 19 18h-7.5L7 21.5V18H5a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 5 5z"/><path d="M7.5 10h9M7.5 13.5h5.5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path stroke-width="2.6" d="M12 5.5v.01M12 12v.01M12 18.5v.01"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M8 5.2v13.6a.8.8 0 0 0 1.2.7l11-6.8a.8.8 0 0 0 0-1.4l-11-6.8A.8.8 0 0 0 8 5.200z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.500z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path stroke-width="2.4" d="M12 7.6v.01"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.400-6.400L12 5.600"/><path d="M14 10a4.5 4.5 0 0 0-6.400 0l-3 3a4.5 4.5 0 0 0 6.400 6.400l1-1"/></symbol>
+  <symbol id="i-retry" viewBox="0 0 24 24"><path d="M19.500 12a7.500 7.500 0 1 1-2.200-5.300"/><path d="M19.500 4v4.500H15"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M12 7.500v5.500"/><path stroke-width="2.400" d="M12 16.400v.010"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.500 12S6 5.500 12 5.500 21.500 12 21.500 12 18 18.500 12 18.500 2.500 12 2.500 12z"/><circle cx="12" cy="12" r="2.800"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 120 80"><rect x="22" y="8" width="76" height="50" rx="5"/><path d="M8 66h104l-6 7H14z"/><rect x="74" y="26" width="18" height="30" rx="3" fill="var(--panel)"/><path d="M36 24h26M36 33h18M36 42h22"/></symbol>
 </svg>
 <noscript>WAEX Web needs JavaScript.</noscript>
 
 <main id="login" class="login" hidden>
   <div class="card">
     <div class="logo">WAEX <span>Web</span></div>
-    <div class="steps" aria-hidden="true"><i class="on"></i><i id="step2Dot"></i></div>
-    <p id="loginIntro" class="muted"></p>
+    <h1 id="loginTitle"></h1>
+    <ol class="howto">
+      <li id="how1"></li>
+      <li id="how2"></li>
+      <li id="how3"></li>
+    </ol>
     <div id="loginStep1">
       <button id="askCode" class="primary wide"></button>
     </div>
@@ -57,21 +74,25 @@
       <button id="newCode" class="link" type="button"></button>
     </form>
     <p id="loginError" class="error" role="alert"></p>
-    <p id="loginNote" class="muted small"></p>
+    <p id="loginNote" class="muted small"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span></span></p>
   </div>
 </main>
 
 <div id="app" class="app" hidden>
+  <nav id="rail" class="rail">
+    <button id="railChats" class="icon on"><svg class="ic" aria-hidden="true"><use href="#i-chats"/></svg><span id="railCount" class="badge" hidden></span></button>
+    <span class="grow"></span>
+    <button id="accountButton" class="acctbtn" type="button" hidden></button>
+    <button id="toggleTheme" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-theme"/></svg></button>
+    <button id="openSettings" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg></button>
+  </nav>
+
   <aside id="side" class="side">
     <header class="bar">
       <div class="logo small">WAEX <span>Web</span></div>
-      <span id="conn" class="conn" role="img"></span>
-      <span class="grow"></span>
-      <button id="accountButton" class="acctbtn" type="button" hidden></button>
-      <button id="toggleTheme" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-theme"/></svg></button>
-      <button id="openSettings" class="icon" aria-label="Settings"><svg class="ic" aria-hidden="true"><use href="#i-settings"/></svg></button>
     </header>
     <div class="searchbox">
+      <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
       <input id="search" type="search" autocomplete="off">
     </div>
     <div id="tabs" class="tabs">
@@ -87,50 +108,91 @@
 
   <section id="pane" class="pane">
     <div id="empty" class="empty">
-      <div class="logo">WAEX <span>Web</span></div>
+      <svg class="art" aria-hidden="true"><use href="#i-laptop"/></svg>
+      <h2 id="emptyTitle"></h2>
       <p id="emptyText" class="muted"></p>
       <p id="emptyHint" class="muted hint"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span></span></p>
     </div>
     <div id="chat" class="chat" hidden>
       <header class="bar">
-        <button id="back" class="icon back" aria-label="Back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
-        <div id="chatAvatar" class="avatar"></div>
-        <div class="grow titlebox">
-          <div id="chatName" class="name"></div>
-          <div id="chatSub" class="muted small"></div>
-        </div>
+        <button id="back" class="icon back"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
+        <button id="chatHead" class="chathead" type="button">
+          <span id="chatAvatar" class="avatar"></span>
+          <span class="grow titlebox">
+            <span id="chatName" class="name"></span>
+            <span id="chatSub" class="muted small"></span>
+          </span>
+        </button>
+        <button id="findOpen" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></button>
         <button id="phoneOpen" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg></button>
+        <button id="infoOpen" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-more"/></svg></button>
       </header>
-      <div id="messages" class="messages"></div>
-      <button id="toLatest" class="tolatest" hidden><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></button>
-      <div id="replyBar" class="replybar" hidden>
-        <div class="grow replybox"><div id="replyWho" class="sender"></div><div id="replyText" class="replytext"></div></div>
-        <button id="replyCancel" class="icon" aria-label="Cancel"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+      <div id="findBar" class="findbar" hidden>
+        <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="findText" type="search" autocomplete="off">
+        <span id="findCount" class="muted small"></span>
+        <button id="findPrev" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-up"/></svg></button>
+        <button id="findNext" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></button>
+        <button id="findClose" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
       </div>
-      <div id="emojiPanel" class="emojipanel" hidden></div>
-      <div id="sendAs" class="sendas" hidden></div>
-      <footer class="composer">
-        <button id="emojiButton" class="icon" aria-label="Emoji"><svg class="ic" aria-hidden="true"><use href="#i-emoji"/></svg></button>
-        <textarea id="text" rows="1" maxlength="8000"></textarea>
-        <button id="send" class="round send" aria-label="Send"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3 10l12 2-12 2z"/></svg></button>
-      </footer>
-      <div id="sendNote" class="sendnote" hidden></div>
+      <div id="messages" class="messages" tabindex="-1"></div>
+      <button id="toLatest" class="tolatest" hidden><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg><span id="latestCount" class="badge" hidden></span></button>
+      <div class="dock">
+        <div id="emojiPanel" class="emojipop" hidden></div>
+        <div id="sendNote" class="sendnote" hidden></div>
+        <div class="composer">
+          <div id="sendAs" class="sendas" hidden></div>
+          <div id="replyBar" class="replybar" hidden>
+            <div class="grow replybox"><div id="replyWho" class="sender"></div><div id="replyText" class="replytext"></div></div>
+            <button id="replyCancel" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+          </div>
+          <div class="writerow">
+            <button id="emojiButton" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-emoji"/></svg></button>
+            <textarea id="text" rows="1" maxlength="8000"></textarea>
+            <button id="send" class="round send"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </div>
     </div>
+    <aside id="info" class="info" hidden>
+      <header class="bar">
+        <button id="infoClose" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+        <div id="infoTitle" class="name grow"></div>
+      </header>
+      <div id="infoBody" class="infobody"></div>
+    </aside>
   </section>
 </div>
 
-<div id="viewer" class="viewer" hidden><img id="viewerImg" alt=""><a id="viewerSave" class="primary" download></a></div>
+<div id="viewer" class="viewer" hidden>
+  <header>
+    <div class="grow"><div id="viewerWho" class="name"></div><div id="viewerWhen" class="small"></div></div>
+    <a id="viewerSave" class="icon" download><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg></a>
+    <button id="viewerClose" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+  </header>
+  <button id="viewerPrev" class="icon nav prev"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg></button>
+  <div id="viewerStage" class="stage"></div>
+  <button id="viewerNext" class="icon nav next"><svg class="ic" aria-hidden="true"><use href="#i-next"/></svg></button>
+  <p id="viewerCaption" class="caption"></p>
+</div>
 
 <dialog id="settings" class="settings">
   <header class="bar">
     <div id="settingsTitle" class="name grow"></div>
-    <button id="closeSettings" class="icon" aria-label="Close"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+    <button id="closeSettings" class="icon"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
   </header>
   <nav id="settingsNav" class="setnav"></nav>
   <div id="settingsBody" class="settingsbody"></div>
 </dialog>
 
-<div id="toast" class="toast" hidden></div>
+<dialog id="ask" class="ask">
+  <h2 id="askTitle"></h2>
+  <p id="askText" class="muted"></p>
+  <div id="askButtons" class="askbuttons"></div>
+</dialog>
+
+<div id="menu" class="menu" role="menu" hidden></div>
+<div id="toast" class="toast" role="status" hidden></div>
 <script src="app.js"></script>
 </body>
 </html>

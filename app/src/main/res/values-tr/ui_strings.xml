@@ -1235,4 +1235,9 @@ Mesajlar arasında yer yok: %4$d"</string>
     <string name="waex_ui_web_screen_title" formatted="false">"Bir tarayıcıdaki sohbetleriniz"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"Bu telefon tarafından yalnızca kendi Wi-Fi üzerinde sunulan bir WhatsApp Web alternatifi."</string>
     <string name="waex_ui_web_card_desc" formatted="false">"Sohbetlerinizi bir bilgisayardan Wi-Fi cihazınıza okuyun ve yazın, hesap değiştirin."</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"Tarayıcıda sohbetler"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"Ana Sayfa Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"Hesap değiştirme"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android, WhatsApp'nin Wi-Fi cihazınızdaki cihazlarla konuşmasını engeller, dolayısıyla bilgisayar bu sayfayı açamaz. WhatsApp için \"Yakındaki cihazlara\" (yerel ağ) izin verin."</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"WhatsApp izinlerini aç"</string>
 </resources>
