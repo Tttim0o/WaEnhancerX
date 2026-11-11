@@ -38,6 +38,8 @@ class WebAccounts(private val app: Context) {
         val contactsFile: File get() = File(dataDir, "databases/wa.db")
     }
 
+    init { watchScreens(app) }
+
     private val root: File = File(app.applicationInfo.dataDir)
     private val switchDir: File get() = File(root, "app_account_switching")
 
@@ -172,9 +174,23 @@ class WebAccounts(private val app: Context) {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             account.lid?.let { intent.putExtra("switch_to_account_lid", it) }
             cachedAt = 0
-            // Android does not let WhatsApp open a screen from the background; the WAEX app opens it.
+            // WhatsApp is on screen: its own screen may open the switcher directly.
+            val front = resumed?.get()
+            if (front != null && !front.isFinishing && !front.isDestroyed) {
+                front.runOnUiThread {
+                    try { front.startActivity(Intent(intent).setFlags(0)) } catch (_: Throwable) {}
+                }
+                return true
+            }
+            // In the background Android only lets a screen open when both the app that made the
+            // request (WhatsApp) and the one that sends it (WAEX, which may draw over apps) agree.
+            val creator = if (android.os.Build.VERSION.SDK_INT >= 34) {
+                @Suppress("WrongConstant")
+                android.app.ActivityOptions.makeBasic().setPendingIntentCreatorBackgroundActivityStartMode(
+                    if (android.os.Build.VERSION.SDK_INT >= 36) BAL_ALLOW_ALWAYS else BAL_ALLOWED).toBundle()
+            } else null
             val pending = PendingIntent.getActivity(app, account.id.hashCode(), intent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT, creator)
             val extras = Bundle()
             extras.putParcelable("intent", pending)
             extras.putString("label", account.name)
@@ -193,6 +209,29 @@ class WebAccounts(private val app: Context) {
 
     companion object {
         const val MAIN = "main"
+        // ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED / _ALLOW_ALWAYS (the second from Android 16).
+        const val BAL_ALLOWED = 1
+        const val BAL_ALLOW_ALWAYS = 3
+
+        /** The WhatsApp screen the user is looking at, if any. */
+        @Volatile private var resumed: java.lang.ref.WeakReference<android.app.Activity>? = null
+        @Volatile private var watching = false
+
+        /** Keeps track of the screen in front, so a switch can start from it. Safe to call many times. */
+        fun watchScreens(context: Context) {
+            if (watching) return
+            val application = context.applicationContext as? android.app.Application ?: return
+            watching = true
+            application.registerActivityLifecycleCallbacks(object : android.app.Application.ActivityLifecycleCallbacks {
+                override fun onActivityResumed(activity: android.app.Activity) { resumed = java.lang.ref.WeakReference(activity) }
+                override fun onActivityPaused(activity: android.app.Activity) { if (resumed?.get() === activity) resumed = null }
+                override fun onActivityCreated(activity: android.app.Activity, state: Bundle?) {}
+                override fun onActivityStarted(activity: android.app.Activity) {}
+                override fun onActivityStopped(activity: android.app.Activity) {}
+                override fun onActivitySaveInstanceState(activity: android.app.Activity, state: Bundle) {}
+                override fun onActivityDestroyed(activity: android.app.Activity) {}
+            })
+        }
         private const val CURRENT = "WhatsApp"
     }
 }
