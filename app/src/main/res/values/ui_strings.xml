@@ -1214,4 +1214,7 @@
     <string name="waex_ui_merged_empty" formatted="false">"No chats found."</string>
     <string name="waex_ui_merged_setting" formatted="false">"All accounts inbox"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"For more than one account in WhatsApp (not Business): the three-dot menu on the home screen gets \"All accounts\" with the chats of every account together. Tapping a chat of another account switches to it. Restart WhatsApp after changing this."</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"Your chats in a browser"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"A WhatsApp Web alternative served by this phone, only on your own Wi-Fi."</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"Read and write your chats from a computer on your Wi-Fi, switch accounts."</string>
 </resources>

@@ -1232,4 +1232,7 @@
     <string name="waex_ui_merged_setting" formatted="false">"البريد الوارد لجميع الحسابات"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"بالنسبة لأكثر من حساب واحد في WhatsApp (ليس تجاريًا): تحصل قائمة النقاط الثلاث على الشاشة الرئيسية على \"جميع الحسابات\" مع محادثات كل حساب معًا. يؤدي النقر على محادثة حساب آخر إلى التبديل إليها. أعد تشغيل WhatsApp بعد تغيير هذا."</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"للأشخاص الذين لديهم أكثر من حساب واحد في WhatsApp (وليس الأعمال). يعرض الويب جميع الدردشات معًا ويتيح لك اختيار الحساب الذي تريد الإرسال منه؛ في WhatsApp، تحصل قائمة النقاط الثلاث على \"جميع الحسابات\". تُظهر الحسابات غير المستخدمة ما كان لديها عند آخر استخدام. أعد تشغيل WhatsApp بعد تغيير هذا."</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"محادثاتك في المتصفح"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"بديل الويب WhatsApp الذي يقدمه هذا الهاتف، فقط بمفردك Wi-Fi."</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"اقرأ واكتب محادثاتك من جهاز كمبيوتر على Wi-Fi، وقم بالتبديل بين الحسابات."</string>
 </resources>

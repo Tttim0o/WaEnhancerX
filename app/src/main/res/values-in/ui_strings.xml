@@ -1232,4 +1232,7 @@ Tidak ada ruang antar pesan: %4$d"</string>
     <string name="waex_ui_merged_setting" formatted="false">"Semua kotak masuk akun"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Untuk lebih dari satu akun di WhatsApp (bukan Bisnis): menu tiga titik di layar beranda menampilkan \"Semua akun\" dengan obrolan setiap akun secara bersamaan. Mengetuk obrolan dari akun lain akan mengalihkannya. Mulai ulang WhatsApp setelah mengubahnya."</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"Bagi yang mempunyai lebih dari satu akun di WhatsApp (bukan Bisnis). Web menampilkan semua obrolan secara bersamaan dan memungkinkan Anda memilih akun yang akan digunakan untuk mengirim; di WhatsApp menu tiga titik menampilkan \"Semua akun\". Akun yang tidak digunakan menunjukkan apa yang dimilikinya saat terakhir kali digunakan. Mulai ulang WhatsApp setelah mengubahnya."</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"Obrolan Anda di browser"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"Alternatif web WhatsApp yang dilayani oleh ponsel ini, hanya di Wi-Fi Anda sendiri."</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"Baca dan tulis obrolan Anda dari komputer di Wi-Fi Anda, ganti akun."</string>
 </resources>

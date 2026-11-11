@@ -563,6 +563,15 @@ fun MainDashboardScreen(
                 }
             }
 
+            // WAEX Web has its own page; it has nothing to do with automation.
+            StandardNavCard(
+                title = "WAEX Web",
+                desc = UiText.get(R.string.waex_ui_web_card_desc, "Read and write your chats from a computer on your Wi-Fi, switch accounts."),
+                icon = WaexIcons.Smartphone,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { navController.navigateTo(Screen.WaexWeb) }
+            )
+
             DashboardDiagnosticsCard(
                 isModuleActive = isModuleActive,
                 diagnostics = systemDiagnostics,

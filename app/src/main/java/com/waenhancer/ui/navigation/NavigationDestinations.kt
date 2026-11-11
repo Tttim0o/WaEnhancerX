@@ -8,6 +8,7 @@ sealed class Screen(val route: String) {
     object ConversationEnhancements : Screen("conversation_enhancements")
     object MediaStatusHub : Screen("media_status_hub")
     object AutomationTasker : Screen("automation_tasker")
+    object WaexWeb : Screen("waex_web")
     object AudioTranscription : Screen("audio_transcription")
     object LicenseActivation : Screen("license_activation")
     object Search : Screen("search")

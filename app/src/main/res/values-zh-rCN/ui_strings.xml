@@ -1232,4 +1232,7 @@
     <string name="waex_ui_merged_setting" formatted="false">"所有帐户收件箱"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"对于 WhatsApp 中的多个帐户（非商业帐户）：主屏幕上的三点菜单显示“所有帐户”，其中包含每个帐户的聊天记录。点击另一个帐户的聊天会切换到该帐户。更改后重新启动 WhatsApp。"</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"适用于在 WhatsApp（非企业）中拥有多个帐户的人士。网络会同时显示所有聊天内容，并让您选择要发送的帐户；在 WhatsApp 中，三点菜单显示“所有帐户”。未使用的帐户显示上次使用时的帐户。更改后重新启动 WhatsApp。"</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"您在浏览器中的聊天记录"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"此手机提供的 WhatsApp Web 替代方案，仅在您自己的 Wi-Fi 上。"</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"从计算机上的 Wi-Fi 上读取和写入聊天记录，切换帐户。"</string>
 </resources>

@@ -1232,4 +1232,7 @@ Pas d'espace entre les messages : %4$d"</string>
     <string name="waex_ui_merged_setting" formatted="false">"Boîte de réception de tous les comptes"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Pour plus d'un compte dans WhatsApp (pas Business) : le menu à trois points sur l'écran d'accueil affiche \"Tous les comptes\" avec les discussions de chaque compte ensemble. En appuyant sur une discussion d'un autre compte, vous y accédez. Redémarrez WhatsApp après avoir modifié cela."</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"Pour les personnes possédant plusieurs comptes dans WhatsApp (pas Business). Le Web affiche toutes les discussions ensemble et vous permet de choisir le compte à partir duquel envoyer ; dans WhatsApp, le menu à trois points obtient \"Tous les comptes\". Les comptes non utilisés affichent ce qu'ils avaient lors de leur dernière utilisation. Redémarrez WhatsApp après avoir modifié cela."</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"Vos discussions dans un navigateur"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"Une alternative Web WhatsApp servie par ce téléphone, uniquement sur votre propre Wi-Fi."</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"Lisez et écrivez vos discussions depuis un ordinateur sur votre Wi-Fi, changez de compte."</string>
 </resources>
