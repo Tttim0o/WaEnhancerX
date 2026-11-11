@@ -1218,7 +1218,6 @@
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi الاسم"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"أضف"</string>
     <string name="waex_ui_web_merge" formatted="false">"دمج صناديق البريد الوارد لجميع حسابات WhatsApp"</string>
-    <string name="waex_ui_web_merge_desc" formatted="false">"للأشخاص الذين لديهم أكثر من حساب واحد في WhatsApp (وليس الأعمال). يعرض الويب جميع الدردشات معًا ويتيح لك اختيار الحساب الذي تريد الإرسال منه. تُظهر الحسابات غير المستخدمة ما كان لديها عند آخر استخدام. أعد تشغيل WhatsApp بعد تغيير هذا."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"قم بتبديل حساب WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"انقر للتبديل إلى %s، كما هو مطلوب في WAEX الويب."</string>
     <string name="waex_ui_merged_inbox" formatted="false">"جميع الحسابات"</string>
@@ -1232,4 +1231,5 @@
     <string name="waex_ui_merged_empty" formatted="false">"لم يتم العثور على محادثات."</string>
     <string name="waex_ui_merged_setting" formatted="false">"البريد الوارد لجميع الحسابات"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"بالنسبة لأكثر من حساب واحد في WhatsApp (ليس تجاريًا): تحصل قائمة النقاط الثلاث على الشاشة الرئيسية على \"جميع الحسابات\" مع محادثات كل حساب معًا. يؤدي النقر على محادثة حساب آخر إلى التبديل إليها. أعد تشغيل WhatsApp بعد تغيير هذا."</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"للأشخاص الذين لديهم أكثر من حساب واحد في WhatsApp (وليس الأعمال). يعرض الويب جميع الدردشات معًا ويتيح لك اختيار الحساب الذي تريد الإرسال منه؛ في WhatsApp، تحصل قائمة النقاط الثلاث على \"جميع الحسابات\". تُظهر الحسابات غير المستخدمة ما كان لديها عند آخر استخدام. أعد تشغيل WhatsApp بعد تغيير هذا."</string>
 </resources>

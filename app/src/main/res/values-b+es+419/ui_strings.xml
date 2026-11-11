@@ -1202,7 +1202,6 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi nombre"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Añadir"</string>
     <string name="waex_ui_web_merge" formatted="false">"Fusionar las bandejas de entrada de todas las cuentas WhatsApp"</string>
-    <string name="waex_ui_web_merge_desc" formatted="false">"Para personas con más de una cuenta en WhatsApp (no Empresas). La web muestra todos los chats juntos y te permite elegir la cuenta desde la que enviar. Las cuentas que no están en uso muestran lo que tenían la última vez que estuvieron en uso. Reinicie WhatsApp después de cambiar esto."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Cambiar cuenta WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Toque para cambiar a %s, como se solicita en WAEX Web."</string>
     <string name="waex_ui_merged_inbox" formatted="false">"Todas las cuentas"</string>
@@ -1216,4 +1215,5 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_merged_empty" formatted="false">"No se encontraron chats."</string>
     <string name="waex_ui_merged_setting" formatted="false">"Bandeja de entrada de todas las cuentas"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Para más de una cuenta en WhatsApp (no Empresas): el menú de tres puntos en la pantalla de inicio muestra \"Todas las cuentas\" con los chats de cada cuenta juntos. Al tocar un chat de otra cuenta se accede a él. Reinicie WhatsApp después de cambiar esto."</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"Para personas con más de una cuenta en WhatsApp (no Empresas). La web muestra todos los chats juntos y te permite elegir la cuenta desde la que enviar; en WhatsApp el menú de tres puntos muestra \"Todas las cuentas\". Las cuentas que no están en uso muestran lo que tenían la última vez que estuvieron en uso. Reinicie WhatsApp después de cambiar esto."</string>
 </resources>

@@ -69,7 +69,8 @@ class MergedInboxHook(context: Context, classLoader: ClassLoader, prefs: SharedP
     private val readers = HashMap<String, WebData>()
 
     override fun hook() {
-        if (context.packageName != WHATSAPP || !isEnabled(PREF_KEY, false)) return
+        if (context.packageName != WHATSAPP) return
+        if (!isEnabled(PREF_KEY, false) && !isEnabled(WEB_MERGE_KEY, false)) return
         val home = resolveHomeActivity() ?: run {
             XposedBridge.log("$TAG home screen not found")
             return
@@ -462,6 +463,8 @@ class MergedInboxHook(context: Context, classLoader: ClassLoader, prefs: SharedP
     companion object {
         private const val TAG = "[WAEX][MergedInbox]"
         const val PREF_KEY = "merged_inbox"
+        /** The same switch in the WAEX Web settings turns this on too. */
+        private const val WEB_MERGE_KEY = "web_merge_accounts"
         private const val WHATSAPP = "com.whatsapp"
         private const val MENU_ID = 0x7EAE0010
     }

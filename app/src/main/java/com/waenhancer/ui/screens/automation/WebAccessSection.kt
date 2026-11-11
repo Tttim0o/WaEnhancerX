@@ -107,6 +107,8 @@ fun WebAccessSection() {
                 "Read and write your chats from a computer on the same Wi-Fi. A new browser needs a code that this phone shows in a notification. You can add a password on the web page."),
             style = typography.labelSm, color = colors.onSurfaceVariant
         )
+        // Also turns on the "All accounts" list inside WhatsApp, so it is shown even with the web off.
+        if (target == null || target == WebAdmin.WHATSAPP) MergeAccounts(epoch)
         if (!enabled) return@Column
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -140,7 +142,6 @@ fun WebAccessSection() {
         }
 
         HomeWifi(epoch)
-        if (target == null || target == WebAdmin.WHATSAPP) MergeAccounts(epoch)
 
         if (addresses.isEmpty()) {
             Text(
@@ -498,13 +499,15 @@ private fun MergeAccounts(epoch: Int) {
             )
             Text(
                 text = UiText.get(R.string.waex_ui_web_merge_desc,
-                    "For people with more than one account in WhatsApp (not Business). The web shows all chats together and lets you choose the account to send from. Accounts not in use show what they had when last in use. Restart WhatsApp after changing this."),
+                    "For people with more than one account in WhatsApp (not Business). The web shows all chats together and lets you choose the account to send from; in WhatsApp the three-dot menu gets \"All accounts\". Accounts not in use show what they had when last in use. Restart WhatsApp after changing this."),
                 style = typography.labelSm, color = colors.onSurfaceVariant
             )
         }
         Switch(checked = merge, onCheckedChange = {
             merge = it
             preferenceManager.putBoolean(WebServerHook.PREF_MERGE, it)
+            // One switch for both: the web and the "All accounts" list inside WhatsApp.
+            preferenceManager.putBoolean("merged_inbox", it)
             WebKeepAliveService.apply(context)
         })
     }

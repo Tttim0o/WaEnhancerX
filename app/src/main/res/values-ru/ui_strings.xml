@@ -1218,7 +1218,6 @@
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi имя"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Добавить"</string>
     <string name="waex_ui_web_merge" formatted="false">"Объединить входящие все учетные записи WhatsApp"</string>
-    <string name="waex_ui_web_merge_desc" formatted="false">"Для людей, имеющих более одной учетной записи в WhatsApp (не Business). В Интернете отображаются все чаты вместе и вы можете выбрать учетную запись для отправки. Неиспользуемые учетные записи показывают, что они имели при последнем использовании. Перезапустите WhatsApp после изменения."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Сменить аккаунт WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Нажмите, чтобы переключиться на %s, как указано в WAEX Web."</string>
     <string name="waex_ui_merged_inbox" formatted="false">"Все аккаунты"</string>
@@ -1232,4 +1231,5 @@
     <string name="waex_ui_merged_empty" formatted="false">"Чатов не найдено."</string>
     <string name="waex_ui_merged_setting" formatted="false">"Входящие все аккаунты"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Для более чем одной учетной записи в WhatsApp (не Business): трехточечное меню на главном экране отображает «Все учетные записи» с чатами каждой учетной записи вместе. Нажатие на чат другого аккаунта переключает на него. Перезапустите WhatsApp после изменения."</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"Для людей, имеющих более одной учетной записи в WhatsApp (не Business). В Интернете отображаются все чаты вместе и вы можете выбрать учетную запись для отправки; в WhatsApp трехточечное меню получает «Все учетные записи». Неиспользуемые учетные записи показывают, что они имели при последнем использовании. Перезапустите WhatsApp после изменения."</string>
 </resources>

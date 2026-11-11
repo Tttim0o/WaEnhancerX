@@ -1200,7 +1200,7 @@
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi name"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Add"</string>
     <string name="waex_ui_web_merge" formatted="false">"Merge the inboxes of all WhatsApp accounts"</string>
-    <string name="waex_ui_web_merge_desc" formatted="false">"For people with more than one account in WhatsApp (not Business). The web shows all chats together and lets you choose the account to send from. Accounts not in use show what they had when last in use. Restart WhatsApp after changing this."</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"For people with more than one account in WhatsApp (not Business). The web shows all chats together and lets you choose the account to send from; in WhatsApp the three-dot menu gets \"All accounts\". Accounts not in use show what they had when last in use. Restart WhatsApp after changing this."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Switch WhatsApp account"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Tap to switch to %s, as asked in WAEX Web."</string>
     <string name="waex_ui_merged_inbox" formatted="false">"All accounts"</string>

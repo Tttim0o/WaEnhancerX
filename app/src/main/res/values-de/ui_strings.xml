@@ -1218,7 +1218,6 @@ Kein Platz zwischen Nachrichten: %4$d"</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi Name"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Hinzufügen"</string>
     <string name="waex_ui_web_merge" formatted="false">"Führen Sie die Posteingänge aller WhatsApp-Konten zusammen"</string>
-    <string name="waex_ui_web_merge_desc" formatted="false">"Für Personen mit mehr als einem Konto in WhatsApp (nicht Business). Im Web werden alle Chats zusammen angezeigt und Sie können das Konto auswählen, von dem aus gesendet werden soll. Nicht verwendete Konten zeigen, was sie bei der letzten Verwendung hatten. Starten Sie WhatsApp neu, nachdem Sie dies geändert haben."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Wechseln Sie das WhatsApp-Konto"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Tippen Sie auf, um zu %s zu wechseln, wie im WAEX Web verlangt."</string>
     <string name="waex_ui_merged_inbox" formatted="false">"Alle Konten"</string>
@@ -1232,4 +1231,5 @@ Kein Platz zwischen Nachrichten: %4$d"</string>
     <string name="waex_ui_merged_empty" formatted="false">"Keine Chats gefunden."</string>
     <string name="waex_ui_merged_setting" formatted="false">"Alle Konten im Posteingang"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Für mehr als ein Konto in WhatsApp (nicht Business): Das Dreipunktmenü auf dem Startbildschirm zeigt „Alle Konten“ mit den Chats aller Konten zusammen an. Durch Tippen auf einen Chat eines anderen Kontos wird zu diesem gewechselt. Starten Sie WhatsApp neu, nachdem Sie dies geändert haben."</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"Für Personen mit mehr als einem Konto in WhatsApp (nicht Business). Im Web werden alle Chats zusammen angezeigt und Sie können das Konto auswählen, von dem aus gesendet werden soll. in WhatsApp erhält das Dreipunktmenü „Alle Konten“. Nicht verwendete Konten zeigen, was sie bei der letzten Verwendung hatten. Starten Sie WhatsApp neu, nachdem Sie dies geändert haben."</string>
 </resources>
