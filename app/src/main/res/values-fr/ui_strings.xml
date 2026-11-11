@@ -1218,7 +1218,6 @@ Pas d'espace entre les messages : %4$d"</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Nom Wi-Fi"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Ajouter"</string>
     <string name="waex_ui_web_merge" formatted="false">"Fusionner les boîtes de réception de tous les comptes WhatsApp"</string>
-    <string name="waex_ui_web_merge_desc" formatted="false">"Pour les personnes possédant plusieurs comptes dans WhatsApp (pas Business). Le Web affiche toutes les discussions ensemble et vous permet de choisir le compte à partir duquel envoyer. Les comptes non utilisés affichent ce qu'ils avaient lors de leur dernière utilisation. Redémarrez WhatsApp après avoir modifié cela."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Changer de compte WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Appuyez pour passer à %s, comme demandé dans WAEX Web."</string>
     <string name="waex_ui_merged_inbox" formatted="false">"Tous les comptes"</string>
@@ -1232,4 +1231,5 @@ Pas d'espace entre les messages : %4$d"</string>
     <string name="waex_ui_merged_empty" formatted="false">"Aucune discussion trouvée."</string>
     <string name="waex_ui_merged_setting" formatted="false">"Boîte de réception de tous les comptes"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Pour plus d'un compte dans WhatsApp (pas Business) : le menu à trois points sur l'écran d'accueil affiche \"Tous les comptes\" avec les discussions de chaque compte ensemble. En appuyant sur une discussion d'un autre compte, vous y accédez. Redémarrez WhatsApp après avoir modifié cela."</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"Pour les personnes possédant plusieurs comptes dans WhatsApp (pas Business). Le Web affiche toutes les discussions ensemble et vous permet de choisir le compte à partir duquel envoyer ; dans WhatsApp, le menu à trois points obtient \"Tous les comptes\". Les comptes non utilisés affichent ce qu'ils avaient lors de leur dernière utilisation. Redémarrez WhatsApp après avoir modifié cela."</string>
 </resources>

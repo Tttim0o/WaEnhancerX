@@ -59,20 +59,23 @@ class WebAccounts(private val app: Context) {
     fun byId(id: String?): Account? = if (id.isNullOrEmpty()) active() else list().firstOrNull { it.id == id }
 
     private fun read(): List<Account> {
-        val file = File(switchDir, "accounts")
-        if (!file.isFile) return emptyList()
         val activeDir = File(switchDir, "active_account").takeIf { it.isFile }?.readText()?.trim().orEmpty()
-        val json = JSONObject(file.readText())
-        val all = json.optJSONArray("allAccounts") ?: return emptyList()
+            .takeIf { !it.contains('/') && !it.contains("..") }.orEmpty()
         val list = ArrayList<Account>()
-        for (i in 0 until all.length()) {
-            val entry = try { JSONObject(all.getString(i)) } catch (_: Throwable) { continue }
+        val file = File(switchDir, "accounts")
+        val all = try {
+            if (file.isFile) JSONObject(file.readText()).optJSONArray("allAccounts") else null
+        } catch (_: Throwable) {
+            null
+        }
+        if (all != null) for (i in 0 until all.length()) {
+            val entry = try { all.optJSONObject(i) ?: JSONObject(all.getString(i)) } catch (_: Throwable) { continue }
             val dirId = entry.optString("dir_id").trim()
             if (dirId.contains('/') || dirId.contains("..")) continue
+            if (list.any { it.dirId == dirId }) continue
             val jid = entry.optString("jid").takeIf { it.isNotBlank() }
             val name = entry.optString("name").takeIf { it.isNotBlank() }
                 ?: jid?.substringBefore('@')?.let { "+$it" } ?: "WhatsApp"
-            val dir = if (dirId.isEmpty()) root else File(root, "accounts/$dirId")
             list.add(Account(
                 id = dirId.ifEmpty { MAIN },
                 dirId = dirId,
@@ -81,16 +84,49 @@ class WebAccounts(private val app: Context) {
                 lid = entry.optString("lid").takeIf { it.isNotBlank() },
                 loggedOut = entry.optBoolean("is_logged_out"),
                 active = dirId == activeDir,
-                dataDir = dir
+                dataDir = dirFor(dirId)
             ))
         }
-        // Without an active_account file the first account is the one in use.
-        if (list.none { it.active } && list.isNotEmpty()) {
-            val main = list.firstOrNull { it.dirId.isEmpty() } ?: list.first()
-            list[list.indexOf(main)] = Account(main.id, main.dirId, main.name, main.phone, main.lid,
-                main.loggedOut, true, main.dataDir)
+        // Accounts WhatsApp keeps a folder for but that the list above did not name.
+        File(root, "accounts").listFiles()?.forEach { dir ->
+            val dirId = dir.name
+            if (!dir.isDirectory || list.any { it.dirId == dirId }) return@forEach
+            if (!File(dir, "databases/msgstore.db").isFile) return@forEach
+            list.add(Account(dirId, dirId, "WhatsApp " + (list.size + 1), null, null, false, dirId == activeDir, dir))
+        }
+        // WhatsApp's list holds the other accounts; the one in use may be missing from it.
+        if (list.none { it.active }) {
+            list.add(Account(
+                id = activeDir.ifEmpty { MAIN },
+                dirId = activeDir,
+                name = ownName() ?: CURRENT,
+                phone = null,
+                lid = null,
+                loggedOut = false,
+                active = true,
+                dataDir = dirFor(activeDir)
+            ))
+        }
+        if (list.size != lastLogged) {
+            lastLogged = list.size
+            // Counts only, never names or numbers.
+            de.robv.android.xposed.XposedBridge.log("[WAEX][Web] accounts: ${list.size} (listed ${all?.length() ?: -1})")
         }
         return list.sortedByDescending { it.active }
+    }
+
+    @Volatile private var lastLogged = -1
+
+    private fun dirFor(dirId: String): File = if (dirId.isEmpty()) root else File(root, "accounts/$dirId")
+
+    /** The profile name WhatsApp shows for the account in use, when it can be found. */
+    private fun ownName(): String? = try {
+        listOf(app.packageName + "_preferences_light", app.packageName + "_preferences")
+            .firstNotNullOfOrNull { name ->
+                app.getSharedPreferences(name, Context.MODE_PRIVATE).getString("push_name", null)?.takeIf { it.isNotBlank() }
+            }
+    } catch (_: Throwable) {
+        null
     }
 
     /**
@@ -127,5 +163,6 @@ class WebAccounts(private val app: Context) {
 
     companion object {
         const val MAIN = "main"
+        private const val CURRENT = "WhatsApp"
     }
 }

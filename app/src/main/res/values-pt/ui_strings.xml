@@ -1218,7 +1218,6 @@ Não há espaço entre mensagens: %4$d"</string>
     <string name="waex_ui_web_wifi_name_hint" formatted="false">"Wi-Fi nome"</string>
     <string name="waex_ui_web_wifi_add" formatted="false">"Adicionar"</string>
     <string name="waex_ui_web_merge" formatted="false">"Mesclar as caixas de entrada de todas as contas WhatsApp"</string>
-    <string name="waex_ui_web_merge_desc" formatted="false">"Para pessoas com mais de uma conta em WhatsApp (não Business). A web mostra todos os bate-papos juntos e permite que você escolha a conta de onde enviar. As contas que não estão em uso mostram o que tinham quando foram usadas pela última vez. Reinicie WhatsApp após alterar isso."</string>
     <string name="waex_ui_web_switch_title" formatted="false">"Trocar conta WhatsApp"</string>
     <string name="waex_ui_web_switch_text" formatted="false">"Toque para mudar para %s, conforme solicitado em WAEX Web."</string>
     <string name="waex_ui_merged_inbox" formatted="false">"Todas as contas"</string>
@@ -1232,4 +1231,5 @@ Não há espaço entre mensagens: %4$d"</string>
     <string name="waex_ui_merged_empty" formatted="false">"Nenhum bate-papo encontrado."</string>
     <string name="waex_ui_merged_setting" formatted="false">"Caixa de entrada de todas as contas"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Para mais de uma conta em WhatsApp (não Business): o menu de três pontos na tela inicial mostra “Todas as contas” com os chats de cada conta juntos. Tocar em um bate-papo de outra conta alterna para ele. Reinicie WhatsApp após alterar isso."</string>
+    <string name="waex_ui_web_merge_desc" formatted="false">"Para pessoas com mais de uma conta em WhatsApp (não Business). A web mostra todos os chats juntos e permite escolher a conta de onde enviar; em WhatsApp o menu de três pontos obtém \"Todas as contas\". As contas que não estão em uso mostram o que tinham quando foram usadas pela última vez. Reinicie WhatsApp após alterar isso."</string>
 </resources>

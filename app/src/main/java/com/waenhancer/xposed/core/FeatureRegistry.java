@@ -380,7 +380,8 @@ public final class FeatureRegistry {
                 () -> new HomeScreenHeaderActionsHook(context, classLoader, prefs));
 
         registerFeature(com.waenhancer.xposed.features.homescreen.MergedInboxHook.class, "Customization",
-                () -> prefs.getBoolean(com.waenhancer.xposed.features.homescreen.MergedInboxHook.PREF_KEY, false),
+                () -> prefs.getBoolean(com.waenhancer.xposed.features.homescreen.MergedInboxHook.PREF_KEY, false)
+                        || prefs.getBoolean(com.waenhancer.xposed.features.web.WebServerHook.PREF_MERGE, false),
                 () -> new com.waenhancer.xposed.features.homescreen.MergedInboxHook(context, classLoader, prefs));
 
         registerFeature(ChatListCustomizationsHook.class, "Customization",
