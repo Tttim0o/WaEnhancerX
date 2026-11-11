@@ -1232,4 +1232,7 @@
     <string name="waex_ui_merged_setting" formatted="false">"Входящие все аккаунты"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Для более чем одной учетной записи в WhatsApp (не Business): трехточечное меню на главном экране отображает «Все учетные записи» с чатами каждой учетной записи вместе. Нажатие на чат другого аккаунта переключает на него. Перезапустите WhatsApp после изменения."</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"Для людей, имеющих более одной учетной записи в WhatsApp (не Business). В Интернете отображаются все чаты вместе и вы можете выбрать учетную запись для отправки; в WhatsApp трехточечное меню получает «Все учетные записи». Неиспользуемые учетные записи показывают, что они имели при последнем использовании. Перезапустите WhatsApp после изменения."</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"Ваши чаты в браузере"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"Веб-альтернатива WhatsApp, обслуживаемая этим телефоном, только на вашем собственном Wi-Fi."</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"Читайте и пишите свои чаты с компьютера на своем Wi-Fi, переключайте учетные записи."</string>
 </resources>

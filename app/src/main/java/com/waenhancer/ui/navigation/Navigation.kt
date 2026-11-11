@@ -1306,6 +1306,7 @@ fun WaexAppNavigation(
         Screen.SupportedVersions -> SupportedVersionsScreen()
         Screen.DeletedMessages -> DeletedMessagesVaultScreen()
         Screen.CallRecordingSettings -> CallRecordingSettingsScreen()
+        Screen.WaexWeb -> com.waenhancer.ui.screens.web.WaexWebScreen()
         Screen.TaskerGuide -> TaskerGuideScreen()
         Screen.TaskerHistory -> TaskerHistoryScreen()
         Screen.ManageDevices -> ManageDevicesScreen()

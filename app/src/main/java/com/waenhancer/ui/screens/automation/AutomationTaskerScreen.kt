@@ -964,8 +964,6 @@ fun AutomationTaskerScreen(targetEpoch: Int = 0) {
                             TranscriptionLogSection()
 
                             TranscriptionServerSection()
-
-                            WebAccessSection()
                         }
                     }
                     }

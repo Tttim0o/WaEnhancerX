@@ -1232,4 +1232,7 @@ Med sporočili ni prostora: %4$d"</string>
     <string name="waex_ui_merged_setting" formatted="false">"Vsi računi Prejeto"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Za več kot en račun v WhatsApp (ne Business): meni s tremi pikami na začetnem zaslonu dobi \"Vsi računi\" s klepeti vsakega računa skupaj. Če tapnete klepet drugega računa, preklopite nanj. Po spremembi tega znova zaženite WhatsApp."</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"Za ljudi z več kot enim računom v WhatsApp (ne Business). Splet prikazuje vse klepete skupaj in vam omogoča izbiro računa za pošiljanje; v WhatsApp meni s tremi pikami dobi \"Vsi računi\". Računi, ki niso v uporabi, prikazujejo, kaj so imeli ob zadnji uporabi. Po spremembi tega znova zaženite WhatsApp."</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"Vaši klepeti v brskalniku"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"WhatsApp Spletna alternativa, ki jo ponuja ta telefon, samo na vašem Wi-Fi."</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"Preberite in pišite svoje klepete iz računalnika na vašem Wi-Fi, zamenjajte račune."</string>
 </resources>

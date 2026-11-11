@@ -1216,4 +1216,7 @@ No hay espacio entre mensajes: %4$d"</string>
     <string name="waex_ui_merged_setting" formatted="false">"Bandeja de entrada de todas las cuentas"</string>
     <string name="waex_ui_merged_setting_desc" formatted="false">"Para más de una cuenta en WhatsApp (no Empresas): el menú de tres puntos en la pantalla de inicio muestra \"Todas las cuentas\" con los chats de cada cuenta juntos. Al tocar un chat de otra cuenta se accede a él. Reinicie WhatsApp después de cambiar esto."</string>
     <string name="waex_ui_web_merge_desc" formatted="false">"Para personas con más de una cuenta en WhatsApp (no Empresas). La web muestra todos los chats juntos y te permite elegir la cuenta desde la que enviar; en WhatsApp el menú de tres puntos muestra \"Todas las cuentas\". Las cuentas que no están en uso muestran lo que tenían la última vez que estuvieron en uso. Reinicie WhatsApp después de cambiar esto."</string>
+    <string name="waex_ui_web_screen_title" formatted="false">"Tus chats en un navegador"</string>
+    <string name="waex_ui_web_screen_subtitle" formatted="false">"Una alternativa web WhatsApp atendida por este teléfono, solo por su cuenta Wi-Fi."</string>
+    <string name="waex_ui_web_card_desc" formatted="false">"Lee y escribe tus chats desde una computadora en tu Wi-Fi, cambia de cuenta."</string>
 </resources>
