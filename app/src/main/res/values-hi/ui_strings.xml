@@ -1235,4 +1235,9 @@
     <string name="waex_ui_web_screen_title" formatted="false">"ब्राउज़र में आपकी चैट"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"एक WhatsApp वेब विकल्प जो इस फ़ोन द्वारा प्रदान किया जाता है, केवल आपके स्वयं के Wi-Fi पर।"</string>
     <string name="waex_ui_web_card_desc" formatted="false">"अपने Wi-Fi पर कंप्यूटर से अपनी चैट पढ़ें और लिखें, खाते बदलें।"</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"ब्राउज़र में चैट"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"होम Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"खाता परिवर्तन"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android WhatsApp को आपके Wi-Fi पर डिवाइस से बात करने से रोकता है, इसलिए कंप्यूटर इस पृष्ठ को नहीं खोल सकता है। WhatsApp के लिए \"आस-पास के डिवाइस\" (स्थानीय नेटवर्क) की अनुमति दें।"</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"WhatsApp अनुमतियाँ खोलें"</string>
 </resources>

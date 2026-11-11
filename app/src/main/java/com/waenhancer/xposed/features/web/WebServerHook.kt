@@ -92,6 +92,33 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
 
         WebSender.prepare(context, classLoader)
         Thread({ serve() }, "waex-web").apply { isDaemon = true }.start()
+        askForLocalNetwork()
+    }
+
+    /**
+     * From Android 17 an app may only talk to other devices on the Wi-Fi with the "local network"
+     * permission. Without it a computer connects but never gets an answer. WhatsApp declares the
+     * permission, so its own home screen asks for it once per start while it is missing.
+     */
+    private fun localNetworkAllowed(): Boolean = Build.VERSION.SDK_INT < 37 ||
+        app.checkSelfPermission(LOCAL_NETWORK) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+    private fun askForLocalNetwork() {
+        if (localNetworkAllowed()) return
+        XposedBridge.log("$TAG Local network permission is missing; computers on the Wi-Fi cannot connect")
+        try {
+            val asked = java.util.concurrent.atomic.AtomicBoolean(false)
+            XposedHelpers.findAndHookMethod(android.app.Activity::class.java, "onResume", object : de.robv.android.xposed.XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    val activity = param.thisObject as? android.app.Activity ?: return
+                    if (!activity.javaClass.name.contains("Home") || !activity.isTaskRoot) return
+                    if (localNetworkAllowed() || !asked.compareAndSet(false, true)) return
+                    try { activity.requestPermissions(arrayOf(LOCAL_NETWORK), 0x7EA1) } catch (_: Throwable) {}
+                }
+            })
+        } catch (t: Throwable) {
+            XposedBridge.log("$TAG Could not ask for the local network permission: ${t.javaClass.simpleName}")
+        }
     }
 
     /**
@@ -156,9 +183,13 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     // ─── Server loop ────────────────────────────────────────────────────
 
     private fun serve() {
-        val workers = ThreadPoolExecutor(2, MAX_WORKERS, 30, TimeUnit.SECONDS, SynchronousQueue()) { r ->
+        // A page asks for many small things at once (pictures of a whole chat list). Requests beyond
+        // the worker count wait in a short queue instead of being dropped.
+        val workers = ThreadPoolExecutor(MAX_WORKERS, MAX_WORKERS, 30, TimeUnit.SECONDS,
+            java.util.concurrent.LinkedBlockingQueue(128)) { r ->
             Thread(r, "waex-web-worker").apply { isDaemon = true }
         }
+        workers.allowCoreThreadTimeOut(true)
         var failures = 0
         while (true) {
             try {
@@ -278,6 +309,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 WebResponse.json(WebJson.obj(
                     "port" to port,
                     "active" to active,
+                    "localNetwork" to localNetworkAllowed(),
                     "passwordSet" to auth.passwordSet(),
                     "canSend" to WebSender.available,
                     "canReact" to WebSender.canReact,
@@ -755,6 +787,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         const val PREF_KEY = "web_access"
         const val PREF_PORT = "web_access_port"
         const val PREF_WIFI_ONLY = "web_wifi_only"
+        private const val LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK"
         const val PREF_MERGE = "web_merge_accounts"
         const val DEFAULT_PORT = 8377
         private const val CHANNEL = "waex_web"

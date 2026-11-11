@@ -1235,4 +1235,9 @@
     <string name="waex_ui_web_screen_title" formatted="false">"Ваши чаты в браузере"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"Веб-альтернатива WhatsApp, обслуживаемая этим телефоном, только на вашем собственном Wi-Fi."</string>
     <string name="waex_ui_web_card_desc" formatted="false">"Читайте и пишите свои чаты с компьютера на своем Wi-Fi, переключайте учетные записи."</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"Чаты в браузере"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"Главная Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"Смена аккаунта"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android блокирует взаимодействие WhatsApp с устройствами на вашем Wi-Fi, поэтому компьютер не может открыть эту страницу. Разрешить «Устройства поблизости» (локальная сеть) для WhatsApp."</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"Открыть разрешения WhatsApp"</string>
 </resources>

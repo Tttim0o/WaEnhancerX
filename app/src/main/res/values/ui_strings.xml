@@ -1217,4 +1217,9 @@
     <string name="waex_ui_web_screen_title" formatted="false">"Your chats in a browser"</string>
     <string name="waex_ui_web_screen_subtitle" formatted="false">"A WhatsApp Web alternative served by this phone, only on your own Wi-Fi."</string>
     <string name="waex_ui_web_card_desc" formatted="false">"Read and write your chats from a computer on your Wi-Fi, switch accounts."</string>
+    <string name="waex_ui_web_chip_browser" formatted="false">"Chats in a browser"</string>
+    <string name="waex_ui_web_chip_wifi" formatted="false">"Home Wi-Fi"</string>
+    <string name="waex_ui_web_chip_accounts" formatted="false">"Account switching"</string>
+    <string name="waex_ui_web_local_network" formatted="false">"Android blocks WhatsApp from talking to devices on your Wi-Fi, so a computer cannot open this page. Allow \"Nearby devices\" (local network) for WhatsApp."</string>
+    <string name="waex_ui_web_local_network_open" formatted="false">"Open WhatsApp permissions"</string>
 </resources>

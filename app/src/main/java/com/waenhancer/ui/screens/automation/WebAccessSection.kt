@@ -242,6 +242,19 @@ private fun WebDevices(pkg: String, heading: String?) {
             fontFamily = FontFamily.Monospace, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = colors.onSurface
         )
     }
+    if (current["localNetwork"] == false) {
+        Text(
+            text = UiText.get(R.string.waex_ui_web_local_network,
+                "Android blocks WhatsApp from talking to devices on your Wi-Fi, so a computer cannot open this page. Allow \"Nearby devices\" (local network) for WhatsApp."),
+            style = typography.labelSm, color = colors.error
+        )
+        TextButton(onClick = {
+            try {
+                context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    android.net.Uri.fromParts("package", pkg, null)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+            } catch (_: Throwable) {}
+        }) { Text(UiText.get(R.string.waex_ui_web_local_network_open, "Open WhatsApp permissions")) }
+    }
     if (current["canSend"] != true) Text(
         text = UiText.get(R.string.waex_ui_web_cannot_send,
             "Sending is not available on this WhatsApp version. Reading works."),

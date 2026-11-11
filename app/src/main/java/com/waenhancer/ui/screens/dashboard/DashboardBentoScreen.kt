@@ -480,6 +480,19 @@ fun DashboardBentoScreen() {
                     }
                 }
 
+                // WAEX Web: its own page, first so it is easy to find.
+                WaexBentoItemMobile(
+                    title = "WAEX Web",
+                    icon = WaexIcons.Smartphone,
+                    chips = listOf(
+                        UiText.get(R.string.waex_ui_web_chip_browser, "Chats in a browser"),
+                        UiText.get(R.string.waex_ui_web_chip_wifi, "Home Wi-Fi"),
+                        UiText.get(R.string.waex_ui_web_chip_accounts, "Account switching"),
+                        UiText.get(R.string.waex_ui_merged_inbox, "All accounts")
+                    ),
+                    onManageClick = { navController.navigateTo(Screen.WaexWeb) }
+                )
+
                 // Media
                 WaexBentoItemMobile(
                     title = UiText.get(R.string.catalog_tab_media, "Media"),
