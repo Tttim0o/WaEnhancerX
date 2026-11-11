@@ -56,7 +56,10 @@ object WebAdmin {
             try {
                 val options = ActivityOptions.makeBasic()
                 if (Build.VERSION.SDK_INT >= 34) {
-                    options.setPendingIntentBackgroundActivityStartMode(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+                    // From Android 16 the old "allowed" only counts while WAEX is on screen; 3 is "allow always".
+                    @Suppress("WrongConstant")
+                    options.setPendingIntentBackgroundActivityStartMode(
+                        if (Build.VERSION.SDK_INT >= 36) 3 else ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
                 }
                 target.send(context, 0, null, null, null, null, options.toBundle())
                 return true

@@ -1469,6 +1469,30 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
                 if (iconContainer == null || iconView == null || badge == null
                         || badge.getVisibility() != View.VISIBLE) continue;
 
+                // Newer WhatsApp versions fill the whole 24dp badge view with green, which hid the
+                // Updates icon behind a big circle. Such a badge is drawn as a small dot at the
+                // icon's top-right corner instead.
+                if (isFullSizeDot(badge, density)) {
+                    float scale = (10f * density) / Math.max(1, badge.getWidth());
+                    badge.setPivotX(badge.getWidth() / 2f);
+                    badge.setPivotY(badge.getHeight() / 2f);
+                    if (Math.abs(badge.getScaleX() - scale) > 0.01f) {
+                        badge.setScaleX(scale);
+                        badge.setScaleY(scale);
+                    }
+                    int[] iconAt = new int[2];
+                    int[] badgeAt = new int[2];
+                    iconView.getLocationOnScreen(iconAt);
+                    badge.getLocationOnScreen(badgeAt);
+                    float shown = badge.getWidth() * scale;
+                    float wantLeft = iconAt[0] + iconView.getWidth() - shown / 2f - 2f * density;
+                    float wantTop = iconAt[1] - shown / 2f + 2f * density;
+                    float dx = wantLeft - badgeAt[0], dy = wantTop - badgeAt[1];
+                    if (Math.abs(dx) > 0.5f) badge.setTranslationX(badge.getTranslationX() + dx);
+                    if (Math.abs(dy) > 0.5f) badge.setTranslationY(badge.getTranslationY() + dy);
+                    continue;
+                }
+
                 // Match the native Chats badge using window coordinates. Local getTop()/getLeft()
                 // omit runtime tab translations, which made the Status dot stay at its original
                 // screen position after switching between Chats, Groups, and Updates.
@@ -1486,6 +1510,19 @@ public class FloatingBottomBarHook extends BaseFeature implements ScreenScopedFe
                 badge.setTranslationX(badge.getTranslationX() + targetLeft - badgeLocation[0]);
             }
         }
+    }
+
+    /** A badge without a number whose view is large and has no smaller picture inside it. */
+    private static boolean isFullSizeDot(View badge, float density) {
+        if (badge.getWidth() < 16f * density) return false;
+        if (badge instanceof TextView && ((TextView) badge).length() > 0) return false;
+        if (badge instanceof ImageView) {
+            android.graphics.drawable.Drawable picture = ((ImageView) badge).getDrawable();
+            if (picture != null && picture.getIntrinsicWidth() > 0
+                    && picture.getIntrinsicWidth() < badge.getWidth() * 0.7f) return false;
+        }
+        if (badge instanceof ViewGroup && ((ViewGroup) badge).getChildCount() > 0) return false;
+        return true;
     }
 
     private static void applyCustomIconColors(ViewGroup bar) {
