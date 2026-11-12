@@ -50,7 +50,15 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
 
     /** Changes whenever WhatsApp writes to the database; used to wake up waiting browsers. */
     fun revision(): Long = try {
-        db().rawQuery("PRAGMA data_version", null).use { c -> if (c.moveToFirst()) c.getLong(0) else 0L }
+        db().rawQuery("PRAGMA data_version", null).use { c -> if (c.moveToFirst()) c.getLong(0) else 0L } +
+            statusRevision() * 1_000_003L
+    } catch (_: Throwable) {
+        0L
+    }
+
+    /** Changes when a status is added, seen or removed. */
+    private fun statusRevision(): Long = try {
+        statusDb()?.rawQuery("PRAGMA data_version", null)?.use { c -> if (c.moveToFirst()) c.getLong(0) else 0L } ?: 0L
     } catch (_: Throwable) {
         0L
     }
@@ -322,7 +330,8 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
         val mine = myReactionsFor(rows.map { it.id })
         for (row in rows) mine[row.id]?.let { row.json["myReaction"] = it }
         return WebJson.obj("messages" to rows.map { it.json }, "canSend" to WebSender.available,
-            "canReact" to WebSender.canReact, "canReply" to WebSender.canReply, "canDelete" to WebSender.canDelete)
+            "canReact" to WebSender.canReact, "canReply" to WebSender.canReply, "canDelete" to WebSender.canDelete,
+            "canMarkRead" to (account == null && WebSender.canMarkRead))
     }
 
     /** Original texts from WAEX's deleted messages vault (kept in the WAEX app), by key id. */
@@ -452,6 +461,165 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
     // ─── Media ──────────────────────────────────────────────────────────
 
     class Media(val file: File, val mime: String, val name: String)
+
+    // ─── Statuses ───────────────────────────────────────────────────────
+    // WhatsApp keeps statuses in their own database. Reading them here sends no "seen" receipt.
+
+    private var statusDatabase: SQLiteDatabase? = null
+    private val statusColumnCache = HashMap<String, Set<String>>()
+
+    @Synchronized
+    private fun statusDb(): SQLiteDatabase? {
+        val dir = account?.dataDir ?: MessageStore.findAccountDataDir(app)
+        val file = File(dir, "databases/status.db").takeIf { it.isFile && it.canRead() } ?: return null
+        val current = statusDatabase
+        if (current != null && current.isOpen && current.path == file.absolutePath) return current
+        try { current?.close() } catch (_: Throwable) {}
+        statusColumnCache.clear()
+        return SQLiteDatabase.openDatabase(file.absolutePath, null,
+            SQLiteDatabase.OPEN_READONLY or SQLiteDatabase.NO_LOCALIZED_COLLATORS).also { statusDatabase = it }
+    }
+
+    @Synchronized
+    private fun statusColumns(table: String): Set<String> = statusColumnCache.getOrPut(table) {
+        val result = HashSet<String>()
+        try {
+            statusDb()?.rawQuery("PRAGMA table_info($table)", null)?.use { c -> while (c.moveToNext()) result.add(c.getString(1)) }
+        } catch (_: Throwable) {}
+        result
+    }
+
+    /** Statuses of the last 24 hours, grouped by person: unseen ones first, then the newest. */
+    fun statusesJson(): String {
+        val people = LinkedHashMap<String, LinkedHashMap<String, Any?>>()
+        try {
+            val db = statusDb() ?: return WebJson.obj("people" to emptyList<Any>(), "available" to false)
+            val status = statusColumns("status")
+            if ("sender_user_jid" !in status || "timestamp" !in status) {
+                return WebJson.obj("people" to emptyList<Any>(), "available" to false)
+            }
+            val media = statusColumns("media_content")
+            val text = statusColumns("status_text")
+            val link = statusColumns("status_media_link")
+            val thumbs = statusColumns("status_thumbnail")
+            fun col(table: Set<String>, alias: String, name: String) = if (name in table) "$alias.$name" else "NULL"
+            val joins = StringBuilder()
+            if ("status_row_id" in link && "row_id" in media)
+                joins.append(" LEFT JOIN status_media_link l ON l.status_row_id = s.row_id LEFT JOIN media_content mc ON mc.row_id = l.media_content_row_id")
+            if ("status_row_id" in text) joins.append(" LEFT JOIN status_text st ON st.status_row_id = s.row_id")
+            val hasThumb = if ("status_row_id" in thumbs)
+                "EXISTS(SELECT 1 FROM status_thumbnail th WHERE th.status_row_id = s.row_id AND th.thumbnail IS NOT NULL)" else "0"
+            val m = if (joins.contains(" mc ")) media else emptySet()
+            val tx = if (joins.contains(" st ")) text else emptySet()
+            val sort = if ("sort_id" in status) "s.sort_id" else "s.row_id"
+            val archived = if ("is_archived" in status) " AND COALESCE(s.is_archived,0)=0" else ""
+            val since = System.currentTimeMillis() - 24 * 3600_000L
+            val sql = """
+                SELECT s.row_id, s.sender_user_jid, ${col(status, "s", "type")}, s.timestamp, ${col(status, "s", "text_data")}, $sort,
+                       ${col(m, "mc", "file_path")}, ${col(m, "mc", "mime_type")}, ${col(m, "mc", "width")}, ${col(m, "mc", "height")},
+                       ${col(m, "mc", "media_duration")}, ${col(m, "mc", "file_size")},
+                       ${col(tx, "st", "background_color")}, ${col(tx, "st", "text_color")}, ${col(tx, "st", "font_style")}, $hasThumb
+                FROM status s$joins
+                WHERE s.timestamp > ?$archived
+                ORDER BY $sort ASC LIMIT 2000
+            """.trimIndent()
+            val unread = unreadStatusFrom()
+            val me = ownJid()
+            db.rawQuery(sql, arrayOf(since.toString())).use { c ->
+                while (c.moveToNext()) {
+                    val type = c.getInt(2)
+                    if (type == 15 || type == TYPE_SYSTEM) continue
+                    val raw = c.getString(1)?.takeIf { it.isNotBlank() }
+                    val mine = raw == null || raw == me
+                    val key = if (mine) "me" else raw!!
+                    val person = people.getOrPut(key) {
+                        linkedMapOf("jid" to key, "name" to (if (mine) null else nameOf(raw!!)), "mine" to mine,
+                            "unseen" to 0, "ts" to 0L, "items" to ArrayList<Any?>())
+                    }
+                    val item = LinkedHashMap<String, Any?>()
+                    item["id"] = c.getLong(0)
+                    item["type"] = type
+                    item["ts"] = c.getLong(3)
+                    c.getString(4)?.let { item["text"] = it }
+                    val path = c.getString(6)
+                    val mime = c.getString(7)
+                    if (path != null || mime != null) {
+                        val file = path?.let(::mediaFileOf)
+                        item["media"] = linkedMapOf("mime" to mime, "w" to c.getInt(8), "h" to c.getInt(9),
+                            "duration" to c.getLong(10), "size" to c.getLong(11),
+                            "available" to (file != null && file.canRead() && insideMediaRoots(file)))
+                    }
+                    if (!c.isNull(12)) item["bg"] = c.getInt(12)
+                    if (!c.isNull(13)) item["fg"] = c.getInt(13)
+                    if (!c.isNull(14)) item["font"] = c.getInt(14)
+                    if (c.getInt(15) == 1) item["thumb"] = true
+                    val from = unread[raw ?: ""]
+                    val unseen = !mine && from != null && c.getLong(5) >= from
+                    if (unseen) {
+                        item["unseen"] = true
+                        person["unseen"] = (person["unseen"] as Int) + 1
+                    }
+                    if (item["ts"] as Long > person["ts"] as Long) person["ts"] = item["ts"]
+                    @Suppress("UNCHECKED_CAST")
+                    (person["items"] as ArrayList<Any?>).add(item)
+                }
+            }
+        } catch (_: Throwable) {
+            return WebJson.obj("people" to emptyList<Any>(), "available" to false)
+        }
+        val list = people.values.sortedWith(compareByDescending<Map<String, Any?>> { it["mine"] == true }
+            .thenByDescending { (it["unseen"] as Int) > 0 }.thenByDescending { it["ts"] as Long })
+        return WebJson.obj("people" to list, "available" to true)
+    }
+
+    /** For each person with unseen statuses, the sort id of the first one not seen yet. */
+    private fun unreadStatusFrom(): Map<String, Long> {
+        val info = statusColumns("status_info")
+        if ("chat_jid" !in info || "unread_count" !in info || "first_unread_sort_id" !in info) return emptyMap()
+        val result = HashMap<String, Long>()
+        try {
+            statusDb()?.rawQuery("SELECT chat_jid, first_unread_sort_id FROM status_info WHERE unread_count > 0", null)?.use { c ->
+                while (c.moveToNext()) c.getString(0)?.let { result[it] = c.getLong(1) }
+            }
+        } catch (_: Throwable) {}
+        return result
+    }
+
+    /** The account's own JID, to tell its own statuses apart. */
+    private fun ownJid(): String? = try {
+        val dir = account?.dataDir ?: MessageStore.findAccountDataDir(app)
+        val prefs = File(dir, "shared_prefs/" + app.packageName + "_preferences_light.xml")
+        if (!prefs.isFile) null else Regex("<string name=\"registration_jid\">([^<]*)</string>")
+            .find(prefs.readText())?.groupValues?.get(1)?.let { if (it.contains('@')) it else "$it@s.whatsapp.net" }
+    } catch (_: Throwable) {
+        null
+    }
+
+    fun statusMedia(id: Long): Media? = try {
+        val m = statusColumns("media_content")
+        if ("file_path" !in m || "status_row_id" !in statusColumns("status_media_link")) null else {
+            val nameCol = if ("media_name" in m) "mc.media_name" else "NULL"
+            statusDb()?.rawQuery("""SELECT mc.file_path, mc.mime_type, $nameCol FROM status_media_link l
+                JOIN media_content mc ON mc.row_id = l.media_content_row_id WHERE l.status_row_id = ? LIMIT 1""",
+                arrayOf(id.toString()))?.use { c ->
+                if (!c.moveToFirst()) return@use null
+                val file = c.getString(0)?.let(::mediaFileOf) ?: return@use null
+                if (!file.isFile || !file.canRead() || !insideMediaRoots(file)) return@use null
+                val mime = c.getString(1)?.takeIf { MIME.matches(it) } ?: "application/octet-stream"
+                Media(file, mime, c.getString(2) ?: file.name)
+            }
+        }
+    } catch (_: Throwable) {
+        null
+    }
+
+    fun statusThumbnail(id: Long): ByteArray? = try {
+        if ("status_row_id" !in statusColumns("status_thumbnail")) null
+        else statusDb()?.rawQuery("SELECT thumbnail FROM status_thumbnail WHERE status_row_id = ? AND thumbnail IS NOT NULL LIMIT 1",
+            arrayOf(id.toString()))?.use { c -> if (c.moveToFirst()) c.getBlob(0) else null }
+    } catch (_: Throwable) {
+        null
+    }
 
     /** Whether message [id] belongs to a chat the web interface may show. */
     private fun messageVisible(id: Long): Boolean = try {

@@ -71,6 +71,20 @@ POST /api/chats/<jid>/delete    body: {"id":<message id>,"everyone":false}
     Deletes a message the way WhatsApp's own dialog does: for this phone only, or with
     "everyone":true for all (your own messages only). 503 delete_unavailable when not supported.
 
+POST /api/chats/<jid>/read      body: {}
+    Marks the chat as read on the phone, like opening it there. WhatsApp sends blue ticks
+    unless WAEX's "hide blue ticks" holds them back. 503 read_unavailable when not supported.
+
+Statuses
+--------
+GET /api/statuses
+    {"people":[{"jid","name","mine","unseen","ts","items":[{"id","type","ts","text","bg","fg",
+                "font","unseen","thumb","media":{"mime","w","h","duration","size","available"}}]}],
+     "available":true}
+    Statuses of the last 24 hours. Reading them here sends no "seen" receipt.
+GET /api/status-media/<id>      the status picture or video (supports Range)
+GET /api/status-thumb/<id>      small JPEG preview
+
 POST /api/chats/<jid>/open      body: {"text":"Hello"}
     Opens the chat on the phone with the text filled in, for sending by hand.
 
