@@ -41,6 +41,8 @@ object WebSender {
     @Volatile private var reactorInstance: Any? = null
     @Volatile private var markRead: Method? = null
     @Volatile private var markReadInstance: Any? = null
+    /** The same helper's (Integer, Collection of chats) method: the chat list's "Mark as read". */
+    @Volatile private var markReadMany: Method? = null
 
     /** Why the last send or reaction did not work; a short code, never message content. */
     @Volatile var lastError: String = ""
@@ -262,6 +264,11 @@ object WebSender {
                 foundRead.isAccessible = true
                 capture(foundRead.declaringClass) { markReadInstance = it }
                 markRead = foundRead
+                markReadMany = foundRead.declaringClass.declaredMethods.firstOrNull { x ->
+                    val q = x.parameterTypes
+                    !Modifier.isStatic(x.modifiers) && x.returnType == Void.TYPE && q.size == 2 &&
+                        q[0] == Integer::class.java && Collection::class.java.isAssignableFrom(q[1])
+                }?.also { it.isAccessible = true }
             }
         } catch (t: Throwable) {
             XposedBridge.log("$TAG Replies and reactions unavailable: ${t.javaClass.simpleName}")
@@ -407,19 +414,29 @@ object WebSender {
      * chat's phone and LID addresses; each one WhatsApp knows is marked.
      */
     fun markRead(rawJids: Collection<String>): Boolean {
-        val method = markRead ?: return fail("read_unavailable")
-        var done = false
-        for (raw in rawJids.distinct()) {
+        val one = markRead ?: return fail("read_unavailable")
+        val jids = rawJids.distinct().mapNotNull { raw -> runCatching { parseJid(raw, one.parameterTypes[0]) }.getOrNull() }
+        if (jids.isEmpty()) return fail("read_jid_not_parsed")
+        val owner = try { instanceOf(one.declaringClass, markReadInstance) } catch (t: Throwable) { return fail("read_failed", t) }
+        // The chat list runs this on the main thread; so does this.
+        val done = java.util.concurrent.CountDownLatch(1)
+        var error: Throwable? = null
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
             try {
-                val jid = parseJid(raw, method.parameterTypes[0]) ?: continue
-                method.invoke(instanceOf(method.declaringClass, markReadInstance), jid, 3, 3, true, true, false)
-                done = true
+                val many = markReadMany
+                if (many != null) many.invoke(owner, null, ArrayList<Any>(jids))
+                else for (jid in jids) one.invoke(owner, jid, 3, 4, true, true, true)
             } catch (t: Throwable) {
-                fail("read_failed", t)
+                error = t
+            } finally {
+                done.countDown()
             }
         }
-        if (done) lastError = ""
-        return done || fail("read_jid_not_parsed")
+        if (!done.await(5, java.util.concurrent.TimeUnit.SECONDS)) return fail("read_timeout")
+        error?.let { return fail("read_failed", it) }
+        lastError = ""
+        XposedBridge.log("$TAG chat marked read (${if (markReadMany != null) "list action" else "single"})")
+        return true
     }
 
     /** Adds [emoji] to a message as the user's reaction; an empty string removes it. */

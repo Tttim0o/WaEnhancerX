@@ -79,6 +79,9 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
         var sendJid: String = jid
         /** The contact's LID chat, when there is one; newer WhatsApp only accepts messages there. */
         var lidJid: String? = null
+        /** A WhatsApp channel the account follows; read only. */
+        var channel = false
+        var muted = false
     }
 
     private fun notLocked(alias: String): String {
@@ -90,6 +93,13 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
     }
 
     private fun hasJidMap(): Boolean = "lid_row_id" in columns("jid_map")
+
+    /** WhatsApp keeps channels as hidden chats; followed ones have a row in `newsletter`. */
+    private fun hasChannels(): Boolean = "chat_row_id" in columns("newsletter")
+    private fun channelFilter(alias: String): String =
+        if (!hasChannels()) "0" else "$alias._id IN (SELECT chat_row_id FROM newsletter WHERE COALESCE(deleted,0)=0)"
+    /** Chats the page may show: visible, unlocked chats, and followed channels. */
+    private fun shown(alias: String): String = "((${notLocked(alias)}) OR ${channelFilter(alias)})"
 
     /** Every visible chat, newest first; a contact's phone and LID chats are merged. */
     fun chats(): List<Chat> {
@@ -130,7 +140,38 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
                 }
             }
         }
+        if (hasChannels()) try { addChannels(byJid, lastJoin, col("sort_timestamp", "m.timestamp")) } catch (_: Throwable) {}
         return byJid.values.sortedByDescending { it.sort }
+    }
+
+    private fun addChannels(byJid: LinkedHashMap<String, Chat>, lastJoin: String, sortCol: String) {
+        val news = columns("newsletter")
+        fun n(name: String, fallback: String = "NULL") = if (name in news) "n.$name" else fallback
+        val sql = """
+            SELECT c._id, j.raw_string, ${n("name")}, $sortCol, ${if ("unseen_message_count" in columns("chat")) "c.unseen_message_count" else "0"},
+                   m.from_me, m.message_type, m.text_data, m.status, ${n("muted", "0")}
+            FROM newsletter n JOIN chat c ON c._id = n.chat_row_id JOIN jid j ON j._id = c.jid_row_id
+            LEFT JOIN message m ON m._id = $lastJoin
+            WHERE COALESCE(${n("deleted", "0")},0)=0
+        """.trimIndent()
+        db().rawQuery(sql, null).use { c ->
+            while (c.moveToNext()) {
+                val jid = c.getString(1) ?: continue
+                if (!JID.matches(jid) || byJid.containsKey(jid)) continue
+                val ref = Chat(jid)
+                ref.channel = true
+                ref.rows.add(c.getLong(0))
+                ref.subject = c.getString(2)
+                ref.sort = maxOf(1L, c.getLong(3))
+                ref.unread = maxOf(0, c.getInt(4))
+                ref.lastFromMe = c.getInt(5) == 1
+                ref.lastType = c.getInt(6)
+                ref.lastText = c.getString(7)
+                ref.lastStatus = c.getInt(8)
+                ref.muted = c.getInt(9) == 1
+                byJid[jid] = ref
+            }
+        }
     }
 
     fun chatsJson(query: String?): String =
@@ -158,6 +199,7 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
                 "lastText" to chat.lastText?.take(160),
                 "lastStatus" to chat.lastStatus
             )
+            if (chat.channel) { item["channel"] = true; if (chat.muted) item["muted"] = true }
             if (tag != null) { item["account"] = tag.first; item["accountName"] = tag.second }
             list.add(chat.sort to WebJson.obj(*item.toList().toTypedArray()))
             if (list.size >= MAX_CHATS) break
@@ -329,8 +371,11 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
         for (row in rows) reactions[row.id]?.let { row.json["reactions"] = it }
         val mine = myReactionsFor(rows.map { it.id })
         for (row in rows) mine[row.id]?.let { row.json["myReaction"] = it }
-        return WebJson.obj("messages" to rows.map { it.json }, "canSend" to WebSender.available,
-            "canReact" to WebSender.canReact, "canReply" to WebSender.canReply, "canDelete" to WebSender.canDelete,
+        // Channels are read only here: posting, replying and deleting need the channel's admin tools.
+        val open = !chat.channel
+        return WebJson.obj("messages" to rows.map { it.json }, "canSend" to (open && WebSender.available),
+            "canReact" to (open && WebSender.canReact), "canReply" to (open && WebSender.canReply),
+            "canDelete" to (open && WebSender.canDelete), "channel" to chat.channel,
             "canMarkRead" to (account == null && WebSender.canMarkRead))
     }
 
@@ -624,7 +669,7 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
     /** Whether message [id] belongs to a chat the web interface may show. */
     private fun messageVisible(id: Long): Boolean = try {
         db().rawQuery(
-            "SELECT 1 FROM message m JOIN chat c ON c._id = m.chat_row_id WHERE m._id = ? AND ${notLocked("c")}",
+            "SELECT 1 FROM message m JOIN chat c ON c._id = m.chat_row_id WHERE m._id = ? AND ${shown("c")}",
             arrayOf(id.toString())
         ).use { it.moveToFirst() }
     } catch (_: Throwable) {

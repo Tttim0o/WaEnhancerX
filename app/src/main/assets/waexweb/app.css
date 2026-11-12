@@ -790,6 +790,15 @@ input[type="checkbox"]:focus-visible { box-shadow: none; outline: 2px solid var(
 .storyperson:disabled { visibility: hidden; }
 @media (max-width: 760px) { .storyperson { display: none; } .story { background: #000; } }
 
+/* Channels: the same list without filters, read-only conversations */
+.sidetitle { display: none; font-size: 22px !important; font-weight: 600 !important; }
+.side.channels .sidetitle { display: block; }
+.side.channels .logo, .side.channels .tabs { display: none; }
+.channelnote { display: none; }
+.chat.channel .dock { display: none; }
+.chat.channel .channelnote { display: block; flex: none; margin: 0 var(--s6) var(--s5); padding: 12px 16px; text-align: center; font-size: 13.5px;
+  color: var(--muted); background: var(--panel); border-radius: 24px; box-shadow: var(--sh-1); }
+
 /* ═══ 8. Responsive ═══════════════════════════════════════════════════ */
 @media (max-width: 1180px) {
   .info { position: absolute; inset: 0; width: auto; z-index: 8; border-left: 0; }
@@ -806,7 +815,8 @@ input[type="checkbox"]:focus-visible { box-shadow: none; outline: 2px solid var(
     position: absolute; top: env(safe-area-inset-top); right: 4px; z-index: 1; width: auto; height: 60px; flex-direction: row; padding: 0;
     background: none; border: 0; gap: 0;
   }
-  .rail #railChats, .rail .grow { display: none; }
+  .rail .grow { display: none; }
+  .app:not([data-view]) .rail #railChats, .app[data-view="chats"] .rail #railChats { display: none; }
   .statusside { z-index: 3; }
   .acctbtn { width: 32px; height: 32px; font-size: 13px; margin-right: 4px; }
   .side, .pane {

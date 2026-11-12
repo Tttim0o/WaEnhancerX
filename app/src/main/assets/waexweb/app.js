@@ -144,7 +144,8 @@
       secretView: 'Viewing here does not tell them you saw it.', statusGone: 'Not downloaded on the phone yet.',
       markReadPref: 'Mark chats as read when opened', markReadHint: 'WhatsApp sends blue ticks, unless WAEX hides them.',
       read_unavailable: 'Marking as read does not work with this WhatsApp version.', pause: 'Pause', play: 'Play',
-      prevPerson: 'Previous person', nextPerson: 'Next person', updates: '{s} new'
+      prevPerson: 'Previous person', nextPerson: 'Next person', updates: '{s} new',
+      channels: 'Channels', channel: 'Channel', noChannels: 'You do not follow any channels.', channelReadOnly: 'Only the channel\'s admins can post here.', searchChannels: 'Search channels'
     },
     sk: {
       intro: 'Čítaj a píš svoje WhatsApp správy z tohto počítača. Telefón ukáže kód, ktorým tento prehliadač pustíš dnu.',
@@ -274,7 +275,8 @@
       secretView: 'Keď si ich pozrieš tu, nedozvedia sa to.', statusGone: 'V telefóne ešte nie je stiahnutý.',
       markReadPref: 'Označiť chat ako prečítaný po otvorení', markReadHint: 'WhatsApp pošle modré fajky, ak ich WAEX neskrýva.',
       read_unavailable: 'Označovanie ako prečítané s touto verziou WhatsAppu nefunguje.', pause: 'Pozastaviť', play: 'Prehrať',
-      prevPerson: 'Predošlá osoba', nextPerson: 'Ďalšia osoba', updates: 'Nové: {s}'
+      prevPerson: 'Predošlá osoba', nextPerson: 'Ďalšia osoba', updates: 'Nové: {s}',
+      channels: 'Kanály', channel: 'Kanál', noChannels: 'Nesleduješ žiadne kanály.', channelReadOnly: 'Písať sem môžu len správcovia kanála.', searchChannels: 'Hľadať v kanáloch'
     }
   };
 
@@ -432,7 +434,7 @@
     label('findOpen', 'findInChat'); label('findClose', 'close'); label('infoOpen', 'chatInfo'); label('infoClose', 'close');
     label('emojiButton', 'emoji'); label('replyCancel', 'cancel'); label('railChats', 'chats'); label('accountButton', 'accounts');
     label('viewerClose', 'close'); label('viewerSave', 'download'); label('viewerPrev', 'back'); label('send', 'typeHere');
-    label('chatHead', 'chatInfo'); label('railStatus', 'statusTitle'); label('statusBack', 'back');
+    label('chatHead', 'chatInfo'); label('railStatus', 'statusTitle'); label('railChannels', 'channels'); label('statusBack', 'back');
     label('storyClose', 'close'); label('storySave', 'download'); label('storyPause', 'pause');
     label('storyPrevPerson', 'prevPerson'); label('storyNextPerson', 'nextPerson');
     $('statusTitle').textContent = t('statusTitle');
@@ -442,7 +444,7 @@
     renderTabs();
   }
   function renderTabs() {
-    const unread = state.chats.filter((c) => c.unread > 0 && !c.archived).length;
+    const unread = state.chats.filter((c) => c.unread > 0 && !c.archived && !c.channel).length;
     for (const b of $('tabs').children) {
       b.textContent = t(b.dataset.tab);
       if (b.dataset.tab === 'unread' && unread > 0) b.append(el('span', 'count', String(unread)));
@@ -698,8 +700,11 @@
       return;
     }
     const q = state.query.toLowerCase();
+    const channels = state.view === 'channels';
     const list = state.chats.filter((c) => {
+      if (!!c.channel !== channels) return false;
       if (q) return c.name.toLowerCase().includes(q) || c.jid.includes(q);
+      if (channels) return true;
       if (state.tab === 'archived') return c.archived;
       if (c.archived) return false;
       if (state.tab === 'unread') return c.unread > 0;
@@ -746,10 +751,10 @@
         box.append(row);
       }
     }
-    if (!box.children.length) box.append(el('div', 'section muted', t('noChats')));
+    if (!box.children.length) box.append(el('div', 'section muted', t(channels ? 'noChannels' : 'noChats')));
     box.scrollTop = keep;
     if (focusKey) for (const row of box.querySelectorAll('.row')) if (row.dataset.key === focusKey) { row.focus({ preventScroll: true }); break; }
-    const unread = state.chats.filter((c) => c.unread > 0 && !c.archived).length;
+    const unread = state.chats.filter((c) => c.unread > 0 && !c.archived && !c.channel).length;
     document.title = (unread && prefs.titleCount ? '(' + unread + ') ' : '') + 'WAEX Web';
     $('railCount').hidden = !unread;
     $('railCount').textContent = unread > 99 ? '99+' : String(unread);
@@ -809,7 +814,8 @@
   async function loadChats() {
     state.chats = (await api('/api/chats')).chats;
     state.loaded = true;
-    const total = state.chats.reduce((n, c) => n + (c.archived ? 0 : c.unread || 0), 0);
+    const total = state.chats.reduce((n, c) => n + (c.archived || c.channel ? 0 : c.unread || 0), 0);
+    $('railChannelDot').hidden = !state.chats.some((c) => c.channel && c.unread > 0 && !c.muted);
     if (prefs.sound && state.lastUnread >= 0 && total > state.lastUnread) beep();
     state.lastUnread = total;
     renderChats();
@@ -834,7 +840,7 @@
     renderChats();
     clearTimeout(searchTimer);
     const q = state.query;
-    if (q.length < 2) return;
+    if (q.length < 2 || state.view === 'channels') return;
     searchTimer = setTimeout(async () => {
       try {
         const r = await api('/api/search?q=' + enc(q));
@@ -1347,7 +1353,9 @@
     $('toLatest').hidden = !hit;
     $('latestCount').hidden = true;
     $('chatName').textContent = chat ? chat.name : jid;
-    $('chatSub').textContent = chat && chat.group ? t('group') : jid.endsWith('@s.whatsapp.net') ? '+' + jid.split('@')[0] : '';
+    $('chat').classList.toggle('channel', !!(chat && chat.channel));
+    $('channelNote').textContent = t('channelReadOnly');
+    $('chatSub').textContent = chat && chat.channel ? t('channel') : chat && chat.group ? t('group') : jid.endsWith('@s.whatsapp.net') ? '+' + jid.split('@')[0] : '';
     avatar($('chatAvatar'), jid, chat ? chat.name : '?', state.account);
     $('messages').textContent = '';
     $('messages').append(el('div', 'loading'));
@@ -1443,8 +1451,8 @@
   function showSendNote() {
     const note = $('sendNote');
     note.textContent = '';
-    note.hidden = state.canSend;
-    if (state.canSend) return;
+    note.hidden = state.canSend || $('chat').classList.contains('channel');
+    if (note.hidden) return;
     const button = el('button', null, t('openOnPhone'));
     button.addEventListener('click', openOnPhone);
     note.append(t('noSend') + ' ', button);
@@ -1665,11 +1673,18 @@
     return 'rgb(' + ((v >> 16) & 255) + ' ' + ((v >> 8) & 255) + ' ' + (v & 255) + ')';
   }
   function showView(view) {
+    const was = state.view;
     state.view = view;
-    $('side').hidden = view !== 'chats';
+    $('app').dataset.view = view;
+    $('side').hidden = view === 'status';
+    $('side').classList.toggle('channels', view === 'channels');
     $('statusSide').hidden = view !== 'status';
     $('railChats').classList.toggle('on', view === 'chats');
+    $('railChannels').classList.toggle('on', view === 'channels');
     $('railStatus').classList.toggle('on', view === 'status');
+    $('sideTitle').textContent = t('channels');
+    $('search').placeholder = t(view === 'channels' ? 'searchChannels' : 'search');
+    if (was !== view && (view === 'chats' || view === 'channels')) { $('search').value = ''; state.query = ''; state.hits = []; renderChats(); }
     if (view === 'status') { renderStatuses(); loadStatuses(); }
   }
 
@@ -1835,6 +1850,7 @@
     drawStory();
   }
   $('railStatus').addEventListener('click', () => showView(state.view === 'status' ? 'chats' : 'status'));
+  $('railChannels').addEventListener('click', () => showView(state.view === 'channels' ? 'chats' : 'channels'));
   $('statusBack').addEventListener('click', () => showView('chats'));
   $('storyClose').addEventListener('click', closeStory);
   $('storyPrev').addEventListener('click', () => stepStory(-1));
