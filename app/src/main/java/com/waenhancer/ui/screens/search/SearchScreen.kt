@@ -102,6 +102,17 @@ fun SearchScreen() {
             "all accounts whatsapp web prehliadac prehliadač pocitac počítač ucet účet ucty účty schranka schránka " + webDesc).lowercase()
         terms.all(haystack::contains)
     }
+    // Call privacy and recording live on their own page as well.
+    val callsTitle = UiText.get(R.string.waex_ui_calls_recording, "Calls & Recording")
+    val callsDesc = UiText.get(R.string.feat_call_privacy_desc, "Block WhatsApp calls based on privacy type") + ". " +
+        UiText.get(R.string.waex_ui_record_whatsapp_calls, "Record WhatsApp Calls")
+    val showCallsPage = remember(query, callsDesc) {
+        val terms = query.trim().lowercase().split("\\s+".toRegex()).filter { it.isNotEmpty() }
+        val haystack = ("call calls calling block blocked blocking reject privacy record recording recorder caller incoming " +
+            "busy no internet unknown hovor hovory volanie blokovať blokovanie nahrávanie nahrávať súkromie sukromie " +
+            callsTitle + " " + callsDesc).lowercase()
+        terms.isNotEmpty() && terms.all(haystack::contains)
+    }
     val groupedPreferences = remember(filteredPreferences, context) {
         filteredPreferences.groupBy { LocalizationHelper.getSection(context, it) }
     }
@@ -149,7 +160,7 @@ fun SearchScreen() {
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
-            if (filteredPreferences.isEmpty() && !showWebPage) {
+            if (filteredPreferences.isEmpty() && !showWebPage && !showCallsPage) {
                 WaexEmptyState(
                     title = stringResource(R.string.no_results_found),
                     description = stringResource(R.string.no_results_description),
@@ -161,6 +172,13 @@ fun SearchScreen() {
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
+                    if (showCallsPage) {
+                        item(key = "page_calls") {
+                            PageResultRow(title = callsTitle, description = callsDesc, icon = WaexIcons.Smartphone) {
+                                navController.navigateTo(Screen.CallRecordingSettings)
+                            }
+                        }
+                    }
                     if (showWebPage) {
                         item(key = "page_waex_web") {
                             PageResultRow(title = webTitle, description = webDesc) {
@@ -199,7 +217,12 @@ fun SearchScreen() {
 }
 
 @Composable
-private fun PageResultRow(title: String, description: String, onClick: () -> Unit) {
+private fun PageResultRow(
+    title: String,
+    description: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector = WaexIcons.Smartphone,
+    onClick: () -> Unit
+) {
     val colors = WaexTheme.colors
     val spacing = WaexTheme.spacing
     val typography = WaexTheme.typography
@@ -217,7 +240,7 @@ private fun PageResultRow(title: String, description: String, onClick: () -> Uni
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = WaexIcons.Smartphone,
+                imageVector = icon,
                 contentDescription = null,
                 tint = colors.primary,
                 modifier = Modifier.size(22.dp)
