@@ -39,6 +39,8 @@ object WebSender {
     @Volatile private var deleterInstance: Any? = null
     @Volatile private var reactor: Method? = null
     @Volatile private var reactorInstance: Any? = null
+    @Volatile private var markRead: Method? = null
+    @Volatile private var markReadInstance: Any? = null
 
     /** Why the last send or reaction did not work; a short code, never message content. */
     @Volatile var lastError: String = ""
@@ -55,6 +57,9 @@ object WebSender {
 
     val canDelete: Boolean
         get() = deleteForMe != null && canFind
+
+    val canMarkRead: Boolean
+        get() = markRead != null && jidClass != null
 
     private val canFind: Boolean
         get() = bySortId != null || (lookup != null && keyConstructor != null)
@@ -229,6 +234,35 @@ object WebSender {
                 capture(foundReactor.declaringClass) { reactorInstance = it }
                 reactor = foundReactor
             }
+
+            // Android Auto's "mark as read": a static helper with twelve parameters, and next to it
+            // the method that calls it with defaults: (chat, int, int, boolean, boolean, boolean).
+            val foundRead = engine.findMethodWithCache(context, classLoader, "waex_web_mark_read") { bridge, loader ->
+                val anchor = bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create()
+                    .addUsingString("CarChatsRepositoryImpl/markChatAsRead", StringMatchType.Contains)))
+                    .firstOrNull() ?: return@findMethodWithCache null
+                for (call in anchor.invokes) {
+                    if (!call.isMethod) continue
+                    val m = runCatching { call.getMethodInstance(loader) }.getOrNull() ?: continue
+                    val p = m.parameterTypes
+                    if (!Modifier.isStatic(m.modifiers) || p.size != 12 || p[4] != Integer::class.java ||
+                        p[5] != String::class.java || p[6] != Integer.TYPE || p[7] != Integer.TYPE ||
+                        (8..11).any { p[it] != java.lang.Boolean.TYPE }) continue
+                    val chatType = p[2]
+                    return@findMethodWithCache m.declaringClass.declaredMethods.firstOrNull { x ->
+                        val q = x.parameterTypes
+                        !Modifier.isStatic(x.modifiers) && q.size == 6 && q[0] == chatType &&
+                            q[1] == Integer.TYPE && q[2] == Integer.TYPE &&
+                            q[3] == java.lang.Boolean.TYPE && q[4] == java.lang.Boolean.TYPE && q[5] == java.lang.Boolean.TYPE
+                    }
+                }
+                null
+            }
+            if (foundRead != null) {
+                foundRead.isAccessible = true
+                capture(foundRead.declaringClass) { markReadInstance = it }
+                markRead = foundRead
+            }
         } catch (t: Throwable) {
             XposedBridge.log("$TAG Replies and reactions unavailable: ${t.javaClass.simpleName}")
         }
@@ -365,6 +399,27 @@ object WebSender {
         } catch (t: Throwable) {
             fail("delete_failed", t)
         }
+    }
+
+    /**
+     * Marks a chat as read the way Android Auto does: the unread count goes to zero and WhatsApp
+     * sends read receipts, unless WAEX's "hide blue ticks" holds them back. [rawJids] are the
+     * chat's phone and LID addresses; each one WhatsApp knows is marked.
+     */
+    fun markRead(rawJids: Collection<String>): Boolean {
+        val method = markRead ?: return fail("read_unavailable")
+        var done = false
+        for (raw in rawJids.distinct()) {
+            try {
+                val jid = parseJid(raw, method.parameterTypes[0]) ?: continue
+                method.invoke(instanceOf(method.declaringClass, markReadInstance), jid, 3, 3, true, true, false)
+                done = true
+            } catch (t: Throwable) {
+                fail("read_failed", t)
+            }
+        }
+        if (done) lastError = ""
+        return done || fail("read_jid_not_parsed")
     }
 
     /** Adds [emoji] to a message as the user's reaction; an empty string removes it. */

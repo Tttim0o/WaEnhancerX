@@ -384,6 +384,18 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 request.query["limit"]?.toIntOrNull()?.coerceIn(1, 200) ?: 50))
             "updates" -> updates(request)
             "media" -> media(request, path.getOrNull(1)?.toLongOrNull())
+            "statuses" -> (dataFor(request) ?: data).let { WebResponse.json(it.statusesJson()) }
+            "status-media" -> {
+                val source = dataFor(request) ?: data
+                path.getOrNull(1)?.toLongOrNull()?.let(source::statusMedia)?.let { fileResponse(request, it) }
+                    ?: WebResponse.error(404, "not_found")
+            }
+            "status-thumb" -> {
+                val source = dataFor(request) ?: data
+                path.getOrNull(1)?.toLongOrNull()?.let(source::statusThumbnail)
+                    ?.let { WebResponse(200, "image/jpeg", it).header("Cache-Control", "private, max-age=86400") }
+                    ?: WebResponse.error(404, "not_found")
+            }
             "thumb" -> thumb(request, path.getOrNull(1)?.toLongOrNull())
             "avatar" -> avatar(request, path.getOrNull(1))
             "accounts" -> accountsRoute(request, path, post)
@@ -575,6 +587,10 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             "react" -> if (post) react(request, chat) else WebResponse.error(405, "method")
             "delete" -> if (post) deleteMessage(request, chat) else WebResponse.error(405, "method")
             "open" -> if (post) openOnPhone(request, chat) else WebResponse.error(405, "method")
+            "read" -> if (!post) WebResponse.error(405, "method")
+                else if (!WebSender.canMarkRead) WebResponse.error(503, "read_unavailable")
+                else if (WebSender.markRead(listOfNotNull(chat.sendJid, chat.jid, chat.lidJid))) WebResponse.json("{\"ok\":true}")
+                else sendError()
             else -> WebResponse.error(404, "not_found")
         }
     }
@@ -736,6 +752,11 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     private fun media(request: WebRequest, id: Long?): WebResponse {
         val source = dataFor(request) ?: return WebResponse.error(404, "not_found")
         val media = id?.let(source::media) ?: return WebResponse.error(404, "not_found")
+        return fileResponse(request, media)
+    }
+
+    /** A media file, with ranges for seeking in videos and voice messages. */
+    private fun fileResponse(request: WebRequest, media: WebData.Media): WebResponse {
         val size = media.file.length()
         val inline = INLINE_TYPES.any { media.mime.startsWith(it) }
         val type = if (inline) media.mime else "application/octet-stream"

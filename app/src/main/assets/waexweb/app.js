@@ -138,7 +138,13 @@
       scClose: 'Close what is open', recent: 'Recently used', smileys: 'Smileys', people: 'People', nature: 'Animals and nature',
       food: 'Food and drink', activity: 'Activities', travel: 'Travel and places', objects: 'Objects', symbols: 'Symbols',
       speed: 'Playback speed', readMore: 'Read more', showAll: 'All', timeout: 'The phone took too long to answer. Try again.',
-      chats: 'Chats', confirmSwitch: 'Switch'
+      chats: 'Chats', confirmSwitch: 'Switch',
+      statusTitle: 'Status', myStatus: 'My status', recentUpdates: 'Recent updates', viewedUpdates: 'Viewed updates',
+      noStatuses: 'No status updates from the last 24 hours.', statusesUnavailable: 'Statuses could not be read from the phone.',
+      secretView: 'Viewing here does not tell them you saw it.', statusGone: 'Not downloaded on the phone yet.',
+      markReadPref: 'Mark chats as read when opened', markReadHint: 'WhatsApp sends blue ticks, unless WAEX hides them.',
+      read_unavailable: 'Marking as read does not work with this WhatsApp version.', pause: 'Pause', play: 'Play',
+      prevPerson: 'Previous person', nextPerson: 'Next person', updates: '{s} new'
     },
     sk: {
       intro: 'Čítaj a píš svoje WhatsApp správy z tohto počítača. Telefón ukáže kód, ktorým tento prehliadač pustíš dnu.',
@@ -262,7 +268,13 @@
       scClose: 'Zavrieť, čo je otvorené', recent: 'Naposledy použité', smileys: 'Smajlíky', people: 'Ľudia', nature: 'Zvieratá a príroda',
       food: 'Jedlo a pitie', activity: 'Aktivity', travel: 'Cestovanie a miesta', objects: 'Predmety', symbols: 'Symboly',
       speed: 'Rýchlosť prehrávania', readMore: 'Čítať ďalej', showAll: 'Všetko', timeout: 'Telefón odpovedal príliš dlho. Skús to znova.',
-      chats: 'Chaty', confirmSwitch: 'Prepnúť'
+      chats: 'Chaty', confirmSwitch: 'Prepnúť',
+      statusTitle: 'Statusy', myStatus: 'Môj status', recentUpdates: 'Nové', viewedUpdates: 'Pozreté',
+      noStatuses: 'Za posledných 24 hodín nikto nepridal status.', statusesUnavailable: 'Statusy sa z telefónu nepodarilo načítať.',
+      secretView: 'Keď si ich pozrieš tu, nedozvedia sa to.', statusGone: 'V telefóne ešte nie je stiahnutý.',
+      markReadPref: 'Označiť chat ako prečítaný po otvorení', markReadHint: 'WhatsApp pošle modré fajky, ak ich WAEX neskrýva.',
+      read_unavailable: 'Označovanie ako prečítané s touto verziou WhatsAppu nefunguje.', pause: 'Pozastaviť', play: 'Prehrať',
+      prevPerson: 'Predošlá osoba', nextPerson: 'Ďalšia osoba', updates: 'Nové: {s}'
     }
   };
 
@@ -272,7 +284,7 @@
     wall: 'classic', wallColor: '', wallOpacity: 100, wallDim: 0,
     font: 14.2, family: 'system', radius: 7.5, tails: true,
     density: 'comfortable', list: 'comfortable', listAvatars: true,
-    groupAvatars: true, senderColors: true, bigEmoji: true, msgWidth: 65, sideWidth: 400, blur: false, sound: false, v: 2,
+    groupAvatars: true, senderColors: true, bigEmoji: true, msgWidth: 65, sideWidth: 400, blur: false, sound: false, markRead: true, v: 2,
     clock: 'auto', motion: 'system', enter: true, react: '❤️',
     quick: ['👍', '❤️', '😂', '😮', '😢', '🙏'], titleCount: true, lang: ''
   };
@@ -420,7 +432,11 @@
     label('findOpen', 'findInChat'); label('findClose', 'close'); label('infoOpen', 'chatInfo'); label('infoClose', 'close');
     label('emojiButton', 'emoji'); label('replyCancel', 'cancel'); label('railChats', 'chats'); label('accountButton', 'accounts');
     label('viewerClose', 'close'); label('viewerSave', 'download'); label('viewerPrev', 'back'); label('send', 'typeHere');
-    label('chatHead', 'chatInfo');
+    label('chatHead', 'chatInfo'); label('railStatus', 'statusTitle'); label('statusBack', 'back');
+    label('storyClose', 'close'); label('storySave', 'download'); label('storyPause', 'pause');
+    label('storyPrevPerson', 'prevPerson'); label('storyNextPerson', 'nextPerson');
+    $('statusTitle').textContent = t('statusTitle');
+    $('statusHint').lastElementChild.textContent = t('secretView');
     $('emptyHint').lastElementChild.textContent = t('emptyHint');
     $('emojiPanel').textContent = '';
     renderTabs();
@@ -557,7 +573,7 @@
   const state = {
     signedIn: false, canSend: false, canReact: false, canReply: false, canDelete: false, reply: null, rev: null, chats: [], tab: 'all', query: '', hits: [],
     current: null, messages: new Map(), nodes: new Map(), noOlder: false, detached: false, drafts: new Map(),
-    pairId: null, noAvatar: new Set(), unfolded: new Set(), loaded: false, unreadFrom: null, unreadCount: 0, newBelow: 0, loadingOlder: false, lastUnread: -1,
+    pairId: null, noAvatar: new Set(), unfolded: new Set(), loaded: false, canMarkRead: false, statuses: [], statusesOk: true, view: 'chats', unreadFrom: null, unreadCount: 0, newBelow: 0, loadingOlder: false, lastUnread: -1,
     // Accounts on the phone; `account` is the account of the open chat ('' = the one in use).
     accounts: [], merged: false, activeAccount: '', account: '', sendAs: '', switchingTo: null, pending: null
   };
@@ -580,6 +596,8 @@
     if ($('ask').open) $('ask').close();
     closeMenu();
     closeViewer();
+    if (!$('story').hidden) closeStory();
+    showView('chats');
     document.title = 'WAEX Web';
   }
   async function askCode() {
@@ -1347,6 +1365,7 @@
       state.canReact = live && !!r.canReact;
       state.canReply = live && !!r.canReply;
       state.canDelete = live && !!r.canDelete;
+      state.canMarkRead = live && !!r.canMarkRead;
       for (const m of r.messages) state.messages.set(m.id, m);
       if (r.messages.length < 60) state.noOlder = true;
       // "Unread messages" line above the first message the phone has not shown yet.
@@ -1363,6 +1382,7 @@
       else toBottom();
       showSendNote();
       showLatestButton();
+      markRead();
       if (window.matchMedia('(min-width: 761px)').matches && $('findBar').hidden) $('text').focus();
     } catch (e) {
       if (state.current !== jid) return;
@@ -1518,6 +1538,8 @@
           state.rev = u.rev;
           await loadChats();
           await loadLatest();
+          if (nearBottom()) markRead();
+          loadStatuses();
           await sleep(600);
         } else if (Date.now() - began < 400) {
           // An answer that came at once without news: do not spin.
@@ -1536,8 +1558,298 @@
   // Back from sleep or another tab: ask right away instead of waiting for the next round.
   document.addEventListener('visibilitychange', () => {
     if (document.hidden || !state.signedIn) return;
-    loadChats().then(loadLatest).catch(() => {});
+    loadChats().then(loadLatest).then(() => { if (nearBottom()) markRead(); }).catch(() => {});
   });
+
+  // ─── Marking chats as read ───────────────────────────────────────────
+  // Only for the account in use, only while this tab is in front, at most once every few seconds.
+  let lastRead = { key: '', at: 0 };
+  async function markRead() {
+    const chat = currentChat();
+    if (!chat || !prefs.markRead || !state.canMarkRead || state.account || document.hidden || !(chat.unread > 0)) return;
+    const key = draftKey();
+    if (lastRead.key === key && Date.now() - lastRead.at < 4000) return;
+    lastRead = { key, at: Date.now() };
+    try {
+      await api('/api/chats/' + enc(chat.jid) + '/read', {});
+      chat.unread = 0;
+      renderChats();
+    } catch (e) {
+      if (e.code === 'read_unavailable') state.canMarkRead = false;
+    }
+  }
+
+  // ─── Statuses ────────────────────────────────────────────────────────
+  // Seen here only: the phone is not told, so the ring turns grey for this browser alone.
+  let seenStatus = new Set();
+  try { seenStatus = new Set(JSON.parse(localStorage.getItem('waex_seen_status') || '[]')); } catch (_) { /* none */ }
+  const saveSeen = () => { try { localStorage.setItem('waex_seen_status', JSON.stringify(Array.from(seenStatus).slice(-600))); } catch (_) { /* ignore */ } };
+  const isNew = (item) => item.unseen && !seenStatus.has(item.id);
+  const personNew = (p) => !p.mine && p.items.some(isNew);
+  async function loadStatuses() {
+    try {
+      const r = await api('/api/statuses');
+      state.statuses = (r.people || []).filter((p) => p.items && p.items.length);
+      state.statusesOk = r.available !== false;
+    } catch (_) {
+      return;
+    }
+    $('railStatusDot').dataset.checked = '1';
+    $('railStatusDot').hidden = !state.statuses.some(personNew);
+    if (state.view === 'status') renderStatuses();
+  }
+  function statusRing(person) {
+    const ring = el('span', 'ring' + (personNew(person) ? '' : ' seen') + (person.items.length === 1 ? ' one' : ''));
+    ring.style.setProperty('--n', Math.min(person.items.length, 30));
+    const pic = el('span', 'avatar');
+    const last = person.items[person.items.length - 1];
+    if (last.thumb) {
+      const img = el('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.addEventListener('load', () => img.classList.add('ok'));
+      img.addEventListener('error', () => img.remove());
+      img.src = '/api/status-thumb/' + last.id;
+      avatar(pic, person.jid, person.name || t('myStatus'), '');
+      pic.textContent = (Array.from((person.name || t('myStatus')).trim())[0] || '?').toUpperCase();
+      pic.append(img);
+    } else if (!last.media && last.text) {
+      pic.classList.add('txt');
+      pic.style.background = argb(last.bg, '#54656f');
+      pic.style.color = argb(last.fg, '#ffffff');
+      pic.textContent = last.text.slice(0, 40);
+    } else {
+      avatar(pic, person.jid, person.name || t('myStatus'), '');
+    }
+    ring.append(pic);
+    return ring;
+  }
+  function renderStatuses() {
+    const box = $('statusList');
+    box.textContent = '';
+    if (!state.statusesOk) { box.append(el('div', 'section muted', t('statusesUnavailable'))); return; }
+    const mine = state.statuses.filter((p) => p.mine);
+    const fresh = state.statuses.filter((p) => !p.mine && personNew(p));
+    const seen = state.statuses.filter((p) => !p.mine && !personNew(p));
+    const add = (title, list) => {
+      if (!list.length) return;
+      box.append(el('div', 'section', title));
+      for (const person of list) {
+        const row = el('div', 'row');
+        row.setAttribute('role', 'listitem');
+        row.tabIndex = 0;
+        const main = el('div', 'grow');
+        const top = el('div', 'top');
+        top.append(el('div', 'name grow', person.mine ? t('myStatus') : person.name || person.jid.split('@')[0]));
+        const bottom = el('div', 'bottom');
+        const fresh = person.items.filter(isNew).length;
+        bottom.append(el('div', 'last grow', statusTime(person.ts) + (fresh ? ' · ' + t('updates', { s: fresh }) : '')));
+        main.append(top, bottom);
+        row.append(statusRing(person), main);
+        const open = () => openStory(state.statuses.indexOf(person));
+        row.addEventListener('click', open);
+        row.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(); });
+        box.append(row);
+      }
+    };
+    add(t('myStatus'), mine);
+    add(t('recentUpdates'), fresh);
+    add(t('viewedUpdates'), seen);
+    if (!box.children.length) box.append(el('div', 'section muted', t('noStatuses')));
+  }
+  const statusTime = (ts) => dayLabel(ts) + ', ' + new Date(ts).toLocaleTimeString([], clockOpts());
+  /** WhatsApp stores status colours as signed 32-bit ARGB numbers. */
+  function argb(value, fallback) {
+    if (value == null || !Number.isFinite(value)) return fallback;
+    const v = value >>> 0;
+    return 'rgb(' + ((v >> 16) & 255) + ' ' + ((v >> 8) & 255) + ' ' + (v & 255) + ')';
+  }
+  function showView(view) {
+    state.view = view;
+    $('side').hidden = view !== 'chats';
+    $('statusSide').hidden = view !== 'status';
+    $('railChats').classList.toggle('on', view === 'chats');
+    $('railStatus').classList.toggle('on', view === 'status');
+    if (view === 'status') { renderStatuses(); loadStatuses(); }
+  }
+
+  // The viewer: one person at a time, their statuses in order, each with its own progress bar.
+  const story = { person: -1, item: 0, timer: 0, started: 0, left: 0, paused: false, media: null };
+  const STORY_MS = 6000;
+  function openStory(index) {
+    const person = state.statuses[index];
+    if (!person) return;
+    story.person = index;
+    const first = person.items.findIndex(isNew);
+    story.item = first >= 0 ? first : 0;
+    $('story').hidden = false;
+    drawStory();
+  }
+  function closeStory() {
+    clearTimeout(story.timer);
+    if (story.media) { story.media.pause(); story.media = null; }
+    $('story').hidden = true;
+    $('storyStage').textContent = '';
+    if (state.view === 'status') renderStatuses();
+    $('railStatusDot').hidden = !state.statuses.some(personNew);
+  }
+  function drawStory() {
+    clearTimeout(story.timer);
+    if (story.media) { story.media.pause(); story.media = null; }
+    const person = state.statuses[story.person];
+    const item = person && person.items[story.item];
+    if (!item) { closeStory(); return; }
+    seenStatus.add(item.id);
+    saveSeen();
+    const bars = $('storyBars');
+    bars.textContent = '';
+    person.items.forEach((_, i) => {
+      const bar = el('i', i < story.item ? 'done' : null);
+      bar.append(el('b'));
+      bars.append(bar);
+    });
+    const pic = $('storyAvatar');
+    avatar(pic, person.jid, person.mine ? t('myStatus') : person.name || '?', '');
+    $('storyName').textContent = person.mine ? t('myStatus') : person.name || person.jid.split('@')[0];
+    $('storyWhen').textContent = statusTime(item.ts);
+    const stage = $('storyStage');
+    stage.textContent = '';
+    const media = item.media;
+    const url = '/api/status-media/' + item.id;
+    $('storySave').hidden = !(media && media.available);
+    $('storySave').href = url;
+    $('storyCaption').textContent = media ? (item.text || '') : '';
+    let duration = STORY_MS;
+    if (media && media.available && (media.mime || '').startsWith('video/')) {
+      const video = el('video');
+      video.src = url;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.addEventListener('ended', () => stepStory(1));
+      video.addEventListener('loadedmetadata', () => { if (Number.isFinite(video.duration)) runBar(video.duration * 1000, true); });
+      video.addEventListener('error', () => runBar(STORY_MS));
+      story.media = video;
+      stage.append(video);
+      duration = 0;
+    } else if (media && media.available && (media.mime || '').startsWith('audio/')) {
+      const audio = el('audio');
+      audio.src = url;
+      audio.autoplay = true;
+      audio.controls = true;
+      audio.addEventListener('ended', () => stepStory(1));
+      audio.addEventListener('loadedmetadata', () => { if (Number.isFinite(audio.duration)) runBar(audio.duration * 1000, true); });
+      story.media = audio;
+      stage.append(audio);
+      duration = 0;
+    } else if (media && media.available) {
+      const img = el('img');
+      img.alt = '';
+      img.src = url;
+      stage.append(img);
+    } else if (media) {
+      const gone = el('div', 'gone');
+      if (item.thumb) { const img = el('img'); img.alt = ''; img.src = '/api/status-thumb/' + item.id; gone.append(img); }
+      gone.append(el('span', null, t('statusGone')));
+      stage.append(gone);
+    } else {
+      const text = el('div', 'storytext' + (item.font === 1 || item.font === 4 ? ' serif' : item.font === 3 ? ' mono' : ''));
+      text.style.background = argb(item.bg, '#54656f');
+      text.style.color = argb(item.fg, '#ffffff');
+      // One inner block, so formatted words stay in the same line as the text around them.
+      const words = el('span');
+      rich(words, item.text || '');
+      text.append(words);
+      stage.append(text);
+    }
+    $('storyPrevPerson').disabled = story.person <= 0;
+    $('storyNextPerson').disabled = story.person >= state.statuses.length - 1;
+    story.paused = false;
+    setPauseIcon();
+    if (duration) runBar(duration);
+  }
+  /** Fills the current bar over [ms] and moves on; [media] bars follow the video or audio instead. */
+  function runBar(ms, media) {
+    const bar = $('storyBars').children[story.item];
+    if (!bar) return;
+    const fill = bar.firstElementChild;
+    clearTimeout(story.timer);
+    if (media && story.media) {
+      const tick = () => {
+        if (!story.media || $('story').hidden) return;
+        fill.style.width = Math.min(100, (story.media.currentTime * 1000 / ms) * 100) + '%';
+        story.timer = setTimeout(tick, 100);
+      };
+      tick();
+      return;
+    }
+    story.left = ms;
+    story.started = Date.now();
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    requestAnimationFrame(() => {
+      fill.style.transition = 'width ' + ms + 'ms linear';
+      fill.style.width = '100%';
+    });
+    story.timer = setTimeout(() => stepStory(1), ms);
+  }
+  function setPauseIcon() {
+    const b = $('storyPause');
+    b.textContent = '';
+    b.append(icon(story.paused ? 'play' : 'pause'));
+    b.title = t(story.paused ? 'play' : 'pause');
+  }
+  function pauseStory(on) {
+    if (story.paused === on || $('story').hidden) return;
+    story.paused = on;
+    setPauseIcon();
+    if (story.media) { if (on) story.media.pause(); else story.media.play().catch(() => {}); return; }
+    const bar = $('storyBars').children[story.item];
+    const fill = bar && bar.firstElementChild;
+    if (!fill) return;
+    if (on) {
+      clearTimeout(story.timer);
+      story.left = Math.max(0, story.left - (Date.now() - story.started));
+      fill.style.width = getComputedStyle(fill).width;
+      fill.style.transition = 'none';
+    } else {
+      story.started = Date.now();
+      fill.style.transition = 'width ' + story.left + 'ms linear';
+      fill.style.width = '100%';
+      story.timer = setTimeout(() => stepStory(1), story.left);
+    }
+  }
+  function stepStory(by) {
+    const person = state.statuses[story.person];
+    if (!person) return closeStory();
+    const next = story.item + by;
+    if (next >= 0 && next < person.items.length) { story.item = next; drawStory(); return; }
+    stepPerson(by);
+  }
+  function stepPerson(by) {
+    const index = story.person + by;
+    if (index < 0 || index >= state.statuses.length) { if (by > 0) closeStory(); else { story.item = 0; drawStory(); } return; }
+    story.person = index;
+    const person = state.statuses[index];
+    const first = by > 0 ? person.items.findIndex(isNew) : -1;
+    story.item = first >= 0 ? first : 0;
+    drawStory();
+  }
+  $('railStatus').addEventListener('click', () => showView(state.view === 'status' ? 'chats' : 'status'));
+  $('statusBack').addEventListener('click', () => showView('chats'));
+  $('storyClose').addEventListener('click', closeStory);
+  $('storyPrev').addEventListener('click', () => stepStory(-1));
+  $('storyNext').addEventListener('click', () => stepStory(1));
+  $('storyPrevPerson').addEventListener('click', () => stepPerson(-1));
+  $('storyNextPerson').addEventListener('click', () => stepPerson(1));
+  $('storyPause').addEventListener('click', () => pauseStory(!story.paused));
+  // Holding a finger or the mouse on the picture pauses it, as on the phone.
+  let holdTimer = 0, held = false;
+  for (const zone of [$('storyPrev'), $('storyNext')]) {
+    zone.addEventListener('pointerdown', () => { held = false; holdTimer = setTimeout(() => { held = true; pauseStory(true); }, 220); });
+    zone.addEventListener('pointerup', (e) => { clearTimeout(holdTimer); if (held) { e.preventDefault(); pauseStory(false); } });
+    zone.addEventListener('click', (e) => { if (held) { e.stopImmediatePropagation(); held = false; } }, true);
+  }
+  $('story').addEventListener('click', (e) => { if (e.target === $('story')) closeStory(); });
 
   // ─── Accounts ────────────────────────────────────────────────────────
   async function loadAccounts() {
@@ -1830,6 +2142,7 @@
     const chats = section('chats', t('chatsLook'));
     chats.append(group(t('density'), seg([{ value: 'comfortable', label: t('comfortable') }, { value: 'compact', label: t('compact') }], 'density')));
     chats.append(slider(t('msgWidth'), 'msgWidth', 50, 85, 5, '%'));
+    chats.append(toggle(t('markReadPref'), 'markRead', false, t('markReadHint')));
     chats.append(toggle(t('groupAvatars'), 'groupAvatars', true));
     chats.append(toggle(t('senderColors'), 'senderColors'));
     chats.append(toggle(t('bigEmoji'), 'bigEmoji', true));
@@ -2042,6 +2355,7 @@
     renderChats();
     await loadAccounts();
     try { await loadChats(); } catch (_) { /* the poll loop retries */ }
+    loadStatuses();
     poll();
   }
 
@@ -2352,7 +2666,8 @@
     for (const b of $('tabs').children) b.classList.toggle('on', b === button);
     renderChats();
   });
-  $('railChats').addEventListener('click', () => { $('search').value = ''; onSearch(); $('chats').scrollTop = 0; $('search').focus(); });
+  $('railChats').addEventListener('click', () => {
+    showView('chats'); $('search').value = ''; onSearch(); $('chats').scrollTop = 0; $('search').focus(); });
   function closeChat() {
     if (state.current) { state.drafts.set(draftKey(), $('text').value); saveDrafts(); }
     $('app').classList.remove('open');
@@ -2438,6 +2753,13 @@
   document.addEventListener('keydown', (e) => {
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''));
     const mod = e.ctrlKey || e.metaKey;
+    if (!$('story').hidden) {
+      if (e.key === 'ArrowLeft') stepStory(-1);
+      else if (e.key === 'ArrowRight') stepStory(1);
+      else if (e.key === ' ') { e.preventDefault(); pauseStory(!story.paused); }
+      else if (e.key === 'Escape') closeStory();
+      return;
+    }
     if (!$('viewer').hidden) {
       if (e.key === 'ArrowLeft') stepViewer(-1);
       else if (e.key === 'ArrowRight') stepViewer(1);
