@@ -56,6 +56,11 @@
       reply: 'Reply', react: 'React', copy: 'Copy text', cancel: 'Cancel', emoji: 'Emoji',
       doubleReact: 'Double click reacts with', sendProblem: 'WhatsApp did not take the message ({s}). Try again.',
       react_unavailable: 'Reactions do not work with this WhatsApp version.',
+      attach: 'Photos and videos', caption: 'Add a caption', captionFirst: 'Caption (goes with the first one)', remove: 'Remove',
+      addMore: 'Add more', sendMedia: 'Send', tooBig: 'Files over 100 MB cannot be sent.',
+      mediaOnly: 'Only photos and videos can be sent from here.', mediaUnavailable: 'This WhatsApp version does not let WAEX send photos and videos.',
+      mediaOtherAccount: 'Switch to this account first to send photos.', dropHere: 'Drop photos or videos to send them',
+      too_large: 'The file is too large.', media_type: 'This kind of file cannot be sent.', media_unavailable: 'Photos and videos cannot be sent with this WhatsApp version.',
       message_not_found: 'WhatsApp no longer has that message.', online: 'Connected to the phone',
       reconnecting: 'The phone does not answer. Trying again…',
       deletedBy: 'Deleted by the sender {s}', deletedShort: 'Deleted', delete: 'Delete',
@@ -187,6 +192,11 @@
       reply: 'Odpovedať', react: 'Reagovať', copy: 'Kopírovať text', cancel: 'Zrušiť', emoji: 'Emoji',
       doubleReact: 'Dvojklik reaguje pomocou', sendProblem: 'WhatsApp správu neprevzal ({s}). Skús to znova.',
       react_unavailable: 'Reakcie s touto verziou WhatsAppu nefungujú.',
+      attach: 'Fotky a videá', caption: 'Pridať popis', captionFirst: 'Popis (k prvému súboru)', remove: 'Odstrániť',
+      addMore: 'Pridať ďalšie', sendMedia: 'Odoslať', tooBig: 'Súbory nad 100 MB sa nedajú poslať.',
+      mediaOnly: 'Odtiaľto sa dajú poslať len fotky a videá.', mediaUnavailable: 'S touto verziou WhatsAppu WAEX nevie posielať fotky a videá.',
+      mediaOtherAccount: 'Na poslanie fotky sa najprv prepni na tento účet.', dropHere: 'Pusť sem fotky alebo videá a pošli ich',
+      too_large: 'Súbor je príliš veľký.', media_type: 'Tento typ súboru sa nedá poslať.', media_unavailable: 'S touto verziou WhatsAppu sa fotky a videá nedajú poslať.',
       message_not_found: 'WhatsApp už túto správu nemá.', online: 'Spojené s telefónom',
       reconnecting: 'Telefón neodpovedá. Skúšam znova…',
       deletedBy: 'Odosielateľ to vymazal {s}', deletedShort: 'Vymazané', delete: 'Vymazať',
@@ -435,6 +445,8 @@
     label('emojiButton', 'emoji'); label('replyCancel', 'cancel'); label('railChats', 'chats'); label('accountButton', 'accounts');
     label('viewerClose', 'close'); label('viewerSave', 'download'); label('viewerPrev', 'back'); label('send', 'typeHere');
     label('chatHead', 'chatInfo'); label('railStatus', 'statusTitle'); label('railChannels', 'channels'); label('statusBack', 'back');
+    label('attachButton', 'attach'); label('attachClose', 'close'); label('attachAdd', 'addMore'); label('attachSend', 'sendMedia');
+    $('dropNote').textContent = t('dropHere');
     label('storyClose', 'close'); label('storySave', 'download'); label('storyPause', 'pause');
     label('storyPrevPerson', 'prevPerson'); label('storyNextPerson', 'nextPerson');
     $('statusTitle').textContent = t('statusTitle');
@@ -901,7 +913,7 @@
     if (last < text.length) parent.append(text.slice(last));
   }
 
-  const mediaUrl = (m) => '/api/media/' + m.id + accParam('?');
+  const mediaUrl = (m) => m.localUrl || '/api/media/' + m.id + accParam('?');
   const isPicture = (m) => /^image\/(jpeg|png|webp|gif)$/.test((m.media && m.media.mime) || '');
   const isVideo = (m) => ((m.media && m.media.mime) || '').startsWith('video/');
   const clock = (sec) => { sec = Math.max(0, Math.round(sec || 0)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); };
@@ -1004,7 +1016,7 @@
     if (mime.startsWith('video/')) {
       const video = el('video');
       video.controls = true;
-      video.preload = 'none';
+      video.preload = m.localUrl ? 'metadata' : 'none';
       video.playsInline = true;
       if (m.type === 13) { video.loop = true; video.muted = true; }
       if (m.thumb) video.poster = '/api/thumb/' + m.id + accParam('?');
@@ -1091,6 +1103,13 @@
       meta.append(span);
     }
     if (m.local && !m.failed) node.classList.add('pending');
+    if (m.upload && !m.failed && !m.sent) {
+      const bar = el('div', 'upbar');
+      const fill = el('i');
+      fill.style.width = Math.round((m.progress || 0) * 100) + '%';
+      bar.append(fill);
+      node.append(bar);
+    }
     node.append(meta);
     if (m.reactions) {
       const chip = el('button', 'react' + (m.myReaction ? ' mine' : ''), m.reactions);
@@ -1174,7 +1193,7 @@
         a.click();
         a.remove();
       });
-      if (m.local) menuItem(menu, 'trash', t('delete'), () => dropLocal(m.id), 'danger');
+      if (m.local) menuItem(menu, 'trash', t('delete'), () => { if (m.xhr) m.xhr.abort(); dropLocal(m.id); }, 'danger');
       else if (state.canDelete) menuItem(menu, 'trash', t('delete'), () => deleteMessage(m), 'danger');
       const when = new Date(m.ts);
       menu.append(el('div', 'when', when.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) +
@@ -1277,7 +1296,9 @@
     for (const m of list) {
       if (!m.fromMe || state.messages.has(m.id)) continue;
       for (const local of Array.from(state.messages.values())) {
-        if (local.local && !local.failed && local.text === m.text) {
+        if (local.local && !local.failed && (local.text || '') === (m.text || '') &&
+            (local.upload ? local.sent && local.type === m.type : !m.type)) {
+          if (local.localUrl) setTimeout(() => URL.revokeObjectURL(local.localUrl), 30000);
           state.messages.delete(local.id);
           const node = state.nodes.get(local.id);
           if (node) node.remove();
@@ -1327,6 +1348,7 @@
   const draftKey = () => state.current + '|' + state.account;
 
   async function openChat(jid, hit, account) {
+    if (!$('attach').hidden) closeAttach();
     if (state.current) { state.drafts.set(draftKey(), $('text').value); saveDrafts(); }
     const nextAccount = account && account !== state.activeAccount ? account : '';
     const sameAsOpen = state.current === jid && state.account === nextAccount;
@@ -1374,6 +1396,9 @@
       state.canReply = live && !!r.canReply;
       state.canDelete = live && !!r.canDelete;
       state.canMarkRead = live && !!r.canMarkRead;
+      state.canSendImage = live && !!r.canSendImage;
+      state.canSendVideo = live && !!r.canSendVideo;
+      showAttachButton();
       for (const m of r.messages) state.messages.set(m.id, m);
       if (r.messages.length < 60) state.noOlder = true;
       // "Unread messages" line above the first message the phone has not shown yet.
@@ -1451,6 +1476,7 @@
   function showSendNote() {
     const note = $('sendNote');
     note.textContent = '';
+    showAttachButton();
     note.hidden = state.canSend || $('chat').classList.contains('channel');
     if (note.hidden) return;
     const button = el('button', null, t('openOnPhone'));
@@ -1472,6 +1498,7 @@
   }
   function retryLocal(m) {
     dropLocal(m.id);
+    if (m.upload) { queueMedia(m.jid, m.upload, m.text); return; }
     queueSend(m.jid, m.text, m.replyTo, m.quote);
   }
   /** Shows the message at once as "being sent" and hands it to the phone; several go out in order. */
@@ -1521,6 +1548,159 @@
     saveDrafts();
     $('text').focus();
     queueSend(jid, text, reply ? reply.id : undefined, reply ? (reply.text || t(TYPE_WORD[reply.type] || 'document')) : undefined);
+  }
+
+  // ─── Photos and videos ───────────────────────────────────────────────
+  const MAX_UPLOAD = 100 * 1024 * 1024;
+  const attach = { files: [], index: 0, urls: [] };
+  const canAttach = () => !!(state.canSendImage || state.canSendVideo);
+  function attachKind(file) {
+    const type = (file.type || '').toLowerCase();
+    if (type.startsWith('video/')) return state.canSendVideo ? 'video' : null;
+    if (/^image\/(jpeg|png|webp|heic|heif|bmp)$/.test(type)) return state.canSendImage ? 'image' : null;
+    return null;
+  }
+  function showAttachButton() {
+    $('attachButton').hidden = !canAttach() || $('chat').classList.contains('channel');
+  }
+  /** Opens the preview with the picked files; files WhatsApp would not take are left out with a note. */
+  function pickFiles(list) {
+    if (!state.current || !canAttach()) return;
+    let skipped = 0, big = 0;
+    for (const file of Array.from(list || [])) {
+      if (!attachKind(file)) { skipped++; continue; }
+      if (file.size > MAX_UPLOAD) { big++; continue; }
+      if (attach.files.length >= 30) break;
+      attach.files.push(file);
+      attach.urls.push(URL.createObjectURL(file));
+    }
+    if (big) toast(t('tooBig'));
+    else if (skipped) toast(t('mediaOnly'));
+    if (!attach.files.length) return;
+    if (!$('attach').hidden) { attach.index = attach.files.length - 1; drawAttach(); return; }
+    if (state.sendAs && state.sendAs !== state.activeAccount) { closeAttach(); toast(t('mediaOtherAccount')); return; }
+    attach.index = 0;
+    $('attachCaption').value = $('text').value.trim();
+    $('attach').hidden = false;
+    drawAttach();
+    setTimeout(() => $('attachCaption').focus(), 30);
+  }
+  function drawAttach() {
+    const file = attach.files[attach.index], url = attach.urls[attach.index];
+    const stage = $('attachStage');
+    stage.textContent = '';
+    if (file.type.startsWith('video/')) {
+      const v = el('video');
+      v.controls = true;
+      v.playsInline = true;
+      v.src = url;
+      stage.append(v);
+    } else {
+      const img = el('img');
+      img.alt = '';
+      img.src = url;
+      stage.append(img);
+    }
+    $('attachName').textContent = file.name + ' · ' + size(file.size);
+    const thumbs = $('attachThumbs');
+    thumbs.textContent = '';
+    attach.files.forEach((f, i) => {
+      const b = el('button', 'attachthumb' + (i === attach.index ? ' on' : ''));
+      b.type = 'button';
+      b.title = f.name;
+      if (f.type.startsWith('video/')) b.append(icon('video')); else {
+        const img = el('img');
+        img.alt = '';
+        img.src = attach.urls[i];
+        b.append(img);
+      }
+      const x = el('span', 'x');
+      x.append(icon('close'));
+      x.title = t('remove');
+      x.addEventListener('click', (e) => { e.stopPropagation(); removeAttach(i); });
+      b.append(x);
+      b.addEventListener('click', () => { attach.index = i; drawAttach(); });
+      thumbs.append(b);
+    });
+    $('attachCaption').placeholder = attach.files.length > 1 ? t('captionFirst') : t('caption');
+  }
+  function removeAttach(i) {
+    URL.revokeObjectURL(attach.urls[i]);
+    attach.files.splice(i, 1);
+    attach.urls.splice(i, 1);
+    if (!attach.files.length) { closeAttach(); return; }
+    attach.index = Math.min(attach.index, attach.files.length - 1);
+    drawAttach();
+  }
+  function closeAttach(keepUrls) {
+    if (!keepUrls) for (const u of attach.urls) URL.revokeObjectURL(u);
+    attach.files = [];
+    attach.urls = [];
+    $('attachStage').textContent = '';
+    $('attach').hidden = true;
+    $('attachInput').value = '';
+  }
+  function sendAttach() {
+    const jid = state.current;
+    if (!jid || !attach.files.length) return;
+    const caption = $('attachCaption').value.trim();
+    const files = attach.files.slice(), urls = attach.urls.slice();
+    closeAttach(true);
+    if (caption && caption === $('text').value.trim()) { $('text').value = ''; autosize(); state.drafts.delete(draftKey()); saveDrafts(); }
+    files.forEach((file, i) => queueMedia(jid, file, i === 0 ? caption : '', urls[i]));
+  }
+  /** Shows the photo or video at once and uploads it; uploads go one after another, like texts. */
+  function queueMedia(jid, file, caption, url) {
+    const id = -(++localSeq);
+    const video = file.type.startsWith('video/');
+    const local = { id, local: true, jid, sort: Number.MAX_SAFE_INTEGER - 100000 + localSeq, fromMe: true, ts: Date.now(),
+      type: video ? 3 : 1, text: caption || '', status: 0, upload: file, progress: 0,
+      localUrl: url || URL.createObjectURL(file), media: { available: true, mime: video ? 'video/mp4' : 'image/jpeg', name: file.name, size: file.size } };
+    if (state.current === jid && !state.detached) { merge([local]); toBottom(); }
+    const show = () => { if (state.current === jid && state.messages.has(id)) redraw(local); };
+    sendChain = sendChain.then(() => new Promise((done) => {
+      if (!state.messages.has(id) && state.current === jid) { done(); return; }
+      const xhr = new XMLHttpRequest();
+      local.xhr = xhr;
+      let shown = 0;
+      xhr.open('POST', '/api/chats/' + enc(jid) + '/media?type=' + encodeURIComponent(file.type || ''));
+      xhr.setRequestHeader('X-WAEX', '1');
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      if (caption) xhr.setRequestHeader('X-WAEX-Caption', encodeURIComponent(caption));
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        local.progress = e.loaded / e.total;
+        if (local.progress - shown >= 0.05 || local.progress === 1) { shown = local.progress; show(); }
+      };
+      const fail = (code, data) => {
+        local.failed = true;
+        local.xhr = null;
+        if (code === 'send_failed') toast(t('sendProblem', { s: (data && data.step) || '?' }));
+        else if (code === 'media_unavailable') { state.canSendImage = state.canSendVideo = false; showAttachButton(); toast(t('mediaUnavailable')); }
+        else if (code !== 'abort') toast(errorText(new ApiError(code, 0, data || {})));
+        show();
+        done();
+      };
+      xhr.onload = async () => {
+        let data = {};
+        try { data = JSON.parse(xhr.responseText || '{}'); } catch (_) { /* empty */ }
+        if (xhr.status === 401) { showLogin(); fail('sign_in'); return; }
+        if (xhr.status < 200 || xhr.status >= 300) { fail(data.error || (xhr.status === 413 ? 'too_large' : 'failed'), data); return; }
+        local.sent = true;
+        local.xhr = null;
+        show();
+        done();
+        if (state.current === jid && !state.detached) {
+          try { await loadLatest(); toBottom(); } catch (_) { /* next poll */ }
+          if (!data.stored) setTimeout(() => { if (state.current === jid) loadLatest().catch(() => {}); }, 2000);
+        }
+      };
+      xhr.onerror = () => fail('offline');
+      xhr.onabort = () => fail('abort');
+      xhr.timeout = 15 * 60 * 1000;
+      xhr.ontimeout = () => fail('timeout');
+      xhr.send(file);
+    }));
   }
 
   // ─── Live updates ────────────────────────────────────────────────────
@@ -2648,6 +2828,40 @@
     panel.append(nav, grid);
     requestAnimationFrame(markTab);
   }
+  $('attachButton').addEventListener('click', () => $('attachInput').click());
+  $('attachAdd').addEventListener('click', () => $('attachInput').click());
+  $('attachInput').addEventListener('change', () => { pickFiles($('attachInput').files); $('attachInput').value = ''; });
+  $('attachClose').addEventListener('click', () => closeAttach());
+  $('attachSend').addEventListener('click', sendAttach);
+  $('attachCaption').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendAttach(); }
+  });
+  // Pasting a screenshot or dropping files on the open chat works like picking them.
+  document.addEventListener('paste', (e) => {
+    if (!state.current || !canAttach() || $('chat').classList.contains('channel')) return;
+    const files = Array.from((e.clipboardData && e.clipboardData.files) || []);
+    if (!files.length) return;
+    e.preventDefault();
+    pickFiles(files);
+  });
+  let dragDepth = 0;
+  const dragFiles = (e) => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+  const canDrop = () => state.current && canAttach() && !$('chat').classList.contains('channel');
+  $('pane').addEventListener('dragenter', (e) => {
+    if (!dragFiles(e) || !canDrop()) return;
+    e.preventDefault();
+    dragDepth++;
+    $('pane').classList.add('dropping');
+  });
+  $('pane').addEventListener('dragover', (e) => { if (dragFiles(e) && canDrop()) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+  $('pane').addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; $('pane').classList.remove('dropping'); } });
+  $('pane').addEventListener('drop', (e) => {
+    dragDepth = 0;
+    $('pane').classList.remove('dropping');
+    if (!dragFiles(e) || !canDrop()) return;
+    e.preventDefault();
+    pickFiles(e.dataTransfer.files);
+  });
   $('emojiButton').addEventListener('click', (e) => {
     e.stopPropagation();
     const panel = $('emojiPanel');
@@ -2685,6 +2899,7 @@
   $('railChats').addEventListener('click', () => {
     showView('chats'); $('search').value = ''; onSearch(); $('chats').scrollTop = 0; $('search').focus(); });
   function closeChat() {
+    if (!$('attach').hidden) closeAttach();
     if (state.current) { state.drafts.set(draftKey(), $('text').value); saveDrafts(); }
     $('app').classList.remove('open');
     state.current = null;
@@ -2790,6 +3005,7 @@
     if (e.key !== 'Escape') return;
     // Escape closes one thing at a time, the topmost first.
     if (!$('menu').hidden) closeMenu();
+    else if (!$('attach').hidden) closeAttach();
     else if (!$('emojiPanel').hidden) $('emojiPanel').hidden = true;
     else if (!$('findBar').hidden) closeFind();
     else if (state.reply) setReply(null);

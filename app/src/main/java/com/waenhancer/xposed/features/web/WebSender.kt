@@ -44,6 +44,12 @@ object WebSender {
     /** The same helper's (Integer, Collection of chats) method: the chat list's "Mark as read". */
     @Volatile private var markReadMany: Method? = null
 
+    /** Photo and video sending, found in the handler WhatsApp uses for media from paired glasses. */
+    @Volatile private var mediaImage: Method? = null
+    @Volatile private var mediaVideo: Method? = null
+    @Volatile private var mediaCopy: Method? = null
+    @Volatile private var mediaChatType: Class<*>? = null
+
     /** Why the last send or reaction did not work; a short code, never message content. */
     @Volatile var lastError: String = ""
         private set
@@ -62,6 +68,12 @@ object WebSender {
 
     val canMarkRead: Boolean
         get() = markRead != null && jidClass != null
+
+    val canSendImage: Boolean
+        get() = mediaImage != null && mediaChatType != null && jidClass != null
+
+    val canSendVideo: Boolean
+        get() = mediaVideo != null && mediaChatType != null && jidClass != null
 
     private val canFind: Boolean
         get() = bySortId != null || (lookup != null && keyConstructor != null)
@@ -127,6 +139,7 @@ object WebSender {
             factory = foundFactory
             sender = foundSender
             prepareExtras(context, classLoader, engine, fMessage, foundFactory.parameterTypes[0])
+            prepareMedia(context, classLoader, engine)
         } catch (t: Throwable) {
             XposedBridge.log("$TAG Sending unavailable: ${t.javaClass.simpleName}")
         }
@@ -272,6 +285,137 @@ object WebSender {
             }
         } catch (t: Throwable) {
             XposedBridge.log("$TAG Replies and reactions unavailable: ${t.javaClass.simpleName}")
+        }
+    }
+
+    /**
+     * WhatsApp's handler for photos, videos and voice notes sent from paired glasses reads a file
+     * and hands it to the same senders the gallery uses. Its calls are found by their shape:
+     * the photo sender takes (Uri, ... 21 parameters), the video sender is static and takes a File
+     * and the list of chats, and (Uri, boolean) -> File copies a file into WhatsApp's own storage.
+     */
+    private fun prepareMedia(context: Context, classLoader: ClassLoader, engine: DexSearchEngine) {
+        try {
+            fun anchorCalls(bridge: org.luckypray.dexkit.DexKitBridge, loader: ClassLoader): List<Method> {
+                val anchor = bridge.findMethod(FindMethod.create().matcher(MethodMatcher.create()
+                    .addUsingString("SendMediaMessageHandler/ no content_uri", StringMatchType.Contains)))
+                    .firstOrNull() ?: return emptyList()
+                return anchor.invokes.filter { it.isMethod }
+                    .mapNotNull { runCatching { it.getMethodInstance(loader) }.getOrNull() }
+            }
+            val image = engine.findMethodWithCache(context, classLoader, "waex_web_media_image") { bridge, loader ->
+                anchorCalls(bridge, loader).firstOrNull { m ->
+                    val p = m.parameterTypes
+                    !Modifier.isStatic(m.modifiers) && p.size >= 15 && p[0] == android.net.Uri::class.java &&
+                        p.count { it == List::class.java } >= 1 && p.count { it == String::class.java } >= 1
+                }
+            }
+            val video = engine.findMethodWithCache(context, classLoader, "waex_web_media_video") { bridge, loader ->
+                anchorCalls(bridge, loader).firstOrNull { m ->
+                    val p = m.parameterTypes
+                    Modifier.isStatic(m.modifiers) && p.size >= 10 && p.contains(java.io.File::class.java) &&
+                        p.contains(List::class.java) && p.contains(String::class.java) &&
+                        p.contains(m.declaringClass)
+                }
+            }
+            val copy = engine.findMethodWithCache(context, classLoader, "waex_web_media_copy") { bridge, loader ->
+                anchorCalls(bridge, loader).firstOrNull { m ->
+                    val p = m.parameterTypes
+                    !Modifier.isStatic(m.modifiers) && p.size == 2 && p[0] == android.net.Uri::class.java &&
+                        p[1] == java.lang.Boolean.TYPE && m.returnType == java.io.File::class.java
+                }
+            }
+            // The handler turns the request's thread id into the chat with a (ByteString) -> chat call.
+            val chatLookup = engine.findMethodWithCache(context, classLoader, "waex_web_media_chat") { bridge, loader ->
+                anchorCalls(bridge, loader).firstOrNull { m ->
+                    val p = m.parameterTypes
+                    p.size == 1 && p[0].name == "com.google.protobuf.ByteString" && !m.returnType.isPrimitive
+                }
+            }
+            val chatType = chatLookup?.returnType ?: return
+            image?.isAccessible = true
+            video?.isAccessible = true
+            copy?.isAccessible = true
+            mediaChatType = chatType
+            mediaImage = image
+            mediaVideo = video
+            mediaCopy = copy
+            XposedBridge.log("$TAG media sending: photo=${image != null} video=${video != null}")
+        } catch (t: Throwable) {
+            XposedBridge.log("$TAG Media sending unavailable: ${t.javaClass.simpleName}")
+        }
+    }
+
+    /** A value for a parameter we have nothing for: zero, false or null. */
+    private fun blank(type: Class<*>): Any? = when (type) {
+        java.lang.Boolean.TYPE -> false
+        Integer.TYPE -> 0
+        java.lang.Long.TYPE -> 0L
+        java.lang.Short.TYPE -> 0.toShort()
+        java.lang.Byte.TYPE -> 0.toByte()
+        java.lang.Float.TYPE -> 0f
+        java.lang.Double.TYPE -> 0.0
+        Character.TYPE -> '\u0000'
+        else -> null
+    }
+
+    /**
+     * The send options the handler builds with every field empty; the longest constructor is the
+     * one it uses. Null when the type has no such constructor (then null is passed, as allowed).
+     */
+    private fun emptyOptions(type: Class<*>): Any? {
+        if (type.isPrimitive || type.isInterface || java.lang.reflect.Modifier.isAbstract(type.modifiers) ||
+            type.name.startsWith("java.") || type.name.startsWith("android.")) return null
+        val ctor = type.declaredConstructors.maxByOrNull { it.parameterTypes.size } ?: return null
+        if (ctor.parameterTypes.isEmpty() || ctor.parameterTypes.size > 12) return null
+        return runCatching {
+            ctor.isAccessible = true
+            ctor.newInstance(*ctor.parameterTypes.map { blank(it) }.toTypedArray())
+        }.getOrNull()
+    }
+
+    /**
+     * Sends [file] to [rawJid] as a photo or, with [video], as a video, with an optional [caption].
+     * The file must stay in place: WhatsApp may still read it after this returns.
+     */
+    fun sendMedia(rawJid: String, file: java.io.File, video: Boolean, caption: String?): Boolean {
+        val chatType = mediaChatType ?: return fail("media_unavailable")
+        val method = (if (video) mediaVideo else mediaImage) ?: return fail("media_unavailable")
+        return try {
+            val chat = parseJid(rawJid, chatType) ?: return fail("media_jid_not_parsed")
+            val chats: List<Any> = java.util.Collections.singletonList(chat)
+            val text = caption?.trim()?.takeIf { it.isNotEmpty() }
+            val p = method.parameterTypes
+            val args = arrayOfNulls<Any>(p.size)
+            var listSet = false
+            var textSet = false
+            for (i in p.indices) {
+                val t = p[i]
+                args[i] = when {
+                    video && t == method.declaringClass -> instanceOf(method.declaringClass, null)
+                    t == java.io.File::class.java -> file
+                    t == List::class.java && !listSet -> { listSet = true; chats }
+                    t == String::class.java && !textSet -> { textSet = true; text }
+                    // The photo sender's third parameter: send options, built empty like the handler does.
+                    !video && i == 2 -> emptyOptions(t)
+                    else -> blank(t)
+                }
+            }
+            if (!video) {
+                // The handler first copies the picture into WhatsApp's storage and sends that copy.
+                val stored = mediaCopy?.let { copy ->
+                    runCatching { copy.invoke(instanceOf(copy.declaringClass, null), android.net.Uri.fromFile(file), false) as? java.io.File }
+                        .getOrNull()
+                }
+                args[0] = android.net.Uri.fromFile(stored?.takeIf { it.exists() } ?: file)
+            }
+            val owner = if (Modifier.isStatic(method.modifiers)) null else instanceOf(method.declaringClass, null)
+            val result = method.invoke(owner, *args) ?: return fail("media_not_queued")
+            XposedBridge.log("$TAG media handed over (${if (video) "video" else "photo"}, ${result.javaClass.name})")
+            lastError = ""
+            true
+        } catch (t: Throwable) {
+            fail("media_failed", t)
         }
     }
 

@@ -231,6 +231,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
     }
 
     private fun handle(socket: Socket) {
+        var upload: java.io.File? = null
         try {
             socket.soTimeout = 20_000
             val peer = socket.inetAddress
@@ -241,11 +242,12 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
             if (!onPhone && !LanPolicy.peerAllowed(peer, local, localInterfaces())) return
             val out = socket.getOutputStream()
             val request = try {
-                WebHttp.read(socket.getInputStream()) ?: return
+                WebHttp.read(socket.getInputStream(), java.io.File(app.cacheDir, UPLOAD_DIR)) ?: return
             } catch (e: WebHttp.BadRequest) {
-                WebHttp.write(out, WebResponse.error(e.status, "bad_request"))
+                WebHttp.write(out, WebResponse.error(e.status, if (e.status == 413) "too_large" else "bad_request"))
                 return
             }
+            upload = request.file
             if (onPhone && request.path.startsWith("/admin/")) {
                 // The WAEX app on this phone manages the server through here, with its own key.
                 val response = try { admin(request) } catch (_: Throwable) { WebResponse.error(500, "internal") }
@@ -272,6 +274,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         } catch (_: Throwable) {
             // Broken connections are normal (closed tabs, sleeping laptops).
         } finally {
+            upload?.delete()
             closeQuietly(socket)
         }
     }
@@ -584,6 +587,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
                 request.query["after"]?.toLongOrNull(),
                 request.query["limit"]?.toIntOrNull() ?: 60))
             "send" -> if (post) send(request, chat) else WebResponse.error(405, "method")
+            "media" -> if (post) sendMedia(request, chat) else WebResponse.error(405, "method")
             "react" -> if (post) react(request, chat) else WebResponse.error(405, "method")
             "delete" -> if (post) deleteMessage(request, chat) else WebResponse.error(405, "method")
             "open" -> if (post) openOnPhone(request, chat) else WebResponse.error(405, "method")
@@ -635,12 +639,7 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         val quoted = (body["replyTo"] as? Double)?.toLong()?.let {
             data.messageKey(chat, it) ?: return sendRefused(404, "message_not_found")
         }
-        synchronized(sendTimes) {
-            val now = System.currentTimeMillis()
-            while (sendTimes.isNotEmpty() && now - sendTimes.first() > 60_000) sendTimes.removeFirst()
-            if (sendTimes.size >= MAX_SENDS_PER_MINUTE) return sendRefused(429, "slow_down")
-            sendTimes.addLast(now)
-        }
+        if (tooFast()) return sendRefused(429, "slow_down")
         val before = data.maxMessageId()
         if (!WebSender.sendText(data.sendTarget(chat), text, quoted)) return sendError()
         // WhatsApp stores the message a moment later; wait briefly so the page can say it worked.
@@ -651,6 +650,62 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         }
         // Never the text or the chat: only whether WhatsApp stored the message.
         XposedBridge.log("$TAG send ${if (stored) "stored" else "not stored after 2 s"}")
+        return WebResponse.json(WebJson.obj("ok" to true, "stored" to stored))
+    }
+
+    /** Counts one send; true when the page already sent too many in the last minute. */
+    private fun tooFast(): Boolean = synchronized(sendTimes) {
+        val now = System.currentTimeMillis()
+        while (sendTimes.isNotEmpty() && now - sendTimes.first() > 60_000) sendTimes.removeFirst()
+        if (sendTimes.size >= MAX_SENDS_PER_MINUTE) return true
+        sendTimes.addLast(now)
+        false
+    }
+
+    /**
+     * POST /api/chats/<jid>/media?type=<mime>, the file as the body and an optional caption in the
+     * x-waex-caption header (percent-encoded). Photos and videos only.
+     */
+    private fun sendMedia(request: WebRequest, chat: WebData.Chat): WebResponse {
+        val upload = request.file ?: return sendRefused(400, "no_file")
+        if (upload.length() <= 0L) return sendRefused(400, "empty_file")
+        if (chat.channel) return sendRefused(403, "channel_read_only")
+        val mime = request.query["type"].orEmpty().lowercase()
+        val video = when {
+            mime.startsWith("video/") -> true
+            mime.startsWith("image/") && mime != "image/gif" && mime != "image/svg+xml" -> false
+            else -> return sendRefused(415, "media_type")
+        }
+        if (if (video) !WebSender.canSendVideo else !WebSender.canSendImage) return sendRefused(503, "media_unavailable")
+        val caption = request.header("x-waex-caption")?.let { WebHttp.decode(it, plusIsSpace = false) }?.trim()
+        if (caption != null && caption.length > MAX_TEXT) return sendRefused(400, "text_length")
+        if (tooFast()) return sendRefused(429, "slow_down")
+        // WhatsApp may read the file after this request ends, so it moves out of the upload folder.
+        // Copies older than a day are cleared; by then WhatsApp has long finished with them.
+        val dir = java.io.File(app.cacheDir, SENT_DIR).apply { mkdirs() }
+        val dayAgo = System.currentTimeMillis() - 24 * 3600_000L
+        dir.listFiles()?.forEach { if (it.lastModified() < dayAgo) it.delete() }
+        val ext = when {
+            video -> ".mp4"
+            mime == "image/png" -> ".png"
+            mime == "image/webp" -> ".webp"
+            else -> ".jpg"
+        }
+        val kept = java.io.File(dir, "web_" + System.currentTimeMillis() + "_" + (1000..9999).random() + ext)
+        if (!upload.renameTo(kept)) {
+            try { upload.copyTo(kept, overwrite = true) } catch (_: Throwable) { return sendRefused(500, "file_copy") }
+        }
+        val before = data.maxMessageId()
+        if (!WebSender.sendMedia(data.sendTarget(chat), kept, video, caption)) {
+            kept.delete()
+            return sendError()
+        }
+        var stored = false
+        for (i in 0 until 30) {
+            if (data.maxMessageId() > before) { stored = true; break }
+            try { Thread.sleep(100) } catch (_: InterruptedException) { break }
+        }
+        XposedBridge.log("$TAG media ${if (stored) "stored" else "not stored after 3 s"}")
         return WebResponse.json(WebJson.obj("ok" to true, "stored" to stored))
     }
 
@@ -816,6 +871,9 @@ class WebServerHook(context: Context, classLoader: ClassLoader, prefs: SharedPre
         private const val MAX_WORKERS = 24
         private const val MAX_WAITING = 8
         private const val MAX_TEXT = 8000
+        /** Uploads arrive here and are deleted after the answer; sent files move to [SENT_DIR]. */
+        private const val UPLOAD_DIR = "waex_web_upload"
+        private const val SENT_DIR = "waex_web_sent"
         private const val MAX_SENDS_PER_MINUTE = 30
         private val INLINE_TYPES = listOf("image/jpeg", "image/png", "image/webp", "image/gif", "video/", "audio/")
         private val ASSETS = mapOf(
