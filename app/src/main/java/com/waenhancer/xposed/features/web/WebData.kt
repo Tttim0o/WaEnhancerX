@@ -376,7 +376,9 @@ class WebData(private val app: Context, private val account: WebAccounts.Account
         return WebJson.obj("messages" to rows.map { it.json }, "canSend" to (open && WebSender.available),
             "canReact" to (open && WebSender.canReact), "canReply" to (open && WebSender.canReply),
             "canDelete" to (open && WebSender.canDelete), "channel" to chat.channel,
-            "canMarkRead" to (account == null && WebSender.canMarkRead))
+            "canMarkRead" to (account == null && WebSender.canMarkRead),
+            "canSendImage" to (open && account == null && WebSender.canSendImage),
+            "canSendVideo" to (open && account == null && WebSender.canSendVideo))
     }
 
     /** Original texts from WAEX's deleted messages vault (kept in the WAEX app), by key id. */

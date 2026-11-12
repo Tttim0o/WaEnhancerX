@@ -62,6 +62,9 @@ POST /api/chats/<jid>/send      body: {"text":"Hello"}  or  {"text":"Hello","rep
     At most 8000 characters and 30 messages per minute.
     503 send_unavailable: this WhatsApp version is not supported for direct sending.
     503 send_failed with "step": WhatsApp did not take the message; step names where it stopped.
+POST /api/chats/<jid>/media?type=<mime>   body: the raw file (photo or video, up to 100 MB)
+                                 header X-WAEX-Caption: optional caption, percent-encoded
+                                 answer: {"ok":true,"stored":true|false}; errors: media_type, too_large, media_unavailable
 
 POST /api/chats/<jid>/react     body: {"id":<message id>,"emoji":"👍"}
     Puts your reaction on a message. An empty emoji removes it.

@@ -11,7 +11,9 @@ class WebRequest(
     val path: String,
     val query: Map<String, String>,
     val headers: Map<String, String>,
-    val body: ByteArray
+    val body: ByteArray,
+    /** A large upload, kept on disk instead of in [body]; deleted once the request is answered. */
+    val file: java.io.File? = null
 ) {
     fun header(name: String): String? = headers[name.lowercase()]
 
@@ -60,11 +62,14 @@ class WebResponse(
 object WebHttp {
     const val MAX_HEADER_BYTES = 16 * 1024
     const val MAX_BODY_BYTES = 256 * 1024
+    /** Photos and videos sent from the page; WhatsApp itself sends videos up to about this size. */
+    const val MAX_UPLOAD_BYTES = 100 * 1024 * 1024
+    private val UPLOAD_PATH = Regex("^/api/chats/[^/]+/media$")
 
     class BadRequest(val status: Int, message: String) : Exception(message)
 
     /** Reads one request; null when the peer closed the connection before sending anything. */
-    fun read(input: InputStream): WebRequest? {
+    fun read(input: InputStream, uploadDir: java.io.File? = null): WebRequest? {
         val head = readHead(input) ?: return null
         val lines = head.split("\r\n")
         val requestLine = lines[0].split(' ')
@@ -94,6 +99,10 @@ object WebHttp {
         if (length != null) {
             val n = length.toIntOrNull() ?: throw BadRequest(400, "content-length")
             if (n < 0) throw BadRequest(400, "content-length")
+            if (method == "POST" && uploadDir != null && UPLOAD_PATH.matches(path)) {
+                if (n > MAX_UPLOAD_BYTES) throw BadRequest(413, "too large")
+                return WebRequest(method, path, query, headers, body, saveUpload(input, n, uploadDir))
+            }
             if (n > MAX_BODY_BYTES) throw BadRequest(413, "too large")
             body = ByteArray(n)
             var read = 0
@@ -106,6 +115,28 @@ object WebHttp {
             throw BadRequest(411, "length required")
         }
         return WebRequest(method, path, query, headers, body)
+    }
+
+    /** Copies exactly [n] bytes into a new file in [dir]; nothing is left behind on failure. */
+    private fun saveUpload(input: InputStream, n: Int, dir: java.io.File): java.io.File {
+        dir.mkdirs()
+        val file = java.io.File.createTempFile("waex_web_", ".upload", dir)
+        try {
+            file.outputStream().use { out ->
+                val buffer = ByteArray(64 * 1024)
+                var left = n
+                while (left > 0) {
+                    val r = input.read(buffer, 0, minOf(buffer.size, left))
+                    if (r < 0) throw BadRequest(400, "short body")
+                    out.write(buffer, 0, r)
+                    left -= r
+                }
+            }
+        } catch (t: Throwable) {
+            file.delete()
+            throw t
+        }
+        return file
     }
 
     private fun readHead(input: InputStream): String? {
