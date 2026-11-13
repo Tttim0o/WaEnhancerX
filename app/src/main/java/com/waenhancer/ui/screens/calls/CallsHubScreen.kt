@@ -162,22 +162,20 @@ fun CallsHubScreen() {
         val sanitized = if (raw == "true") "1" else if (raw == "false") "1" else (raw ?: "1")
         mutableStateOf(if (sanitized == "0" || sanitized == "3" || sanitized == "4") "1" else sanitized)
     }
+    // The switch alone decides whether calls are blocked. Only settings from before the switch
+    // existed (no stored switch) fall back to the old meaning: any mode other than "0" blocked.
+    // Opening this screen must never turn blocking on by itself.
+    val callSwitchStored = prefManager.getBoolean("call_privacy_enabled", false) ==
+        prefManager.getBoolean("call_privacy_enabled", true)
     var callPrivacyEnabled by remember(prefManager.targetEpoch) {
-        val enabledPref = prefManager.getBoolean("call_privacy_enabled", false)
-        val rawMode = try { prefManager.getString("call_privacy", "0") } catch (_: Throwable) { "0" }
-        mutableStateOf(enabledPref || (rawMode != null && rawMode != "0"))
+        val enabled = if (callSwitchStored) prefManager.getBoolean("call_privacy_enabled", false) else {
+            val rawMode = try { prefManager.getString("call_privacy", "0") } catch (_: Throwable) { "0" }
+            rawMode != null && rawMode != "0"
+        }
+        mutableStateOf(enabled)
     }
-    LaunchedEffect(Unit) {
-        val raw = try {
-            prefManager.getString("call_privacy", "0")
-        } catch (_: Throwable) {
-            "0"
-        }
-        val isEnabled = prefManager.getBoolean("call_privacy_enabled", false) || (raw != "0" && raw != null)
-        prefManager.putBoolean("call_privacy_enabled", isEnabled)
-        if (raw == "0" || raw == "3" || raw == "4") {
-            prefManager.putString("call_privacy", "1")
-        }
+    LaunchedEffect(prefManager.targetEpoch) {
+        if (!callSwitchStored) prefManager.putBoolean("call_privacy_enabled", callPrivacyEnabled)
     }
     var callRejectType by remember(prefManager.targetEpoch) { mutableStateOf(prefManager.getString("call_type", "no_internet") ?: "no_internet") }
     var callInfoEnabled by remember(prefManager.targetEpoch) { mutableStateOf(prefManager.getBoolean("call_info", false)) }
